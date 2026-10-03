@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Lịch trình 8 ngày 7 đêm Hàn Quốc - Seoul mùa thu 2026" />
+  <title>Seoul Autumn 2026 | 8N7Đ</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e' }
+          },
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .day-card { transition: all 0.2s ease; }
+    .day-card:active { transform: scale(0.98); }
+    .timeline-item { position: relative; padding-left: 1.75rem; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: 0.35rem; top: 0.5rem; bottom: -1.25rem;
+      width: 2px; background: #e2e8f0;
+    }
+    .dark .timeline-item::before { background: #334155; }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot {
+      position: absolute; left: 0; top: 0.4rem; width: 0.85rem; height: 0.85rem;
+      border-radius: 9999px; background: #0ea5e9; border: 2px solid white;
+      box-shadow: 0 0 0 2px #0ea5e9;
+    }
+    .dark .timeline-dot { border-color: #0f172a; }
+    .checked .timeline-dot { background: #22c55e; box-shadow: 0 0 0 2px #22c55e; }
+    #map, #map-all { border-radius: 1rem; z-index: 1; }
+    #map { height: 280px; }
+    #map-all { height: 340px; }
+    .leaflet-popup-content { margin: 8px 12px; font-size: 13px; }
+    .bottom-nav { padding-bottom: calc(0.5rem + var(--safe-bottom)); }
+    .fade-in { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .progress-ring { transition: stroke-dashoffset 0.5s ease; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    .place-img { background: linear-gradient(135deg, #e0f2fe 0%, #fce7f3 100%); }
+    .dark .place-img { background: linear-gradient(135deg, #0c4a6e 0%, #831843 100%); }
+    .filter-btn.active { background: #0ea5e9; color: white; border-color: #0ea5e9; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased pb-24">
+
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold tracking-tight">🍂 Seoul Autumn</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">18–25/10/2026 · 8N7Đ</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-theme" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Theme">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+        <div class="relative w-10 h-10">
+          <svg class="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e2e8f0" stroke-width="3" class="dark:stroke-slate-700"/>
+            <circle id="progress-circle" class="progress-ring" cx="18" cy="18" r="15.5" fill="none" stroke="#0ea5e9" stroke-width="3" stroke-dasharray="97.4" stroke-dashoffset="97.4" stroke-linecap="round"/>
+          </svg>
+          <span id="progress-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold">0%</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 pt-4">
+    
+    <section id="view-overview" class="space-y-3">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lịch trình 8 ngày</h2>
+        <button id="btn-today" class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-full">Hôm nay</button>
+      </div>
+      <div id="days-list" class="space-y-3"></div>
+    </section>
+
+    <section id="view-day" class="hidden fade-in">
+      <button id="btn-back-day" class="flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 mb-3 font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Tất cả ngày
+      </button>
+      <div id="day-header" class="mb-4"></div>
+      <div class="mb-4 rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
+        <div id="map"></div>
+      </div>
+      <div id="day-timeline" class="space-y-0"></div>
+    </section>
+
+    <section id="view-place" class="hidden fade-in">
+      <button id="btn-back-place" class="flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 mb-3 font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Quay lại
+      </button>
+      <div id="place-content"></div>
+    </section>
+
+    <section id="view-mapall" class="hidden fade-in">
+      <h2 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Bản đồ toàn bộ</h2>
+      
+      <div class="mb-3 space-y-2">
+        <div class="flex gap-1.5 overflow-x-auto pb-1">
+          <button class="filter-btn active text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="all">Tất cả</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-1">Ngày 1</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-2">Ngày 2</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-3">Ngày 3</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-4">Ngày 4</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-5">Ngày 5</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-6">Ngày 6</button>
+          <button class="filter-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-filter="day-7">Ngày 7</button>
+        </div>
+        <div class="flex gap-1.5 overflow-x-auto pb-1">
+          <button class="type-btn active text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-type="all">Mọi loại</button>
+          <button class="type-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-type="sight">📸 Tham quan</button>
+          <button class="type-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-type="food">🍜 Ăn uống</button>
+          <button class="type-btn text-xs px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 whitespace-nowrap" data-type="shop">🛍️ Mua sắm</button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 mb-3">
+        <div id="map-all"></div>
+      </div>
+      <div id="map-legend" class="flex flex-wrap gap-2 text-xs mb-2"></div>
+      <p class="text-[11px] text-slate-400">Chạm marker để xem tên · Dùng bộ lọc phía trên</p>
+    </section>
+  </main>
+
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 bottom-nav">
+    <div class="max-w-lg mx-auto flex justify-around py-2">
+      <button data-view="overview" class="nav-btn flex flex-col items-center gap-0.5 px-4 py-1 text-primary-600 dark:text-primary-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="text-[10px] font-medium">Lịch</span>
+      </button>
+      <button data-view="mapall" class="nav-btn flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+        <span class="text-[10px] font-medium">Bản đồ</span>
+      </button>
+      <button id="btn-reset" class="nav-btn flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span class="text-[10px] font-medium">Reset</span>
+      </button>
+    </div>
+  </nav>
+
+<script>
+const DAYS = [
+  {id:1,date:'2026-10-18',title:'Đến Seoul → Kyung Hee & Hwarangdae',emoji:'🌿',color:'#0ea5e9',summary:'Nhập cảnh, nghỉ ngơi, Đại học Kyung Hee, Hwarangdae Railway Park',items:[{time:'01:40',title:'Bay Hà Nội → Seoul (Incheon T1)',type:'transport'},{time:'06:00–08:30',title:'Nhập cảnh + Di chuyển về Nowon',desc:'AREX + Line 7 hoặc bus 6100/6101 → Chamdaum, Gongneung-dong',type:'transport'},{time:'08:30–09:30',title:'Ăn sáng/brunch quanh Nowon',type:'food'},{time:'09:30–12:00',title:'Ngủ phục hồi sau chuyến bay đêm',type:'rest'},{time:'12:00–13:30',title:'Ăn trưa + trò chuyện cùng bạn',type:'food'},{time:'13:30–14:30',title:'Nghỉ trưa nhẹ',type:'rest'},{time:'14:30–16:30',title:'Đại học Kyung Hee',placeId:'kyunghee',type:'sight',duration:'~15 phút di chuyển'},{time:'16:30–18:00',title:'Hwarangdae Railway Park',placeId:'hwarangdae',type:'sight',duration:'15–20 phút'},{time:'18:00–19:30',title:'Ăn tối + café Gongridan-gil',type:'food'},{time:'19:30',title:'Về nhà nghỉ sớm',type:'rest'}]},
+  {id:2,date:'2026-10-19',title:'Đảo Nami (Mùa thu)',emoji:'🌲',color:'#22c55e',summary:'Day trip thiên nhiên – Metasequoia & Ginkgo Lane',items:[{time:'07:00',title:'Thức dậy',type:'rest'},{time:'07:30–08:45',title:'Di chuyển Nowon → Gapyeong',desc:'Sangbong/Cheongnyangni → ITX-Cheongchun hoặc Gyeongchun Line',type:'transport'},{time:'08:45–09:30',title:'Ăn sáng / café gần ga Gapyeong',type:'food'},{time:'09:30–09:45',title:'Bus/taxi ra bến phà Nami',type:'transport'},{time:'10:00–10:10',title:'Đi phà sang Đảo Nami',type:'transport'},{time:'10:10–15:00',title:'Tham quan Đảo Nami',placeId:'nami',type:'sight',duration:'~5 giờ'},{time:'15:00–15:30',title:'Phà về đất liền',type:'transport'},{time:'15:30–17:30',title:'Tàu Gapyeong → Seoul/Nowon',type:'transport'},{time:'18:00–20:00',title:'Ăn tối quanh Gongneung',type:'food'}]},
+  {id:3,date:'2026-10-20',title:'Local Food + 2hand + Ewha + Haneul Park',emoji:'🛍️',color:'#a855f7',summary:'Chợ Gwangjang, Dongmyo, Ewha, Haneul Park Silver Grass',items:[{time:'08:00–09:15',title:'Ăn sáng Chợ Gwangjang + săn 2hand tầng 2',placeId:'gwangjang',type:'food'},{time:'09:15–13:15',title:'Săn đồ 2hand Chợ Dongmyo + Vin Prime',placeId:'dongmyo',type:'shop'},{time:'13:15–13:45',title:'Subway Line 2 → Ewha',type:'transport'},{time:'13:45–15:30',title:'Phố mua sắm Ewha + Đại học Nữ sinh',placeId:'ewha',type:'shop'},{time:'15:30–16:00',title:'Di chuyển sang Haneul Park',type:'transport'},{time:'16:00–18:30',title:'Haneul Park – Silver Grass Festival',placeId:'haneul',type:'sight'},{time:'18:30–20:30',title:'Media art / ánh sáng buổi tối',type:'sight'},{time:'20:30',title:'Về nghỉ (có thể đổi lưu trú trung tâm)',type:'rest'}]},
+  {id:4,date:'2026-10-21',title:'Suwon → Starfield → Folk Village',emoji:'🏯',color:'#f59e0b',summary:'Thành cổ Suwon, thư viện Byeolmadang, Korean Folk Village',items:[{time:'07:00–08:15',title:'Di chuyển Seoul → Suwon',desc:'Mugunghwa hoặc Line 1',type:'transport'},{time:'08:15–08:45',title:'Ăn sáng nhẹ Suwon',type:'food'},{time:'08:45–09:15',title:'Changnyongmun, Banghwasuryujeong & Yongyeon',placeId:'suwon',type:'sight'},{time:'09:15–10:30',title:'Hwaseong Haenggung',placeId:'haenggung',type:'sight'},{time:'10:30–11:30',title:'Phố cổ Haengnidan-gil',placeId:'haengnidan',type:'sight'},{time:'11:30–12:00',title:'Di chuyển sang Starfield Suwon',type:'transport'},{time:'12:00–14:00',title:'Starfield Suwon + Thư viện Byeolmadang',placeId:'starfield',type:'sight'},{time:'14:00–14:45',title:'Taxi/Bus → Korean Folk Village',type:'transport'},{time:'14:45–18:00',title:'Korean Folk Village',placeId:'folk',type:'sight'},{time:'18:00–19:00',title:'Ăn tối tại Folk Village',type:'food'},{time:'19:00–20:30',title:'Về lại Seoul',type:'transport'}]},
+  {id:5,date:'2026-10-22',title:'Gyeongbokgung → Bukchon → Namsan → Myeongdong',emoji:'👘',color:'#ef4444',summary:'Cung điện + Hanbok, phố cổ, hoàng hôn Namsan, mua sắm',items:[{time:'08:00–08:40',title:'Brunch LEEDORIM gần Gyeongbokgung',type:'food'},{time:'08:40–09:00',title:'Thuê Hanbok + làm tóc',type:'shop'},{time:'09:00–11:30',title:'Gyeongbokgung (Cảnh Phúc Cung)',placeId:'gyeongbok',type:'sight'},{time:'11:30–12:40',title:'Bukchon Hanok Village',placeId:'bukchon',type:'sight'},{time:'12:40–13:40',title:'Ăn trưa Bukchon / Samcheong-dong',type:'food'},{time:'13:40–14:40',title:'Insadong & Ssamzigil',placeId:'insadong',type:'sight'},{time:'14:40–16:00',title:'Ikseon-dong café Hanok',placeId:'ikseon',type:'food'},{time:'16:00–16:30',title:'Nhà thờ Myeongdong',placeId:'myeongdong-cath',type:'sight'},{time:'16:30–18:40',title:'Namsan Park – Hoàng hôn',placeId:'namsan',type:'sight'},{time:'19:00–20:30',title:'Gotomall (Express Bus Terminal)',placeId:'gotomall',type:'shop'},{time:'20:30–22:00',title:'Myeongdong đêm – ăn + mỹ phẩm',placeId:'myeongdong',type:'shop'}]},
+  {id:6,date:'2026-10-23',title:'Hwadam Forest → Hangang Yacht',emoji:'🍂',color:'#f97316',summary:'Thiên đường lá đỏ + du thuyền hoàng hôn sông Hàn',items:[{time:'06:30',title:'Dậy sớm',type:'rest'},{time:'07:00–08:30',title:'Di chuyển → Hwadam Forest',desc:'⚠️ Bắt buộc săn vé online trước trên hwadam.or.kr',type:'transport'},{time:'09:00–13:00',title:'Hwadam Forest',placeId:'hwadam',type:'sight'},{time:'13:00–14:00',title:'Ăn trưa ngoài cổng',type:'food'},{time:'14:00–15:40',title:'Về trung tâm Seoul (dự phòng tắc đường)',type:'transport'},{time:'15:40–16:30',title:'Nghỉ / thay đồ đẹp',type:'rest'},{time:'16:30–17:00',title:'Di chuyển Banpo Hangang Park',type:'transport'},{time:'17:00–18:00',title:'Du thuyền Golden Blue Marina Yacht',placeId:'yacht',type:'sight'},{time:'18:00–20:00',title:'Ăn tối bờ sông Hàn + cầu vồng Banpo',type:'food'},{time:'20:30',title:'Về nghỉ',type:'rest'}]},
+  {id:7,date:'2026-10-24',title:'Lotte World → COEX → Sân bay',emoji:'🎡',color:'#ec4899',summary:'Lotte World, Aquarium, về Incheon nghỉ gần sân bay',items:[{time:'07:45–08:30',title:'Brunch khu Jamsil',type:'food'},{time:'08:30–09:00',title:'Thuê đồng phục học sinh',type:'shop'},{time:'09:00–12:30',title:'Lotte World (Magic Island + Indoor)',placeId:'lotte',type:'sight'},{time:'12:30–13:30',title:'Ăn trưa nhẹ',type:'food'},{time:'13:30–14:00',title:'Di chuyển → COEX (Line 2)',type:'transport'},{time:'14:00–15:40',title:'SEA LIFE COEX Aquarium',placeId:'coex',type:'sight'},{time:'15:40–16:30',title:'Về lấy hành lý',type:'transport'},{time:'16:30–18:00',title:'AREX Ga Seoul → Incheon T1',type:'transport'},{time:'18:30–19:00',title:'Check-in khách sạn gần Ga Unseo / sân bay',type:'rest'}]},
+  {id:8,date:'2026-10-25',title:'Incheon → Hà Nội',emoji:'✈️',color:'#64748b',summary:'Trả phòng, hoàn thuế, bay về',items:[{time:'07:30',title:'Dậy, vệ sinh, trả phòng',type:'rest'},{time:'08:00–08:30',title:'Có mặt Terminal 1 – gửi hành lý, Tax Refund, xuất cảnh',type:'transport'},{time:'11:00',title:'Bay Vietjet T1 → Hà Nội',type:'transport'}]}
+];
+
+const PLACES = {
+  kyunghee:{name:'Đại học Kyung Hee (Seoul Campus)',nameKo:'경희대학교',lat:37.5968,lng:127.0519,address:'26 Kyungheedae-ro, Dongdaemun-gu, Seoul',hours:'Khuôn viên mở tự do',fee:'Miễn phí tham quan bên ngoài',history:'Thành lập 1949, là đại học tư thục hàng đầu Hàn Quốc. Tòa Grand Peace Palace mang kiến trúc châu Âu cổ điển, biểu tượng lý tưởng hòa bình. Khuôn viên mùa thu với hàng cây ngân hạnh rất đẹp.',tips:'Chụp Grand Peace Palace, thư viện kiểu La Mã và rặng cây lá vàng. Từ Nowon ~15 phút.',naver:'경희대학교 서울캠퍼스'},
+  hwarangdae:{name:'Hwarangdae Railway Park',nameKo:'화랑대역 철도공원',lat:37.623,lng:127.085,address:'Gongneung-dong, Nowon-gu, Seoul',hours:'Thường mở cả ngày',fee:'Miễn phí',history:'Công viên đường sắt cải tạo từ nhà ga và đường ray cũ tuyến Gyeongchun. Ví dụ bảo tồn di sản công nghiệp thành không gian xanh đô thị.',tips:'Đường ray cổ, nhà ga cũ rất photogenic dưới nắng chiều.',naver:'화랑대역 철도공원'},
+  nami:{name:'Đảo Nami (Namiseom)',nameKo:'남이섬',lat:37.7915,lng:127.5254,address:'1 Namiseom-gil, Namsan-myeon, Chuncheon-si, Gangwon-do',hours:'08:00–21:00',fee:'Người lớn ~19.000₩ (gồm phà khứ hồi). Nên mua online.',history:'Đảo hình thành sau đập Cheongpyeong (1944). Tên từ tướng Nami thời Joseon. Từ 1960s phát triển thành điểm du lịch sinh thái nổi tiếng với hàng cây Metasequoia và Ginkgo mùa thu.',tips:'Đi sớm. Metasequoia & Ginkgo Lane đẹp nhất cuối tháng 10. Mang giày thoải mái.',naver:'남이섬'},
+  gwangjang:{name:'Chợ Gwangjang',nameKo:'광장시장',lat:37.570,lng:126.999,address:'Jongno-gu, Seoul',hours:'Khoảng 09:00–22:00',fee:'Miễn phí vào chợ',history:'Một trong những chợ truyền thống lâu đời nhất Seoul từ thời Joseon. Nổi tiếng ẩm thực đường phố và khu vintage tầng 2.',tips:'Bindaetteok, Mayak Gimbap, Kalguksu. Tầng 2 săn đồ 2hand.',naver:'광장시장'},
+  dongmyo:{name:'Chợ Dongmyo (Flea Market)',nameKo:'동묘시장',lat:37.573,lng:127.018,address:'Sinseol-dong, Jongno-gu, Seoul',hours:'Sáng đến chiều',fee:'Miễn phí',history:'Chợ trời nổi tiếng đồ second-hand. Dongmyo vốn là đền thờ tướng Quan Vũ được đưa vào văn hóa Hàn từ thời Joseon.',tips:'Thiên đường áo len, cardigan, áo khoác dạ giá bình dân.',naver:'동묘 벼룩시장'},
+  ewha:{name:'Ewha Womans University & Shopping Street',nameKo:'이화여자대학교',lat:37.561,lng:126.946,address:'Seodaemun-gu, Seoul',hours:'Cả ngày',fee:'Miễn phí',history:'Trường đại học nữ sinh đầu tiên và lớn nhất Hàn Quốc (1886). ECC là công trình kiến trúc hiện đại nổi bật.',tips:'Săn đồ mới 10–25k₩. Chụp ECC và đường cây mùa thu.',naver:'이화여자대학교'},
+  haneul:{name:'Haneul Park (Sky Park)',nameKo:'하늘공원',lat:37.568,lng:126.886,address:'95 Haneulgongwon-ro, Mapo-gu, Seoul',hours:'Tháng 10: ~06:00–20:00',fee:'Miễn phí. Xe điện ~2–3k₩',history:'Từng là bãi rác khổng lồ (1978–1993), phục hồi thành công viên sinh thái thuộc World Cup Park. Lễ hội cỏ lau hàng năm rất nổi tiếng.',tips:'Lên đỉnh đồi ngắm hoàng hôn sông Hàn. Festival cỏ lau giữa–cuối tháng 10.',naver:'하늘공원'},
+  suwon:{name:'Suwon Hwaseong Fortress',nameKo:'수원 화성',lat:37.287,lng:127.012,address:'Suwon, Gyeonggi-do',hours:'Thường 09:00–18:00',fee:'Một số khu miễn phí / vé vài nghìn ₩',history:'Di sản UNESCO. Vua Jeongjo xây cuối thế kỷ 18 để tưởng nhớ cha và làm thành phố mới. Kết hợp kiến trúc quân sự Đông–Tây.',tips:'Buổi sáng vắng, ánh sáng đẹp để chụp tường thành.',naver:'수원화성'},
+  haenggung:{name:'Hwaseong Haenggung',nameKo:'화성행궁',lat:37.282,lng:127.014,address:'Suwon',hours:'09:00–18:00',fee:'Có vé vào',history:'Cung điện tạm của vua Jeongjo khi đến Suwon. Trung tâm hành chính thành Hwaseong, kiến trúc Joseon điển hình.',tips:'Kết hợp với tường thành và Haengnidan-gil.',naver:'화성행궁'},
+  haengnidan:{name:'Haengnidan-gil',nameKo:'행리단길',lat:37.283,lng:127.015,address:'Suwon',hours:'Cả ngày',fee:'Miễn phí',history:'Phố cổ quanh Haenggung, mang không khí hip giống Gyeongnidan-gil Seoul. Kết hợp nhà cổ và quán café hanok.',tips:'Dạo hẻm, uống café hanok, chụp ảnh.',naver:'행리단길'},
+  starfield:{name:'Starfield Suwon & Byeolmadang Library',nameKo:'스타필드 수원 · 별마당도서관',lat:37.287,lng:126.991,address:'175 Suseong-ro, Jangan-gu, Suwon',hours:'Thư viện ~10:00–22:00',fee:'Miễn phí vào thư viện',history:'Byeolmadang Library là không gian văn hóa mở của Shinsegae. Chi nhánh Suwon (2024) cao 22m, lớn hơn bản COEX.',tips:'Kệ sách 4–7 tầng cực đẹp. Ăn trưa Gourmet Street (B1) hoặc tầng 7.',naver:'스타필드 수원 별마당도서관'},
+  folk:{name:'Korean Folk Village (Yongin)',nameKo:'한국민속촌',lat:37.2589,lng:127.1181,address:'90 Minsokchon-ro, Giheung-gu, Yongin-si',hours:'T2–T5 ~10:00–18:00; cuối tuần có thể đến 22:00',fee:'Người lớn ~32–37k₩ (có thể dùng DSP)',history:'Mở 1974, bảo tàng sống lớn nhất Hàn Quốc tái hiện làng quê Joseon muộn. Hơn 260 ngôi nhà thực được di dời.',tips:'Dùng DSP nếu có. Xem biểu diễn, nhà hanok, lá đỏ. Dành 3–4 giờ.',naver:'한국민속촌'},
+  gyeongbok:{name:'Gyeongbokgung Palace',nameKo:'경복궁',lat:37.5798,lng:126.9768,address:'161 Sajik-ro, Jongno-gu, Seoul',hours:'Tháng 10: 09:00–18:00 (vào đến 17:00). Đóng cửa thứ 3.',fee:'Người lớn 3.000₩. Miễn phí nếu mặc Hanbok đầy đủ.',history:'Cung điện chính đầu tiên triều Joseon (1395). Nơi vua Sejong sáng tạo chữ Hangul. Bị phá trong chiến tranh Imjin, phục dựng lớn từ thế kỷ 20.',tips:'Thuê Hanbok để miễn phí + ảnh đẹp. Chụp Geunjeongjeon, Gyeonghoeru, Hyangwonjeong. Đi sớm.',naver:'경복궁'},
+  bukchon:{name:'Bukchon Hanok Village',nameKo:'북촌한옥마을',lat:37.582,lng:126.983,address:'Jongno-gu, Seoul',hours:'Cả ngày (tôn trọng khu dân cư)',fee:'Miễn phí',history:'Làng hanok nằm giữa Gyeongbokgung và Changdeokgung. Từng là nơi ở quý tộc thời Joseon. Hiện là khu bảo tồn kiến trúc dân gian quan trọng.',tips:'Đi bộ nhẹ, giữ im lặng, không vào nhà riêng.',naver:'북촌한옥마을'},
+  insadong:{name:'Insadong & Ssamzigil',nameKo:'인사동',lat:37.574,lng:126.985,address:'Jongno-gu, Seoul',hours:'Cửa hàng ~10:00–21:00',fee:'Miễn phí',history:'Từ thời Joseon liên quan nghi lễ và văn hóa. Thế kỷ 20 trở thành trung tâm đồ cổ, thư pháp, trà đạo.',tips:'Đồ thủ công, trà, gallery. Ssamzigil đẹp để chụp.',naver:'인사동'},
+  ikseon:{name:'Ikseon-dong',nameKo:'익선동',lat:37.574,lng:126.990,address:'Jongno-gu, Seoul',hours:'Café thường 11:00–22:00',fee:'Miễn phí dạo',history:'Khu hanok quy hoạch thời Nhật, sau trở thành hot place với café và nhà hàng trong nhà cổ.',tips:'Hẻm hanok đầy café và bánh ngọt. Rất chill.',naver:'익선동'},
+  'myeongdong-cath':{name:'Nhà thờ Myeongdong',nameKo:'명동성당',lat:37.563,lng:126.987,address:'Myeongdong, Seoul',hours:'Thường mở cả ngày',fee:'Miễn phí',history:'Nhà thờ Công giáo chính tòa Tổng giáo phận Seoul, xây 1898 phong cách Gothic. Biểu tượng Công giáo Hàn Quốc.',tips:'Kiến trúc Gothic đẹp dưới nắng chiều.',naver:'명동성당'},
+  namsan:{name:'Namsan Park & N Seoul Tower',nameKo:'남산공원',lat:37.551,lng:126.988,address:'Yongsan / Jung-gu, Seoul',hours:'Công viên cả ngày',fee:'Công viên miễn phí. Cáp treo/bus có phí.',history:'Núi Namsan là biểu tượng phong thủy và quốc phòng Seoul. N Seoul Tower (1971) nay là điểm ngắm cảnh và tình yêu nổi tiếng.',tips:'Bus vàng Namsan hoặc cáp treo. Hoàng hôn + city light cực đẹp.',naver:'남산공원'},
+  gotomall:{name:'Gotomall (Express Bus Terminal)',nameKo:'고투몰',lat:37.505,lng:127.004,address:'Express Bus Terminal, Seocho-gu, Seoul',hours:'Thường 10:00–22:00',fee:'Miễn phí',history:'Trung tâm mua sắm dưới lòng đất tại bến xe trung ương, nổi tiếng thời trang giá rẻ.',tips:'Săn thời trang mùa thu 10–15k₩.',naver:'고투몰'},
+  myeongdong:{name:'Myeongdong',nameKo:'명동',lat:37.563,lng:126.985,address:'Jung-gu, Seoul',hours:'Cửa hàng đến 22–23:00',fee:'Miễn phí',history:'Từ khu tài chính thời thuộc Nhật trở thành thiên đường mua sắm và street food lớn nhất Seoul.',tips:'Street food, mỹ phẩm, shopping đêm.',naver:'명동'},
+  hwadam:{name:'Hwadam Forest',nameKo:'화담숲',lat:37.3408,lng:127.2888,address:'278 Docheokwit-ro, Docheok-myeon, Gwangju-si, Gyeonggi-do',hours:'09:00–18:00 (vào đến ~17:00). Đóng cửa thứ 2.',fee:'Người lớn ~11.000₩ (mùa thu). Monorail bán riêng. ⚠️ Đặt vé online trước.',history:'Arboretum do Quỹ LG Evergreen tạo lập. Tên “Hwadam” nghĩa trò chuyện hòa hợp với thiên nhiên. Điểm ngắm lá đỏ hàng đầu gần Seoul.',tips:'Đặt vé sớm trên hwadam.or.kr. Đi monorail + đi bộ.',naver:'화담숲'},
+  yacht:{name:'Golden Blue Marina Yacht (Banpo)',nameKo:'골든블루마리나',lat:37.510,lng:126.996,address:'Banpo Hangang Park, Seoul',hours:'Theo lịch chuyến',fee:'Có thể dùng Discover Seoul Pass',history:'Du thuyền trên sông Hàn kết hợp ngắm cầu Banpo (cầu vồng nước) – biểu tượng Seoul về đêm.',tips:'Ngắm hoàng hôn + cầu vồng Banpo. Đặt trước.',naver:'반포한강공원'},
+  lotte:{name:'Lotte World',nameKo:'롯데월드',lat:37.5111,lng:127.0980,address:'240 Olympic-ro, Songpa-gu, Seoul',hours:'Thường 09:30–22:00',fee:'Free Pass khoảng 50–60k₩ (mua online rẻ hơn)',history:'Mở 1989, công viên giải trí trong nhà lớn nhất thế giới thời điểm đó. Kết hợp Magic Island và Lotte World Tower.',tips:'Tập trung Magic Island mùa thu + Indoor. Thuê đồng phục học sinh.',naver:'롯데월드'},
+  coex:{name:'SEA LIFE COEX Aquarium',nameKo:'코엑스 아쿠아리움',lat:37.512,lng:127.059,address:'COEX, Gangnam-gu, Seoul',hours:'Thường 10:00–20:00',fee:'Có thể dùng Discover Seoul Pass',history:'Nằm trong tổ hợp COEX – trung tâm hội chợ và thương mại lớn của Gangnam.',tips:'Gần Lotte World (Line 2 chỉ 2 trạm).',naver:'코엑스 아쿠아리움'}
+};
+
+let currentView = 'overview', currentDayId = null, mapInstance = null, mapAllInstance = null;
+let checked = JSON.parse(localStorage.getItem('korea-checked') || '{}');
+let filterDay = 'all', filterType = 'all';
+
+function saveChecked(){ localStorage.setItem('korea-checked', JSON.stringify(checked)); updateProgress(); }
+function updateProgress(){
+  let total=0,done=0;
+  DAYS.forEach(d=>d.items.forEach((_,i)=>{total++;if(checked[`${d.id}-${i}`])done++;}));
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('progress-circle').style.strokeDashoffset=97.4-(97.4*pct/100);
+  document.getElementById('progress-text').textContent=pct+'%';
+}
+function formatDate(s){const d=new Date(s+'T12:00:00'),days=['CN','T2','T3','T4','T5','T6','T7'];return `${d.getDate()}/${d.getMonth()+1} (${days[d.getDay()]})`;}
+function isToday(s){const t=new Date(),d=new Date(s+'T12:00:00');return t.toDateString()===d.toDateString();}
+function naverUrl(p){return `https://map.naver.com/v5/search/${encodeURIComponent(p.naver||p.nameKo||p.name)}`;}
+
+function renderOverview(){
+  const list=document.getElementById('days-list');
+  list.innerHTML=DAYS.map(day=>{
+    const done=day.items.filter((_,i)=>checked[`${day.id}-${i}`]).length,total=day.items.length,isTod=isToday(day.date);
+    return `<button class="day-card w-full text-left bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition ${isTod?'ring-2 ring-primary-500':''}" data-day="${day.id}">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background:${day.color}20">${day.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:${day.color}20;color:${day.color}">Ngày ${day.id}</span>
+            <span class="text-xs text-slate-500">${formatDate(day.date)}</span>
+            ${isTod?'<span class="text-[10px] bg-primary-500 text-white px-1.5 py-0.5 rounded-full">Hôm nay</span>':''}
+          </div>
+          <h3 class="font-semibold mt-1 truncate">${day.title}</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">${day.summary}</p>
+          <div class="mt-2 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${total?done/total*100:0}%;background:${day.color}"></div></div>
+            <span class="text-[10px] text-slate-500">${done}/${total}</span>
+          </div>
+        </div>
+        <svg class="w-5 h-5 text-slate-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </button>`;
+  }).join('');
+  list.querySelectorAll('[data-day]').forEach(b=>b.addEventListener('click',()=>showDay(+b.dataset.day)));
+}
+
+function showDay(dayId){
+  currentDayId=dayId;
+  const day=DAYS.find(d=>d.id===dayId); if(!day)return;
+  document.getElementById('view-overview').classList.add('hidden');
+  document.getElementById('view-place').classList.add('hidden');
+  document.getElementById('view-mapall').classList.add('hidden');
+  document.getElementById('view-day').classList.remove('hidden');
+  currentView='day';
+  document.getElementById('day-header').innerHTML=`<div class="flex items-center gap-3 mb-1"><span class="text-3xl">${day.emoji}</span><div><div class="text-xs font-semibold" style="color:${day.color}">Ngày ${day.id} · ${formatDate(day.date)}</div><h2 class="text-xl font-bold">${day.title}</h2></div></div><p class="text-sm text-slate-500 dark:text-slate-400">${day.summary}</p>`;
+  const timeline=document.getElementById('day-timeline');
+  timeline.innerHTML=day.items.map((item,idx)=>{
+    const key=`${day.id}-${idx}`,isChecked=checked[key];
+    const icon={transport:'🚇',food:'🍜',sight:'📸',shop:'🛍️',rest:'😴'}[item.type]||'•';
+    return `<div class="timeline-item pb-5 ${isChecked?'checked opacity-70':''}"><div class="timeline-dot"></div>
+      <div class="flex items-start gap-2">
+        <button class="check-btn mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition ${isChecked?'bg-green-500 border-green-500 text-white':'border-slate-300 dark:border-slate-600'}" data-key="${key}">${isChecked?'<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>':''}</button>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline gap-2 flex-wrap"><span class="text-xs font-mono font-medium text-slate-500">${item.time}</span><span class="text-sm">${icon}</span></div>
+          <h4 class="font-medium text-sm mt-0.5 ${isChecked?'line-through':''}">${item.title}</h4>
+          ${item.desc?`<p class="text-xs text-slate-500 mt-0.5">${item.desc}</p>`:''}
+          ${item.duration?`<p class="text-xs text-slate-400 mt-0.5">${item.duration}</p>`:''}
+          ${item.placeId?`<button class="place-link mt-1 text-xs font-medium text-primary-600 dark:text-primary-400 underline" data-place="${item.placeId}">Xem thông tin điểm →</button>`:''}
+        </div>
+      </div></div>`;
+  }).join('');
+  timeline.querySelectorAll('.check-btn').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();checked[btn.dataset.key]=!checked[btn.dataset.key];saveChecked();showDay(dayId);}));
+  timeline.querySelectorAll('.place-link').forEach(btn=>btn.addEventListener('click',()=>showPlace(btn.dataset.place,dayId)));
+  setTimeout(()=>initDayMap(day),40);
+}
+
+function initDayMap(day){
+  const container=document.getElementById('map');
+  if(mapInstance){mapInstance.remove();mapInstance=null;}
+  container.innerHTML='';
+  const places=day.items.filter(i=>i.placeId&&PLACES[i.placeId]).map(i=>({...PLACES[i.placeId],id:i.placeId}));
+  if(!places.length){container.innerHTML='<div class="h-full flex items-center justify-center text-sm text-slate-400">Không có điểm trên bản đồ</div>';return;}
+  mapInstance=L.map('map',{zoomControl:false}).setView([places[0].lat,places[0].lng],12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(mapInstance);
+  const bounds=[];
+  places.forEach(p=>{
+    const m=L.circleMarker([p.lat,p.lng],{radius:8,fillColor:day.color,color:'#fff',weight:2,fillOpacity:0.9}).addTo(mapInstance);
+    m.bindPopup(`<b>${p.name}</b><br><button onclick="showPlace('${p.id}',${day.id})" class="text-sky-600 text-xs underline">Chi tiết</button>`);
+    bounds.push([p.lat,p.lng]);
+  });
+  if(bounds.length>1)mapInstance.fitBounds(bounds,{padding:[30,30]});
+  L.control.zoom({position:'bottomright'}).addTo(mapInstance);
+}
+
+function showPlace(placeId,fromDayId){
+  const place=PLACES[placeId]; if(!place)return;
+  document.getElementById('view-day').classList.add('hidden');
+  document.getElementById('view-overview').classList.add('hidden');
+  document.getElementById('view-mapall').classList.add('hidden');
+  document.getElementById('view-place').classList.remove('hidden');
+  currentView='place';
+  document.getElementById('place-content').innerHTML=`
+    <div class="place-img rounded-2xl h-36 flex items-center justify-center mb-4"><span class="text-5xl opacity-50">📍</span></div>
+    <h2 class="text-xl font-bold">${place.name}</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">${place.nameKo||''}</p>
+    <div class="mt-4 space-y-3 text-sm">
+      <div class="flex gap-3"><span class="text-slate-400 w-20 flex-shrink-0">Địa chỉ</span><span>${place.address}</span></div>
+      <div class="flex gap-3"><span class="text-slate-400 w-20 flex-shrink-0">Giờ mở</span><span>${place.hours}</span></div>
+      <div class="flex gap-3"><span class="text-slate-400 w-20 flex-shrink-0">Giá vé</span><span>${place.fee}</span></div>
+    </div>
+    ${place.history?`<div class="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl"><h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">📜 Lịch sử & Văn hóa</h3><p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${place.history}</p></div>`:''}
+    <div class="mt-3 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl"><h3 class="text-sm font-semibold text-primary-700 dark:text-primary-300 mb-1">💡 Tips thực tế</h3><p class="text-sm text-slate-700 dark:text-slate-300">${place.tips}</p></div>
+    <a href="${naverUrl(place)}" target="_blank" rel="noopener" class="mt-4 flex items-center justify-center gap-2 w-full py-3.5 bg-[#03C75A] hover:bg-[#02b351] text-white font-semibold rounded-xl transition shadow-sm">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+      Chỉ đường Naver Map
+    </a>
+    <button id="btn-back-from-place" class="mt-3 w-full py-3 text-sm font-medium text-slate-500 dark:text-slate-400">← Quay lại lịch trình ngày</button>`;
+  document.getElementById('btn-back-from-place').onclick=()=>fromDayId?showDay(fromDayId):showOverview();
+}
+
+function showOverview(){
+  document.getElementById('view-day').classList.add('hidden');
+  document.getElementById('view-place').classList.add('hidden');
+  document.getElementById('view-mapall').classList.add('hidden');
+  document.getElementById('view-overview').classList.remove('hidden');
+  currentView='overview'; renderOverview();
+}
+
+function getFilteredPlaces(){
+  const result=[];
+  DAYS.forEach(day=>{
+    if(filterDay!=='all'&&filterDay!==`day-${day.id}`)return;
+    day.items.forEach(item=>{
+      if(!item.placeId||!PLACES[item.placeId])return;
+      if(filterType!=='all'&&item.type!==filterType)return;
+      result.push({...PLACES[item.placeId],id:item.placeId,dayId:day.id,dayColor:day.color,type:item.type});
+    });
+  });
+  const seen=new Set();
+  return result.filter(p=>{if(seen.has(p.id))return false;seen.add(p.id);return true;});
+}
+
+function showMapAll(){
+  document.getElementById('view-overview').classList.add('hidden');
+  document.getElementById('view-day').classList.add('hidden');
+  document.getElementById('view-place').classList.add('hidden');
+  document.getElementById('view-mapall').classList.remove('hidden');
+  currentView='mapall'; setTimeout(renderMapAll,40);
+}
+
+function renderMapAll(){
+  if(mapAllInstance){mapAllInstance.remove();mapAllInstance=null;}
+  const places=getFilteredPlaces();
+  mapAllInstance=L.map('map-all',{zoomControl:false}).setView([37.55,127.0],10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(mapAllInstance);
+  const bounds=[];
+  places.forEach(p=>{
+    const m=L.circleMarker([p.lat,p.lng],{radius:8,fillColor:p.dayColor,color:'#fff',weight:2,fillOpacity:0.9}).addTo(mapAllInstance);
+    m.bindPopup(`<b>${p.name}</b><br>Ngày ${p.dayId}<br><button onclick="showPlace('${p.id}')" class="text-sky-600 text-xs underline">Chi tiết</button>`);
+    bounds.push([p.lat,p.lng]);
+  });
+  if(bounds.length)mapAllInstance.fitBounds(bounds,{padding:[40,40]});
+  else mapAllInstance.setView([37.55,127.0],10);
+  L.control.zoom({position:'bottomright'}).addTo(mapAllInstance);
+  const legendDays=filterDay==='all'?DAYS:DAYS.filter(d=>filterDay===`day-${d.id}`);
+  document.getElementById('map-legend').innerHTML=legendDays.map(d=>`<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><span class="w-2.5 h-2.5 rounded-full" style="background:${d.color}"></span>Ngày ${d.id}</span>`).join('');
+}
+
+document.getElementById('btn-back-day').onclick=showOverview;
+document.getElementById('btn-back-place').onclick=()=>currentDayId?showDay(currentDayId):showOverview();
+document.getElementById('btn-today').onclick=()=>{const t=DAYS.find(d=>isToday(d.date));if(t)showDay(t.id);else alert('Hôm nay không nằm trong lịch 18–25/10/2026');};
+document.getElementById('btn-theme').onclick=()=>{document.documentElement.classList.toggle('dark');localStorage.setItem('korea-theme',document.documentElement.classList.contains('dark')?'dark':'light');};
+document.getElementById('btn-reset').onclick=()=>{if(confirm('Xóa toàn bộ check-in đã lưu?')){checked={};saveChecked();if(currentView==='day'&&currentDayId)showDay(currentDayId);else renderOverview();}};
+document.querySelectorAll('.nav-btn[data-view]').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('text-primary-600','dark:text-primary-400');b.classList.add('text-slate-400');});
+  btn.classList.remove('text-slate-400');btn.classList.add('text-primary-600','dark:text-primary-400');
+  if(btn.dataset.view==='overview')showOverview();else if(btn.dataset.view==='mapall')showMapAll();
+}));
+document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterDay=btn.dataset.filter;if(currentView==='mapall')renderMapAll();}));
+document.querySelectorAll('.type-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterType=btn.dataset.type;if(currentView==='mapall')renderMapAll();}));
+
+if(localStorage.getItem('korea-theme')==='dark'||(!localStorage.getItem('korea-theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');
+updateProgress();renderOverview();
+window.showPlace=showPlace;
+</script>
+</body>
+</html>
