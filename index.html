@@ -1212,6 +1212,7 @@ const expensesRef = collection(db, "trips", TRIP_ID, "expenses");
 const dspRef = collection(db, "trips", TRIP_ID, "dsp");
 const notesRef = collection(db, "trips", TRIP_ID, "notes");
 const bookingsRef = collection(db, "trips", TRIP_ID, "bookings");
+const checklistRef = collection(db, "trips", TRIP_ID, "checklist");
 
 
 /* =========================================================
@@ -1228,6 +1229,9 @@ const state = {
   dsp: [],
   dspMain: null,
   bookings: [],
+  checklist: [],
+  dayNoteText: "",
+  alertedIds: {},
   unsubscribe: [],
   /** Tick for "now" UI — updated every 30s when on dashboard */
   nowTick: Date.now()
@@ -1410,7 +1414,6 @@ function openPlaceMaps(placeId) {
   const hasCoord = Number.isFinite(lat) && Number.isFinite(lng);
   const name = place.name || "";
 
-  // Web URLs
   const googleWeb = place.googleMapsUrl ||
     (hasCoord
       ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
@@ -1418,7 +1421,7 @@ function openPlaceMaps(placeId) {
   const naverWeb = place.naverMapsUrl ||
     (name ? `https://map.naver.com/p/search/${encodeURIComponent(name)}` : null);
 
-  // App deep links (iOS/Android) — mở app native, Back/gesture quay lại Safari tab cũ
+  // Deep link mở app — Safari giữ nguyên tab lịch trình, không cần Back
   const naverApp = name
     ? `nmap://search?query=${encodeURIComponent(name)}`
     : (hasCoord ? `nmap://map?lat=${lat}&lng=${lng}&zoom=15` : null);
@@ -1434,30 +1437,28 @@ function openPlaceMaps(placeId) {
     return;
   }
 
-  /** Mở cùng tab Safari → nút Back quay lại đúng lịch trình */
-  function goSameTab(url) {
-    if (!url) return;
-    closeModal();
-    // delay nhẹ để modal đóng trước khi navigate
-    setTimeout(() => { window.location.href = url; }, 50);
+  /** Mở app native nếu có; trang lịch trình vẫn nằm dưới — không navigate đi */
+  function openApp(appUrl) {
+    if (!appUrl) return false;
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = appUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 1500);
+    // cũng thử location scheme qua hidden anchor (iOS)
+    const a = document.createElement("a");
+    a.href = appUrl;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return true;
   }
 
-  function tryAppThenWeb(appUrl, webUrl) {
-    if (!appUrl && !webUrl) return;
-    closeModal();
-    if (appUrl) {
-      // Thử app; nếu không cài, sau ~0.8s fallback web cùng tab
-      const start = Date.now();
-      window.location.href = appUrl;
-      setTimeout(() => {
-        // Nếu vẫn còn trên trang (app không mở), dùng web cùng tab
-        if (document.visibilityState === "visible" && Date.now() - start < 1500 && webUrl) {
-          window.location.href = webUrl;
-        }
-      }, 900);
-    } else {
-      goSameTab(webUrl);
-    }
+  /** Web: tab mới — tab lịch trình vẫn còn, không cần Back */
+  function openWebNewTab(url) {
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   openModal("🗺 " + (name || "Bản đồ"), `
@@ -1466,7 +1467,8 @@ function openPlaceMaps(placeId) {
       ${hasCoord ? `<br><span class="small">${lat}, ${lng}</span>` : ""}
     </p>
     <p class="small muted" style="margin:0 0 12px">
-      Mở <b>cùng tab</b> — nhấn <b>Back</b> trên Safari để quay lại lịch trình.
+      Ưu tiên mở <b>app bản đồ</b> — lịch trình vẫn giữ nguyên, không cần Back.<br>
+      Nếu không có app → mở tab mới (tab này vẫn còn).
     </p>
     <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
       ${naverWeb || naverApp ? `<button type="button" class="btn primary" id="openNaverMap">Naver Map</button>` : ""}
@@ -1477,11 +1479,23 @@ function openPlaceMaps(placeId) {
   `);
 
   const nBtn = document.getElementById("openNaverMap");
-  if (nBtn) nBtn.onclick = () => tryAppThenWeb(naverApp, naverWeb);
+  if (nBtn) nBtn.onclick = () => {
+    closeModal();
+    if (naverApp) openApp(naverApp);
+    // Luôn mở web tab mới làm fallback an toàn (tab lịch trình không mất)
+    setTimeout(() => openWebNewTab(naverWeb), 400);
+  };
   const gBtn = document.getElementById("openGoogleMap");
-  if (gBtn) gBtn.onclick = () => tryAppThenWeb(googleApp, googleWeb);
+  if (gBtn) gBtn.onclick = () => {
+    closeModal();
+    if (googleApp) openApp(googleApp);
+    setTimeout(() => openWebNewTab(googleWeb), 400);
+  };
   const aBtn = document.getElementById("openAppleMap");
-  if (aBtn) aBtn.onclick = () => goSameTab(appleMaps);
+  if (aBtn) aBtn.onclick = () => {
+    closeModal();
+    openApp(appleMaps);
+  };
   const cBtn = document.getElementById("copyPlaceName");
   if (cBtn) cBtn.onclick = async () => {
     try {
@@ -1669,6 +1683,9 @@ function subscribeFirestore() {
   state.unsubscribe.push(
     onSnapshot(expensesRef, snapshot => {
       state.expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    })
+  );
 
   state.unsubscribe.push(
     onSnapshot(bookingsRef, snapshot => {
@@ -1679,6 +1696,10 @@ function subscribeFirestore() {
       render();
     })
   );
+
+  state.unsubscribe.push(
+    onSnapshot(checklistRef, snapshot => {
+      state.checklist = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       render();
     })
   );
@@ -1949,13 +1970,14 @@ function renderDashboard() {
   const now = new Date(state.nowTick);
   const todayStr = localDateString(now);
 
-  // Today tab: use selectedDay; default to real today when inside trip range
-  const inTrip = todayStr >= TRIP_START && todayStr <= TRIP_END;
-  if (inTrip && !state._userPickedDay) {
+  // Prefer trip day if device date is outside trip (preview mode)
+  let focusDay = todayStr;
+  if (todayStr < TRIP_START || todayStr > TRIP_END) {
+    focusDay = state.selectedDay || TRIP_START;
+  } else {
     state.selectedDay = todayStr;
+    focusDay = todayStr;
   }
-  if (!state.selectedDay) state.selectedDay = inTrip ? todayStr : TRIP_START;
-  let focusDay = state.selectedDay;
 
   const classified = classifyDayActivities(focusDay, now);
   const current = classified.find(c => c.state === "current");
@@ -2008,15 +2030,6 @@ function renderDashboard() {
         <button class="btn blue" id="goItinerary">Lịch trình</button>
       </div>
     </div>
-
-    <div class="day-tabs" id="todayDayTabs" style="margin-bottom:10px">
-      ${tripDays().map(day => `
-        <button type="button" class="btn sm ${day === focusDay ? "active" : ""}" data-today-day="${day}">
-          ${formatDay(day)}${day === todayStr ? " · nay" : ""}
-        </button>
-      `).join("")}
-    </div>
-    ${!inTrip ? `<div class="small muted" style="margin:-4px 0 10px">Đang xem trước lịch · chọn ngày trip bên trên</div>` : ""}
 
     <!-- NOW STATUS -->
     ${(function(){try{var h=scheduleHealth(focusDay,now);return '<div class="status-banner '+h.level+'">'+escapeHtml(h.text)+'</div>';}catch(e){return "";}})()}
@@ -2096,6 +2109,30 @@ function renderDashboard() {
       </div>
     </div>
 
+
+    <div class="card" id="dayNoteCard" style="margin-bottom:12px">
+      <div class="row" style="margin-bottom:6px">
+        <h3 style="margin:0">📝 Ghi chú ngày</h3>
+        <button type="button" class="btn sm" id="saveDayNoteBtn">Lưu</button>
+      </div>
+      <textarea id="dayNoteInput" rows="2" placeholder="Ghi 1–2 dòng cho ngày này…">${escapeHtml(state.dayNoteText || "")}</textarea>
+    </div>
+
+    ${(function(){
+      try {
+        var bs = (state.bookings||[]).filter(function(b){ return b.date === focusDay; });
+        if (!bs.length) return "";
+        return '<div class="card" style="margin-bottom:12px"><h3>✈️ Booking hôm nay</h3>' +
+          bs.map(function(b){
+            return '<div class="list-item"><div class="row"><div><b>'+escapeHtml(b.title||"")+'</b>'+
+              '<div class="small muted">'+(b.time?escapeHtml(b.time)+" · ":"")+escapeHtml(b.type||"")+
+              (b.confirmationCode?" · #"+escapeHtml(b.confirmationCode):"")+'</div></div>'+
+              (b.url?'<button class="btn sm" onclick="window.open(\''+escapeHtml(b.url)+'\',\'_blank\')">Link</button>':'')+
+              '</div></div>';
+          }).join("") + '</div>';
+      } catch(e) { return ""; }
+    })()}
+
     ${dspSummary}
 
     ${(function(){try{var w=freeWindows(focusDay);if(!w.length)return "";return '<div class="card" style="margin-top:10px"><h3>🕐 Khoảng trống</h3>'+w.map(function(x){return '<div class="free-window"><b>'+escapeHtml(x.from)+' – '+escapeHtml(x.to)+'</b> · '+x.minutes+' phút<div class="small muted">Sau '+escapeHtml(x.after)+' · trước '+escapeHtml(x.before)+'</div></div>';}).join("")+'</div>';}catch(e){return "";}})()}
@@ -2152,13 +2189,6 @@ function renderDashboard() {
 
   document.getElementById("imHereBtn").onclick = () => runImHere();
 
-  document.querySelectorAll("[data-today-day]").forEach(btn => {
-    btn.onclick = () => {
-      state.selectedDay = btn.getAttribute("data-today-day");
-      state._userPickedDay = true;
-      render();
-    };
-  });
 
   const goIt = document.getElementById("goItinerary");
   if (goIt) {
@@ -2227,6 +2257,22 @@ function renderDashboard() {
       if (pid) openPlaceMaps(pid);
     };
   });
+
+  loadDayNote(focusDay);
+  const saveDayBtn = document.getElementById("saveDayNoteBtn");
+  if (saveDayBtn) {
+    saveDayBtn.onclick = async () => {
+      const text = (document.getElementById("dayNoteInput") || {}).value || "";
+      try {
+        await setDoc(doc(db, "trips", TRIP_ID, "notes", "day-" + focusDay), {
+          text, date: focusDay, ...audit()
+        }, { merge: true });
+        state.dayNoteText = text;
+        showToast("Đã lưu ghi chú ngày");
+      } catch (e) { alert(e.message); }
+    };
+  }
+  try { checkUpcomingAlerts(); } catch (_) {}
 
 }
 
@@ -2974,6 +3020,7 @@ function renderExpenses() {
                         ${item.time ? " · " + escapeHtml(item.time) : ""}
                         · ${escapeHtml(item.category || "")}
                         ${item.payer ? " · " + escapeHtml(item.payer) : ""}
+                        ${item.placeId ? " · 📍 " + escapeHtml(placeName(item.placeId)) : ""}
                       </div>
                     </div>
                     <div class="actions" style="flex-shrink:0">
@@ -3044,6 +3091,28 @@ function openExpenseForm() {
           <input type="hidden" name="payer" id="expPayer" value="Tôi">
         </label>
 
+        <label>
+          Địa điểm (tuỳ chọn)
+          <select name="placeId" id="expPlaceId">
+            <option value="">— Không gắn —</option>
+            ${(state.places || []).slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""))).map(p =>
+              `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`
+            ).join("")}
+          </select>
+        </label>
+
+        <label>
+          Activity (tuỳ chọn)
+          <select name="activityId" id="expActivityId">
+            <option value="">— Không gắn —</option>
+            ${(typeof activeActivities === "function" ? activeActivities() : state.activities)
+              .filter(a => a.date === defaultDate)
+              .map(a =>
+                `<option value="${escapeHtml(a.id)}">${escapeHtml((a.startTime || "") + " " + (a.title || ""))}</option>`
+              ).join("")}
+          </select>
+        </label>
+
         <button class="btn primary" style="width:100%;min-height:48px;font-size:16px;margin-top:4px">Lưu khoản chi</button>
       </form>
     `
@@ -3069,6 +3138,8 @@ function openExpenseForm() {
     const data = Object.fromEntries(new FormData(event.target).entries());
     data.amount = Number(data.amount);
     if (!data.time) delete data.time;
+    if (!data.placeId) delete data.placeId;
+    if (!data.activityId) delete data.activityId;
     try {
       await addDoc(expensesRef, { ...data, status: "active", ...audit() });
       closeModal();
@@ -3103,6 +3174,29 @@ window.restoreExpense = async function (id) {
   });
   showToast("Đã khôi phục khoản chi");
 };
+
+window.purgeActivity = async function (id) {
+  if (!confirm("XÓA VĨNH VIỄN activity này? Không khôi phục được.")) return;
+  try {
+    await deleteDoc(doc(db, "trips", TRIP_ID, "activities", id));
+    showToast("Đã xóa vĩnh viễn");
+  } catch (e) { alert(e.message); }
+};
+window.purgeExpense = async function (id) {
+  if (!confirm("XÓA VĨNH VIỄN khoản chi này? Không khôi phục được.")) return;
+  try {
+    await deleteDoc(doc(db, "trips", TRIP_ID, "expenses", id));
+    showToast("Đã xóa vĩnh viễn");
+  } catch (e) { alert(e.message); }
+};
+window.purgeBooking = async function (id) {
+  if (!confirm("XÓA VĨNH VIỄN booking này? Không khôi phục được.")) return;
+  try {
+    await deleteDoc(doc(db, "trips", TRIP_ID, "bookings", id));
+    showToast("Đã xóa vĩnh viễn");
+  } catch (e) { alert(e.message); }
+};
+
 
 
 /* =========================================================
@@ -3202,6 +3296,35 @@ function renderMore() {
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:12px" id="checklistCard">
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <h2>🧳 Checklist packing</h2>
+          <div class="small muted">Tick khi đã chuẩn bị · Ẩn / xóa trong thùng rác</div>
+        </div>
+        <button class="btn sm primary" id="addCheckBtn">+ Mục</button>
+      </div>
+      <div id="checklistList">
+        ${(state.checklist || []).filter(c => String(c.status||"").toLowerCase() !== "deleted" && !c.deletedAt)
+          .slice()
+          .sort((a,b) => Number(a.order||0) - Number(b.order||0) || String(a.text||"").localeCompare(String(b.text||"")))
+          .map(c => `
+            <div class="list-item" style="${c.done ? "opacity:.55" : ""}">
+              <div class="row">
+                <label style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;cursor:pointer">
+                  <input type="checkbox" data-check-toggle="${escapeHtml(c.id)}" ${c.done ? "checked" : ""} style="width:20px;height:20px;flex-shrink:0">
+                  <span style="${c.done ? "text-decoration:line-through" : ""}">${escapeHtml(c.text || "—")}</span>
+                </label>
+                <button class="btn sm danger" data-check-hide="${escapeHtml(c.id)}">Ẩn</button>
+              </div>
+            </div>
+          `).join("") || '<div class="empty">Chưa có mục. Thêm passport, sim, adapter…</div>'}
+      </div>
+      <div class="actions" style="margin-top:8px">
+        <button class="btn sm" id="seedCheckBtn">+ Gợi ý mặc định</button>
+      </div>
+    </div>
+
     <div class="card" style="margin-bottom:12px">
       <div class="row" style="margin-bottom:8px">
         <div>
@@ -3248,7 +3371,7 @@ function renderMore() {
     </div>
 
     <div class="card" id="trashPanel" style="margin-top:12px">
-      <h2>🗑 Đã ẩn (khôi phục được)</h2>
+      <h2>🗑 Thùng rác</h2><p class="small muted" style="margin:0 0 8px">Khôi phục hoặc <b>Xóa</b> vĩnh viễn (không lấy lại được).</p>
       <h3 class="small muted" style="margin-top:8px">Activities</h3>
       ${deleted.length ? deleted.map(a => `
         <div class="list-item">
@@ -3257,7 +3380,10 @@ function renderMore() {
               <b>${escapeHtml(a.title || "—")}</b>
               <div class="small muted">${escapeHtml(a.date || "")} · ${escapeHtml(a.startTime || "")}</div>
             </div>
-            <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
+            <div class="actions">
+              <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-act="${escapeHtml(a.id)}">Xóa</button>
+            </div>
           </div>
         </div>
       `).join("") : `<div class="empty">Không có activity đã ẩn.</div>`}
@@ -3269,7 +3395,10 @@ function renderMore() {
               <b>${escapeHtml(e.description || e.title || "—")}</b>
               <div class="small muted">${escapeHtml(e.date || "")} · ${money(e.amount)}</div>
             </div>
-            <button class="btn sm" data-restore-exp="${escapeHtml(e.id)}">↩ Khôi phục</button>
+            <div class="actions">
+              <button class="btn sm" data-restore-exp="${escapeHtml(e.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-exp="${escapeHtml(e.id)}">Xóa</button>
+            </div>
           </div>
         </div>
       `).join("") : `<div class="empty">Không có khoản chi đã ẩn.</div>`}
@@ -3281,10 +3410,27 @@ function renderMore() {
               <b>${escapeHtml(b.title || "—")}</b>
               <div class="small muted">${escapeHtml(b.date || "")}</div>
             </div>
-            <button class="btn sm" data-restore-booking="${escapeHtml(b.id)}">↩ Khôi phục</button>
+            <div class="actions">
+              <button class="btn sm" data-restore-booking="${escapeHtml(b.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-booking="${escapeHtml(b.id)}">Xóa</button>
+            </div>
           </div>
         </div>
       `).join("") : `<div class="empty">Không có booking đã ẩn.</div>`}
+
+      <h3 class="small muted" style="margin-top:12px">Checklist</h3>
+      ${(state.checklist||[]).filter(c => String(c.status||"").toLowerCase()==="deleted" || c.deletedAt).map(c => `
+        <div class="list-item">
+          <div class="row">
+            <div><b>${escapeHtml(c.text || "—")}</b></div>
+            <div class="actions">
+              <button class="btn sm" data-restore-check="${escapeHtml(c.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-check="${escapeHtml(c.id)}">Xóa</button>
+            </div>
+          </div>
+        </div>
+      `).join("") || '<div class="empty">Không có mục checklist đã ẩn.</div>'}
+
     </div>
   `;
 
@@ -3292,6 +3438,80 @@ function renderMore() {
   document.getElementById("saveNote").onclick = savePlanningNote;
   document.getElementById("exportJson").onclick = exportJson;
   document.getElementById("addBookingBtn").onclick = () => openBookingForm();
+
+  const addCheckBtn = document.getElementById("addCheckBtn");
+  if (addCheckBtn) {
+    addCheckBtn.onclick = () => {
+      openModal("Thêm mục checklist", `
+        <form id="checkForm" class="form">
+          <label>Nội dung
+            <input name="text" required placeholder="Passport, sạc dự phòng…" autofocus>
+          </label>
+          <button class="btn primary">Thêm</button>
+        </form>
+      `);
+      document.getElementById("checkForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const text = new FormData(e.target).get("text");
+        try {
+          await addDoc(checklistRef, {
+            text: String(text).trim(),
+            done: false,
+            order: (state.checklist || []).length,
+            status: "active",
+            createdAt: new Date().toISOString(),
+            ...audit()
+          });
+          closeModal();
+          showToast("Đã thêm");
+        } catch (err) { alert(err.message); }
+      };
+    };
+  }
+  const seedCheckBtn = document.getElementById("seedCheckBtn");
+  if (seedCheckBtn) {
+    seedCheckBtn.onclick = async () => {
+      if (!confirm("Thêm các mục gợi ý (passport, sim, adapter…)? Chỉ thêm, không xóa mục hiện có.")) return;
+      const defaults = [
+        "Passport / CCCD", "Vé máy bay / booking", "Sim / eSIM Hàn", "Tiền mặt KRW / thẻ",
+        "Sạc dự phòng", "Adapter / củ sạc", "Thuốc cá nhân", "Tai nghe",
+        "Áo ấm / áo mưa", "Discover Seoul Pass", "TMC / T-money", "Xác nhận khách sạn"
+      ];
+      const existing = new Set((state.checklist || []).map(c => String(c.text || "").toLowerCase()));
+      try {
+        for (const text of defaults) {
+          if (existing.has(text.toLowerCase())) continue;
+          await addDoc(checklistRef, {
+            text, done: false, order: (state.checklist || []).length,
+            status: "active", createdAt: new Date().toISOString(), ...audit()
+          });
+        }
+        showToast("Đã thêm gợi ý");
+      } catch (err) { alert(err.message); }
+    };
+  }
+  element.querySelectorAll("[data-check-toggle]").forEach(cb => {
+    cb.onchange = async () => {
+      const id = cb.getAttribute("data-check-toggle");
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "checklist", id), {
+          done: !!cb.checked, ...audit()
+        });
+      } catch (e) { alert(e.message); }
+    };
+  });
+  element.querySelectorAll("[data-check-hide]").forEach(btn => {
+    btn.onclick = async () => {
+      if (!confirm("Ẩn mục này?")) return;
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "checklist", btn.getAttribute("data-check-hide")), {
+          status: "deleted", deletedAt: new Date().toISOString(), ...audit()
+        });
+        showToast("Đã ẩn");
+      } catch (e) { alert(e.message); }
+    };
+  });
+
 
   element.querySelectorAll("[data-edit-booking]").forEach(btn => {
     btn.onclick = () => openBookingForm(btn.getAttribute("data-edit-booking"));
@@ -3320,6 +3540,35 @@ function renderMore() {
           status: "active", deletedAt: null, ...audit()
         });
         showToast("Đã khôi phục booking");
+      } catch (e) { alert(e.message); }
+    };
+  });
+  element.querySelectorAll("[data-purge-act]").forEach(btn => {
+    btn.onclick = () => purgeActivity(btn.getAttribute("data-purge-act"));
+  });
+  element.querySelectorAll("[data-purge-exp]").forEach(btn => {
+    btn.onclick = () => purgeExpense(btn.getAttribute("data-purge-exp"));
+  });
+  element.querySelectorAll("[data-purge-booking]").forEach(btn => {
+    btn.onclick = () => purgeBooking(btn.getAttribute("data-purge-booking"));
+  });
+
+  element.querySelectorAll("[data-restore-check]").forEach(btn => {
+    btn.onclick = async () => {
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "checklist", btn.getAttribute("data-restore-check")), {
+          status: "active", deletedAt: null, ...audit()
+        });
+        showToast("Đã khôi phục");
+      } catch (e) { alert(e.message); }
+    };
+  });
+  element.querySelectorAll("[data-purge-check]").forEach(btn => {
+    btn.onclick = async () => {
+      if (!confirm("XÓA VĨNH VIỄN mục checklist?")) return;
+      try {
+        await deleteDoc(doc(db, "trips", TRIP_ID, "checklist", btn.getAttribute("data-purge-check")));
+        showToast("Đã xóa vĩnh viễn");
       } catch (e) { alert(e.message); }
     };
   });
@@ -3422,6 +3671,7 @@ async function exportJson() {
     places: state.places,
     expenses: state.expenses,
     bookings: state._allBookings || state.bookings,
+    checklist: state.checklist,
     dsp: state.dsp,
     dspMain: state.dspMain
   };
@@ -3534,10 +3784,53 @@ function render() {
 }
 
 
+
+/** Cảnh báo 15–30 phút trước activity (ưu tiên fixed). Toast 1 lần / activity / ngưỡng. */
+function checkUpcomingAlerts() {
+  const now = new Date();
+  const todayStr = localDateString(now);
+  if (todayStr < TRIP_START || todayStr > TRIP_END) return;
+  const nowMin = localTimeMinutes(now);
+  const list = (typeof activeActivities === "function" ? activeActivities() : state.activities)
+    .filter(a => a.date === todayStr);
+  for (const a of list) {
+    const st = String(a.status || "").toLowerCase();
+    if (st === "done" || st === "skipped" || st === "deleted") continue;
+    const start = minutes(a.startTime);
+    if (!Number.isFinite(start)) continue;
+    const minsUntil = start - nowMin;
+    if (minsUntil > 30 || minsUntil < 1) continue;
+    const key = todayStr + ":" + a.id + ":" + (minsUntil <= 15 ? "15" : "30");
+    if (state.alertedIds[key]) continue;
+    state.alertedIds[key] = true;
+    const label = minsUntil <= 15 ? ("còn " + minsUntil + " phút") : ("còn ~" + minsUntil + " phút");
+    const mode = a.mode === "fixed" ? "🔒 " : "";
+    showToast(mode + "Sắp tới: " + (a.title || "Activity") + " (" + label + ")");
+    const banner = document.getElementById("upcomingAlertBanner");
+    if (banner) {
+      banner.className = "status-banner yellow";
+      banner.textContent = mode + "Sắp tới · " + (a.title || "Activity") + " · " + label + " · " + (a.startTime || "");
+      banner.style.display = "";
+    }
+  }
+}
+
+async function loadDayNote(day) {
+  try {
+    const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    const snap = await getDoc(doc(db, "trips", TRIP_ID, "notes", "day-" + day));
+    const text = snap.exists() ? (snap.data().text || "") : "";
+    state.dayNoteText = text;
+    const el = document.getElementById("dayNoteInput");
+    if (el && document.activeElement !== el) el.value = text;
+  } catch (e) { console.error(e); }
+}
+
 function startNowTimer() {
   stopNowTimer();
   nowTimer = setInterval(() => {
     state.nowTick = Date.now();
+    try { checkUpcomingAlerts(); } catch (_) {}
     // Only soft-refresh dashboard if visible — avoid full map rebuild
     if (state.tab === "dashboard" && state.user) {
       renderDashboard();
