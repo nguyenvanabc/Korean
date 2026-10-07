@@ -2,7 +2,10 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#111827" />
   <title>Seoul Trip Companion · 2026</title>
 
@@ -762,6 +765,110 @@
         padding-bottom: 90px;
       }
     }
+  
+    /* ===== MOBILE-FIRST BOTTOM NAV ===== */
+    :root {
+      --nav-h: 64px;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    .bottom-nav {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 40;
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--line);
+      padding-bottom: var(--safe-b);
+      display: flex;
+      justify-content: space-around;
+      align-items: stretch;
+      height: calc(var(--nav-h) + var(--safe-b));
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+    .bottom-nav button {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 2px;
+      font-size: 10px;
+      font-weight: 600;
+      min-width: 0;
+    }
+    .bottom-nav button .ico { font-size: 20px; line-height: 1; }
+    .bottom-nav button.active { color: #3730a3; }
+    .fab {
+      bottom: calc(var(--nav-h) + var(--safe-b) + 12px) !important;
+    }
+    .toast {
+      bottom: calc(var(--nav-h) + var(--safe-b) + 70px) !important;
+    }
+    main {
+      padding-bottom: calc(var(--nav-h) + var(--safe-b) + 24px) !important;
+    }
+    .status-banner {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .status-banner.green { background: #dcfce7; color: #166534; }
+    .status-banner.yellow { background: #fef9c3; color: #a16207; }
+    .status-banner.red { background: #fee2e2; color: #b91c1c; }
+    .status-banner.gray { background: #f1f5f9; color: #475569; }
+    .free-window {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+    .impact-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .impact-box.warn { background: #fef2f2; border-color: #fecaca; }
+    .impact-row { padding: 6px 0; border-bottom: 1px dashed #e5e7eb; }
+    .impact-row:last-child { border-bottom: 0; }
+    /* Hide top nav on mobile, show bottom */
+    @media (max-width: 767px) {
+      .nav { display: none !important; }
+    }
+    @media (min-width: 768px) {
+      .bottom-nav { display: none !important; }
+      .fab { bottom: 24px !important; right: 24px !important; }
+      .toast { bottom: 90px !important; }
+    }
+    .modal {
+      align-items: flex-end !important;
+      padding: 0 !important;
+    }
+    .modal-box {
+      border-radius: 18px 18px 0 0 !important;
+      max-height: 88dvh !important;
+      width: 100% !important;
+      max-width: 560px !important;
+      padding-bottom: calc(16px + var(--safe-b)) !important;
+    }
+    @media (min-width: 640px) {
+      .modal { align-items: center !important; padding: 16px !important; }
+      .modal-box { border-radius: 18px !important; }
+    }
+    input, select, textarea { font-size: 15px !important; }
+
   </style>
 </head>
 
@@ -890,6 +997,16 @@
   </main>
 
   <!-- Quick Add FAB (visible when logged in) -->
+
+  <nav class="bottom-nav" id="navBottom">
+    <button data-tab="dashboard" class="active"><span class="ico">🏠</span>Today</button>
+    <button data-tab="itinerary"><span class="ico">🗓</span>Lịch</button>
+    <button data-tab="dsp"><span class="ico">🎫</span>DSP</button>
+    <button data-tab="expenses"><span class="ico">💰</span>Chi</button>
+    <button data-tab="places"><span class="ico">📍</span>Chỗ</button>
+    <button data-tab="more"><span class="ico">☰</span>Thêm</button>
+  </nav>
+
   <button
     id="quickAddFab"
     class="fab"
@@ -1286,6 +1403,21 @@ document.querySelectorAll("#nav button").forEach(button => {
 });
 
 
+
+/* Bottom nav sync */
+document.querySelectorAll("#navBottom button").forEach(button => {
+  button.onclick = () => {
+    state.tab = button.dataset.tab;
+    document.querySelectorAll("#nav button, #navBottom button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === state.tab);
+    });
+    ["dashboard","itinerary","dsp","expenses","places","more"].forEach(tab => {
+      document.getElementById("tab-" + tab).classList.toggle("hidden", tab !== state.tab);
+    });
+    render();
+  };
+});
+
 /* =========================================================
    FIRESTORE REALTIME
 ========================================================= */
@@ -1400,6 +1532,184 @@ function activityHtml(activity) {
 }
 
 
+
+function minsToTime(m) {
+  const h = Math.floor(m / 60), mm = m % 60;
+  return String(h).padStart(2,"0") + ":" + String(mm).padStart(2,"0");
+}
+function dayBufferMinutes(day) {
+  return state.activities.filter(a => a.date === day)
+    .reduce((s, a) => s + (Number(a.bufferMinutesAfter) || 0), 0);
+}
+function freeWindows(day) {
+  const list = state.activities.filter(a => a.date === day).slice()
+    .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
+  const windows = [];
+  for (let i = 0; i < list.length - 1; i++) {
+    const endA = minutes(list[i].endTime) || minutes(list[i].startTime) + 60;
+    const startB = minutes(list[i+1].startTime);
+    const gap = startB - endA;
+    if (gap >= 15) {
+      windows.push({
+        from: minsToTime(endA), to: minsToTime(startB), minutes: gap,
+        after: list[i].title, before: list[i+1].title
+      });
+    }
+  }
+  return windows;
+}
+function scheduleHealth(day, now = new Date()) {
+  const classified = (typeof classifyDayActivities === "function")
+    ? classifyDayActivities(day, now)
+    : [];
+  // Fallback simple health if classify not available at call time
+  const todayStr = localDateString(now);
+  if (day !== todayStr) {
+    return { level: "gray", text: day < todayStr ? "Ngày đã qua" : "Ngày sắp tới" };
+  }
+  const nowMin = localTimeMinutes(now);
+  const dayActs = state.activities.filter(a => a.date === day)
+    .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
+  for (const a of dayActs) {
+    const st = String(a.status||"").toLowerCase();
+    if (st === "done" || st === "skipped") continue;
+    const start = minutes(a.startTime);
+    const end = minutes(a.endTime) || start + 60;
+    if (nowMin >= start && nowMin < end) {
+      return { level: "green", text: "🟢 Đúng lịch · " + (a.title||"") };
+    }
+    if (nowMin > start + 10 && nowMin < start) { /* noop */ }
+    if (a.mode === "fixed" && nowMin > start + 10 && nowMin < end) {
+      /* already in */
+    }
+    if (a.mode === "fixed" && nowMin > end && st !== "done") {
+      /* past */
+    }
+  }
+  // upcoming
+  for (const a of dayActs) {
+    const st = String(a.status||"").toLowerCase();
+    if (st === "done" || st === "skipped") continue;
+    const start = minutes(a.startTime);
+    if (nowMin < start) {
+      const until = start - nowMin;
+      if (until <= 15) return { level: "yellow", text: "🟡 Sắp tới: " + (a.title||"") + " (" + until + "p)" };
+      return { level: "green", text: "🟢 On schedule · còn " + until + "p" };
+    }
+    if (nowMin >= start && nowMin < (minutes(a.endTime)||start+60)) {
+      return { level: "green", text: "🟢 Đúng lịch" };
+    }
+  }
+  if (dayActs.length) return { level: "green", text: "🟢 Xong ngày / giữa các slot" };
+  return { level: "gray", text: "Chưa có lịch" };
+}
+
+function analyzeImpact(newAct) {
+  const day = newAct.date;
+  const newStart = minutes(newAct.startTime);
+  const newEnd = minutes(newAct.endTime) || newStart + 60;
+  const existing = state.activities.filter(a => a.date === day)
+    .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
+  const effects = [];
+  let hasFixedConflict = false;
+  for (const a of existing) {
+    const aStart = minutes(a.startTime);
+    const aEnd = minutes(a.endTime) || aStart + 60;
+    if (newStart < aEnd && newEnd > aStart) {
+      if (a.mode === "fixed") hasFixedConflict = true;
+      effects.push(a.mode === "fixed"
+        ? "⚠ Xung đột FIXED: " + a.title + " (" + a.startTime + "–" + a.endTime + ")"
+        : "Chồng giờ flexible: " + a.title + " (" + a.startTime + "–" + a.endTime + ")");
+    } else if (aStart >= newEnd) {
+      effects.push("Activity sau: " + a.title + " lúc " + a.startTime + " · gap " + (aStart - newEnd) + "p");
+      break;
+    }
+  }
+  for (let i = existing.length - 1; i >= 0; i--) {
+    const a = existing[i];
+    const aEnd = minutes(a.endTime) || minutes(a.startTime) + 60;
+    if (aEnd <= newStart) {
+      const gap = newStart - aEnd;
+      const travel = Number(a.travelMinutesToNext) || 0;
+      effects.unshift("Trước đó: " + a.title + " · gap " + gap + "p" + (travel ? " · travel " + travel + "p" : ""));
+      if (travel && gap < travel) effects.unshift("⚠ Gap " + gap + "p < travelMinutesToNext " + travel + "p");
+      break;
+    }
+  }
+  return { effects, hasFixedConflict };
+}
+
+function openImpactForm() {
+  const dates = [...new Set([
+    ...state.activities.map(a => a.date),
+    "2026-10-18","2026-10-19","2026-10-20","2026-10-21",
+    "2026-10-22","2026-10-23","2026-10-24","2026-10-25"
+  ])].sort();
+  openModal("Thêm có Impact Preview", `
+    <form id="impactForm" class="form">
+      <div class="form-grid">
+        <label>Ngày<select name="date">${dates.map(d =>
+          `<option value="${d}" ${d===state.selectedDay?"selected":""}>${formatDay(d)}</option>`
+        ).join("")}</select></label>
+        <label>Địa điểm<select name="placeId"><option value="">—</option>${
+          state.places.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("")
+        }</select></label>
+      </div>
+      <div class="form-grid">
+        <label>Bắt đầu<input type="time" name="startTime" value="15:00" required></label>
+        <label>Kết thúc<input type="time" name="endTime" value="16:00" required></label>
+      </div>
+      <label>Tên<input name="title" required placeholder="Cafe / phát sinh..."></label>
+      <label>Kiểu<select name="mode"><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>
+      <button type="button" class="btn primary" id="previewImpact">Xem ảnh hưởng</button>
+    </form>
+    <div id="impactPreview"></div>
+  `);
+  document.getElementById("previewImpact").onclick = () => {
+    const data = Object.fromEntries(new FormData(document.getElementById("impactForm")).entries());
+    showImpactPreview(data);
+  };
+}
+
+function showImpactPreview(data) {
+  const container = document.getElementById("impactPreview");
+  if (!container) return;
+  const result = analyzeImpact(data);
+  let cls = "impact-box" + (result.hasFixedConflict ? " warn" : "");
+  container.innerHTML = `
+    <div class="${cls}">
+      <b>ACTIVITY MỚI</b><br>
+      ${escapeHtml(data.startTime)}–${escapeHtml(data.endTime)} · ${escapeHtml(data.title)}
+      <div style="margin-top:8px">
+        ${result.effects.length
+          ? result.effects.map(m => `<div class="impact-row">${escapeHtml(m)}</div>`).join("")
+          : `<div class="impact-row muted">Không ảnh hưởng activity khác.</div>`}
+      </div>
+      ${result.hasFixedConflict
+        ? `<div class="impact-row" style="color:var(--red);font-weight:700">⚠ Có xung đột với activity cố định</div>`
+        : ""}
+      <div class="actions" style="margin-top:10px">
+        <button class="btn" id="impactCancel">Hủy</button>
+        <button class="btn primary" id="impactConfirm">Thêm vào lịch</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("impactCancel").onclick = closeModal;
+  document.getElementById("impactConfirm").onclick = async () => {
+    try {
+      await addDoc(tripRef, {
+        date: data.date, startTime: data.startTime, endTime: data.endTime,
+        title: data.title, placeId: data.placeId || "",
+        mode: data.mode || "flexible", type: "other", status: "planned",
+        createdAt: new Date().toISOString(), ...audit()
+      });
+      closeModal();
+      showToast("Đã thêm activity");
+    } catch (e) { alert(e.message); }
+  };
+}
+
+
 /* =========================================================
    PHASE 2 — DASHBOARD "TODAY"
 ========================================================= */
@@ -1471,6 +1781,7 @@ function renderDashboard() {
     </div>
 
     <!-- NOW STATUS -->
+    ${(function(){try{var h=scheduleHealth(focusDay,now);return '<div class="status-banner '+h.level+'">'+escapeHtml(h.text)+'</div>';}catch(e){return "";}})()}
     <div class="card now-card" style="margin-bottom:14px">
       <div class="grid grid-2">
         <div>
@@ -1549,6 +1860,7 @@ function renderDashboard() {
 
     ${dspSummary}
 
+    ${(function(){try{var w=freeWindows(focusDay);if(!w.length)return "";return '<div class="card" style="margin-top:10px"><h3>🕐 Khoảng trống</h3>'+w.map(function(x){return '<div class="free-window"><b>'+escapeHtml(x.from)+' – '+escapeHtml(x.to)+'</b> · '+x.minutes+' phút<div class="small muted">Sau '+escapeHtml(x.after)+' · trước '+escapeHtml(x.before)+'</div></div>';}).join("")+'</div>';}catch(e){return "";}})()}
     <!-- TIMELINE -->
     <div class="card" style="margin-top:14px">
       <div class="row">
@@ -1944,6 +2256,7 @@ function renderItinerary() {
         <div class="muted">🔒 Fixed · ◇ Flexible</div>
       </div>
       <button class="btn primary" id="addActivity">+ Activity</button>
+      <button class="btn" id="impactAdd">⚡ Impact</button>
     </div>
 
     <div class="day-tabs">
@@ -1992,6 +2305,7 @@ function renderItinerary() {
   });
 
   document.getElementById("addActivity").onclick = () => openActivityForm();
+  const _ib=document.getElementById("impactAdd"); if(_ib)_ib.onclick=()=>openImpactForm();
 
   if (state.tab === "itinerary") {
     requestAnimationFrame(() => initOrUpdateDayMap(state.selectedDay));
@@ -2574,16 +2888,15 @@ function openQuickAdd() {
     `
       <div class="quick-sheet">
         <button class="btn" id="qaActivity">📅 Activity</button>
+        <button class="btn" id="qaImpact">⚡ Activity + Impact</button>
         <button class="btn" id="qaExpense">💳 Khoản chi</button>
         <button class="btn" id="qaNote">📝 Ghi chú nhanh</button>
       </div>
     `
   );
 
-  document.getElementById("qaActivity").onclick = () => {
-    closeModal();
-    openActivityForm();
-  };
+  document.getElementById("qaActivity").onclick = () => { closeModal(); openActivityForm(); };
+  const qaI=document.getElementById("qaImpact"); if(qaI) qaI.onclick=()=>{closeModal();openImpactForm();};
   document.getElementById("qaExpense").onclick = () => {
     closeModal();
     openExpenseForm();
