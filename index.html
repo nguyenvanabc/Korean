@@ -1211,6 +1211,7 @@ const placesRef = collection(db, "trips", TRIP_ID, "places");
 const expensesRef = collection(db, "trips", TRIP_ID, "expenses");
 const dspRef = collection(db, "trips", TRIP_ID, "dsp");
 const notesRef = collection(db, "trips", TRIP_ID, "notes");
+const bookingsRef = collection(db, "trips", TRIP_ID, "bookings");
 
 
 /* =========================================================
@@ -1226,6 +1227,7 @@ const state = {
   expenses: [],
   dsp: [],
   dspMain: null,
+  bookings: [],
   unsubscribe: [],
   /** Tick for "now" UI — updated every 30s when on dashboard */
   nowTick: Date.now()
@@ -1403,34 +1405,112 @@ function openPlaceMaps(placeId) {
     showToast("Không tìm thấy địa điểm");
     return;
   }
-  const google = place.googleMapsUrl ||
-    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
-      ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
-      : null);
-  const naver = place.naverMapsUrl ||
-    (place.name ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}` : null);
-  // Prefer Naver in Korea, fallback Google
-  const url = naver || google;
-  if (!url) {
+  const lat = Number(place.lat);
+  const lng = Number(place.lng);
+  const hasCoord = Number.isFinite(lat) && Number.isFinite(lng);
+  const name = place.name || "";
+
+  // Web URLs
+  const googleWeb = place.googleMapsUrl ||
+    (hasCoord
+      ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+      : (name ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}` : null));
+  const naverWeb = place.naverMapsUrl ||
+    (name ? `https://map.naver.com/p/search/${encodeURIComponent(name)}` : null);
+
+  // App deep links (iOS/Android) — mở app native, Back/gesture quay lại Safari tab cũ
+  const naverApp = name
+    ? `nmap://search?query=${encodeURIComponent(name)}`
+    : (hasCoord ? `nmap://map?lat=${lat}&lng=${lng}&zoom=15` : null);
+  const googleApp = hasCoord
+    ? `comgooglemaps://?q=${lat},${lng}`
+    : (name ? `comgooglemaps://?q=${encodeURIComponent(name)}` : null);
+  const appleMaps = hasCoord
+    ? `maps://?q=${lat},${lng}`
+    : (name ? `maps://?q=${encodeURIComponent(name)}` : null);
+
+  if (!naverWeb && !googleWeb && !appleMaps) {
     showToast("Không có link bản đồ");
     return;
   }
-  // Offer choice if both exist
-  if (google && naver) {
-    openModal("Mở bản đồ · " + (place.name || ""), `
-      <p class="muted small" style="margin:0 0 12px">${escapeHtml(place.name || "")}</p>
-      <div class="actions" style="flex-direction:column;align-items:stretch">
-        <button class="btn primary" id="openNaverMap">Naver Map</button>
-        <button class="btn" id="openGoogleMap">Google Maps</button>
-      </div>
-    `);
-    document.getElementById("openNaverMap").onclick = () => { window.open(naver, "_blank"); closeModal(); };
-    document.getElementById("openGoogleMap").onclick = () => { window.open(google, "_blank"); closeModal(); };
-  } else {
-    window.open(url, "_blank");
+
+  /** Mở cùng tab Safari → nút Back quay lại đúng lịch trình */
+  function goSameTab(url) {
+    if (!url) return;
+    closeModal();
+    // delay nhẹ để modal đóng trước khi navigate
+    setTimeout(() => { window.location.href = url; }, 50);
   }
+
+  function tryAppThenWeb(appUrl, webUrl) {
+    if (!appUrl && !webUrl) return;
+    closeModal();
+    if (appUrl) {
+      // Thử app; nếu không cài, sau ~0.8s fallback web cùng tab
+      const start = Date.now();
+      window.location.href = appUrl;
+      setTimeout(() => {
+        // Nếu vẫn còn trên trang (app không mở), dùng web cùng tab
+        if (document.visibilityState === "visible" && Date.now() - start < 1500 && webUrl) {
+          window.location.href = webUrl;
+        }
+      }, 900);
+    } else {
+      goSameTab(webUrl);
+    }
+  }
+
+  openModal("🗺 " + (name || "Bản đồ"), `
+    <p class="muted small" style="margin:0 0 8px">
+      ${escapeHtml(name || "—")}
+      ${hasCoord ? `<br><span class="small">${lat}, ${lng}</span>` : ""}
+    </p>
+    <p class="small muted" style="margin:0 0 12px">
+      Mở <b>cùng tab</b> — nhấn <b>Back</b> trên Safari để quay lại lịch trình.
+    </p>
+    <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
+      ${naverWeb || naverApp ? `<button type="button" class="btn primary" id="openNaverMap">Naver Map</button>` : ""}
+      ${googleWeb || googleApp ? `<button type="button" class="btn" id="openGoogleMap">Google Maps</button>` : ""}
+      ${appleMaps ? `<button type="button" class="btn" id="openAppleMap">Apple Maps</button>` : ""}
+      <button type="button" class="btn" id="copyPlaceName">📋 Sao chép tên địa điểm</button>
+    </div>
+  `);
+
+  const nBtn = document.getElementById("openNaverMap");
+  if (nBtn) nBtn.onclick = () => tryAppThenWeb(naverApp, naverWeb);
+  const gBtn = document.getElementById("openGoogleMap");
+  if (gBtn) gBtn.onclick = () => tryAppThenWeb(googleApp, googleWeb);
+  const aBtn = document.getElementById("openAppleMap");
+  if (aBtn) aBtn.onclick = () => goSameTab(appleMaps);
+  const cBtn = document.getElementById("copyPlaceName");
+  if (cBtn) cBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(name || (hasCoord ? `${lat},${lng}` : ""));
+      showToast("Đã sao chép");
+    } catch (_) {
+      showToast(name || "—");
+    }
+  };
 }
 window.openPlaceMaps = openPlaceMaps;
+
+
+function tripDays() {
+  const days = [];
+  const start = new Date(TRIP_START + "T12:00:00");
+  const end = new Date(TRIP_END + "T12:00:00");
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    days.push(`${y}-${m}-${day}`);
+  }
+  // also include any activity dates outside range
+  for (const a of state.activities) {
+    if (a.date && !days.includes(a.date)) days.push(a.date);
+  }
+  return days.sort();
+}
 
 function classifyDayActivities(day, now = new Date()) {
   const dayStr = day;
@@ -1589,6 +1669,16 @@ function subscribeFirestore() {
   state.unsubscribe.push(
     onSnapshot(expensesRef, snapshot => {
       state.expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  state.unsubscribe.push(
+    onSnapshot(bookingsRef, snapshot => {
+      state.bookings = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(b => String(b.status || "").toLowerCase() !== "deleted" && !b.deletedAt);
+      state._allBookings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    })
+  );
       render();
     })
   );
@@ -1859,14 +1949,13 @@ function renderDashboard() {
   const now = new Date(state.nowTick);
   const todayStr = localDateString(now);
 
-  // Prefer trip day if device date is outside trip (preview mode)
-  let focusDay = todayStr;
-  if (todayStr < TRIP_START || todayStr > TRIP_END) {
-    focusDay = state.selectedDay || TRIP_START;
-  } else {
+  // Today tab: use selectedDay; default to real today when inside trip range
+  const inTrip = todayStr >= TRIP_START && todayStr <= TRIP_END;
+  if (inTrip && !state._userPickedDay) {
     state.selectedDay = todayStr;
-    focusDay = todayStr;
   }
+  if (!state.selectedDay) state.selectedDay = inTrip ? todayStr : TRIP_START;
+  let focusDay = state.selectedDay;
 
   const classified = classifyDayActivities(focusDay, now);
   const current = classified.find(c => c.state === "current");
@@ -1919,6 +2008,15 @@ function renderDashboard() {
         <button class="btn blue" id="goItinerary">Lịch trình</button>
       </div>
     </div>
+
+    <div class="day-tabs" id="todayDayTabs" style="margin-bottom:10px">
+      ${tripDays().map(day => `
+        <button type="button" class="btn sm ${day === focusDay ? "active" : ""}" data-today-day="${day}">
+          ${formatDay(day)}${day === todayStr ? " · nay" : ""}
+        </button>
+      `).join("")}
+    </div>
+    ${!inTrip ? `<div class="small muted" style="margin:-4px 0 10px">Đang xem trước lịch · chọn ngày trip bên trên</div>` : ""}
 
     <!-- NOW STATUS -->
     ${(function(){try{var h=scheduleHealth(focusDay,now);return '<div class="status-banner '+h.level+'">'+escapeHtml(h.text)+'</div>';}catch(e){return "";}})()}
@@ -2053,6 +2151,15 @@ function renderDashboard() {
   `;
 
   document.getElementById("imHereBtn").onclick = () => runImHere();
+
+  document.querySelectorAll("[data-today-day]").forEach(btn => {
+    btn.onclick = () => {
+      state.selectedDay = btn.getAttribute("data-today-day");
+      state._userPickedDay = true;
+      render();
+    };
+  });
+
   const goIt = document.getElementById("goItinerary");
   if (goIt) {
     goIt.onclick = () => {
@@ -2852,21 +2959,26 @@ function renderExpenses() {
       ${
         activeExpenses().length
           ? activeExpenses()
-              .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+              .sort((a, b) => {
+                const dc = String(b.date || "").localeCompare(String(a.date || ""));
+                if (dc) return dc;
+                return String(b.time || "").localeCompare(String(a.time || ""));
+              })
               .map(item => `
                 <div class="list-item">
                   <div class="row">
-                    <div>
-                      <b>${escapeHtml(item.description)}</b>
+                    <div style="min-width:0">
+                      <b>${escapeHtml(item.description || "—")}</b>
                       <div class="small muted">
                         ${escapeHtml(item.date || "")}
+                        ${item.time ? " · " + escapeHtml(item.time) : ""}
                         · ${escapeHtml(item.category || "")}
                         ${item.payer ? " · " + escapeHtml(item.payer) : ""}
                       </div>
                     </div>
-                    <div class="actions">
+                    <div class="actions" style="flex-shrink:0">
                       <strong>${money(item.amount)}</strong>
-                      <button class="btn danger" onclick="removeExpense('${escapeHtml(item.id)}')">Xóa</button>
+                      <button class="btn sm danger" onclick="removeExpense('${escapeHtml(item.id)}')">Ẩn</button>
                     </div>
                   </div>
                 </div>
@@ -2881,53 +2993,96 @@ function renderExpenses() {
 
 
 function openExpenseForm() {
+  const now = new Date();
+  const defaultTime = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+  const defaultDate = state.selectedDay || localDateString();
+
   openModal(
     "Thêm khoản chi",
     `
       <form id="expenseForm" class="form">
+        <label>
+          Mô tả
+          <input name="description" required placeholder="Ăn trưa, taxi, cafe…" autocomplete="off">
+        </label>
+
+        <label>
+          Số tiền (KRW)
+          <input type="number" name="amount" min="0" step="1" required inputmode="numeric" placeholder="0" style="font-size:22px;font-weight:700;padding:14px 12px">
+        </label>
+
         <div class="form-grid">
           <label>
             Ngày
-            <input type="date" name="date" value="${state.selectedDay || localDateString()}" required>
+            <input type="date" name="date" value="${defaultDate}" required>
           </label>
           <label>
-            Số tiền KRW
-            <input type="number" name="amount" min="0" required>
+            Giờ
+            <input type="time" name="time" value="${defaultTime}">
           </label>
         </div>
-        <div class="form-grid">
-          <label>
-            Danh mục
-            <select name="category">
-              <option value="food">food</option>
-              <option value="transport">transport</option>
-              <option value="shopping">shopping</option>
-              <option value="ticket">ticket</option>
-              <option value="other">other</option>
-            </select>
-          </label>
-          <label>
-            Người trả
-            <input name="payer" placeholder="Tôi / Vợ">
-          </label>
-        </div>
+
         <label>
-          Mô tả
-          <input name="description" required placeholder="Ví dụ: ăn trưa...">
+          Danh mục
+          <div class="seg" id="expCatSeg" style="margin-top:4px">
+            <button type="button" data-cat="food" class="on">🍜 Ăn</button>
+            <button type="button" data-cat="transport">🚇 Đi lại</button>
+            <button type="button" data-cat="shopping">🛍 Mua</button>
+            <button type="button" data-cat="ticket">🎫 Vé</button>
+            <button type="button" data-cat="other">… Khác</button>
+          </div>
+          <input type="hidden" name="category" id="expCategory" value="food">
         </label>
-        <button class="btn primary">Lưu</button>
+
+        <label>
+          Người trả
+          <div class="seg" id="expPayerSeg" style="margin-top:4px">
+            <button type="button" data-payer="Tôi" class="on">Tôi</button>
+            <button type="button" data-payer="Vợ">Vợ</button>
+            <button type="button" data-payer="Cả hai">Cả hai</button>
+          </div>
+          <input type="hidden" name="payer" id="expPayer" value="Tôi">
+        </label>
+
+        <button class="btn primary" style="width:100%;min-height:48px;font-size:16px;margin-top:4px">Lưu khoản chi</button>
       </form>
     `
   );
+
+  document.querySelectorAll("#expCatSeg button").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("#expCatSeg button").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      document.getElementById("expCategory").value = btn.getAttribute("data-cat");
+    };
+  });
+  document.querySelectorAll("#expPayerSeg button").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("#expPayerSeg button").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      document.getElementById("expPayer").value = btn.getAttribute("data-payer");
+    };
+  });
 
   document.getElementById("expenseForm").onsubmit = async event => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.target).entries());
     data.amount = Number(data.amount);
-    await addDoc(expensesRef, { ...data, ...audit() });
-    closeModal();
-    showToast("Đã thêm khoản chi");
+    if (!data.time) delete data.time;
+    try {
+      await addDoc(expensesRef, { ...data, status: "active", ...audit() });
+      closeModal();
+      showToast("Đã thêm khoản chi");
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  // Focus amount for quick entry
+  setTimeout(() => {
+    const amt = document.querySelector('#expenseForm input[name="amount"]');
+    if (amt) amt.focus();
+  }, 100);
 }
 
 
@@ -3024,14 +3179,59 @@ function placeListHtml(places) {
 
 function renderMore() {
   const element = document.getElementById("tab-more");
+  const bookings = (state.bookings || []).slice().sort((a, b) =>
+    String(a.date || "").localeCompare(String(b.date || "")) ||
+    String(a.time || "").localeCompare(String(b.time || ""))
+  );
+  const deleted = state.activities.filter(a => isDeletedActivity(a));
+  const deletedExp = state.expenses.filter(e => {
+    const st = String(e.status || "").toLowerCase();
+    return st === "deleted" || !!e.deletedAt;
+  });
+  const deletedBookings = (state._allBookings || []).filter(b => {
+    const st = String(b.status || "").toLowerCase();
+    return st === "deleted" || !!b.deletedAt;
+  });
 
   element.innerHTML = `
     <div class="hero">
       <div>
         <span class="pill">TOOLS</span>
         <h1>Khác</h1>
-        <div class="muted">Backup và ghi chú.</div>
+        <div class="muted">Booking · ghi chú · backup</div>
       </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <h2>✈️ Booking Vault</h2>
+          <div class="small muted">Flight · hotel · reservation</div>
+        </div>
+        <button class="btn sm primary" id="addBookingBtn">+ Booking</button>
+      </div>
+      ${bookings.length ? bookings.map(b => `
+        <div class="list-item">
+          <div class="row">
+            <div style="min-width:0">
+              <b>${escapeHtml(b.title || "—")}</b>
+              <div class="small muted">
+                ${escapeHtml(b.type || "")}
+                ${b.date ? " · " + escapeHtml(b.date) : ""}
+                ${b.time ? " · " + escapeHtml(b.time) : ""}
+                ${b.location ? " · " + escapeHtml(b.location) : ""}
+              </div>
+              ${b.confirmationCode ? `<div class="small muted"># ${escapeHtml(b.confirmationCode)}</div>` : ""}
+              ${b.note ? `<div class="small muted">${escapeHtml(b.note)}</div>` : ""}
+            </div>
+            <div class="actions" style="flex-shrink:0">
+              ${b.url ? `<button class="btn sm" onclick="window.open('${escapeHtml(b.url)}','_blank')">Link</button>` : ""}
+              <button class="btn sm" data-edit-booking="${escapeHtml(b.id)}">Sửa</button>
+              <button class="btn sm danger" data-hide-booking="${escapeHtml(b.id)}">Ẩn</button>
+            </div>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">Chưa có booking. Thêm flight, hotel, nhà hàng…</div>`}
     </div>
 
     <div class="grid grid-2">
@@ -3042,49 +3242,147 @@ function renderMore() {
       </div>
       <div class="card">
         <h2>💾 Backup</h2>
-        <p class="muted small">Xuất dữ liệu hiện tại thành file JSON.</p>
+        <p class="muted small">Xuất JSON toàn bộ dữ liệu hiện tại.</p>
         <button id="exportJson" class="btn">Export JSON</button>
       </div>
+    </div>
+
+    <div class="card" id="trashPanel" style="margin-top:12px">
+      <h2>🗑 Đã ẩn (khôi phục được)</h2>
+      <h3 class="small muted" style="margin-top:8px">Activities</h3>
+      ${deleted.length ? deleted.map(a => `
+        <div class="list-item">
+          <div class="row">
+            <div>
+              <b>${escapeHtml(a.title || "—")}</b>
+              <div class="small muted">${escapeHtml(a.date || "")} · ${escapeHtml(a.startTime || "")}</div>
+            </div>
+            <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">Không có activity đã ẩn.</div>`}
+      <h3 class="small muted" style="margin-top:12px">Chi tiêu</h3>
+      ${deletedExp.length ? deletedExp.map(e => `
+        <div class="list-item">
+          <div class="row">
+            <div>
+              <b>${escapeHtml(e.description || e.title || "—")}</b>
+              <div class="small muted">${escapeHtml(e.date || "")} · ${money(e.amount)}</div>
+            </div>
+            <button class="btn sm" data-restore-exp="${escapeHtml(e.id)}">↩ Khôi phục</button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">Không có khoản chi đã ẩn.</div>`}
+      <h3 class="small muted" style="margin-top:12px">Bookings</h3>
+      ${deletedBookings.length ? deletedBookings.map(b => `
+        <div class="list-item">
+          <div class="row">
+            <div>
+              <b>${escapeHtml(b.title || "—")}</b>
+              <div class="small muted">${escapeHtml(b.date || "")}</div>
+            </div>
+            <button class="btn sm" data-restore-booking="${escapeHtml(b.id)}">↩ Khôi phục</button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">Không có booking đã ẩn.</div>`}
     </div>
   `;
 
   loadPlanningNote();
   document.getElementById("saveNote").onclick = savePlanningNote;
   document.getElementById("exportJson").onclick = exportJson;
+  document.getElementById("addBookingBtn").onclick = () => openBookingForm();
 
-  // Soft-deleted activities restore panel
-  const deleted = state.activities.filter(a => isDeletedActivity(a));
-  const trashHost = document.createElement("div");
-  trashHost.className = "card";
-  trashHost.style.marginTop = "14px";
-  trashHost.innerHTML = `
-    <h2>🗑 Đã ẩn (khôi phục được)</h2>
-    ${deleted.length ? deleted.map(a => `
-      <div class="list-item">
-        <div class="row">
-          <div>
-            <b>${escapeHtml(a.title || "—")}</b>
-            <div class="small muted">${escapeHtml(a.date || "")} · ${escapeHtml(a.startTime || "")}</div>
-          </div>
-          <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
-        </div>
+  element.querySelectorAll("[data-edit-booking]").forEach(btn => {
+    btn.onclick = () => openBookingForm(btn.getAttribute("data-edit-booking"));
+  });
+  element.querySelectorAll("[data-hide-booking]").forEach(btn => {
+    btn.onclick = async () => {
+      if (!confirm("Ẩn booking này?")) return;
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "bookings", btn.getAttribute("data-hide-booking")), {
+          status: "deleted", deletedAt: new Date().toISOString(), ...audit()
+        });
+        showToast("Đã ẩn booking");
+      } catch (e) { alert(e.message); }
+    };
+  });
+  element.querySelectorAll("[data-restore-act]").forEach(btn => {
+    btn.onclick = () => restoreActivity(btn.getAttribute("data-restore-act"));
+  });
+  element.querySelectorAll("[data-restore-exp]").forEach(btn => {
+    btn.onclick = () => restoreExpense(btn.getAttribute("data-restore-exp"));
+  });
+  element.querySelectorAll("[data-restore-booking]").forEach(btn => {
+    btn.onclick = async () => {
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "bookings", btn.getAttribute("data-restore-booking")), {
+          status: "active", deletedAt: null, ...audit()
+        });
+        showToast("Đã khôi phục booking");
+      } catch (e) { alert(e.message); }
+    };
+  });
+}
+
+function openBookingForm(bookingId = null) {
+  const b = bookingId
+    ? (state._allBookings || state.bookings || []).find(x => x.id === bookingId)
+    : null;
+  openModal(b ? "Sửa booking" : "Thêm booking", `
+    <form id="bookingForm" class="form">
+      <label>Tiêu đề
+        <input name="title" required value="${escapeHtml(b?.title || "")}" placeholder="Flight ICN / Hotel Myeongdong…">
+      </label>
+      <div class="form-grid">
+        <label>Loại
+          <select name="type">
+            ${["flight","hotel","restaurant","attraction","transport","other"].map(t =>
+              `<option value="${t}" ${(b?.type || "flight") === t ? "selected" : ""}>${t}</option>`
+            ).join("")}
+          </select>
+        </label>
+        <label>Ngày
+          <input type="date" name="date" value="${escapeHtml(b?.date || state.selectedDay || "")}">
+        </label>
       </div>
-    `).join("") : `<div class="empty">Không có activity đã ẩn.</div>`}
-  `;
-  const moreTab = document.getElementById("tab-more");
-  if (moreTab && !moreTab.querySelector("[data-restore-act], .empty")) {
-    /* always append once per render */
-  }
-  if (moreTab) {
-    const oldTrash = moreTab.querySelector("#trashPanel");
-    if (oldTrash) oldTrash.remove();
-    trashHost.id = "trashPanel";
-    moreTab.appendChild(trashHost);
-    trashHost.querySelectorAll("[data-restore-act]").forEach(btn => {
-      btn.onclick = () => restoreActivity(btn.getAttribute("data-restore-act"));
-    });
-  }
-
+      <div class="form-grid">
+        <label>Giờ
+          <input type="time" name="time" value="${escapeHtml(b?.time || "")}">
+        </label>
+        <label>Mã xác nhận
+          <input name="confirmationCode" value="${escapeHtml(b?.confirmationCode || "")}" placeholder="PNR / booking code">
+        </label>
+      </div>
+      <label>Địa điểm
+        <input name="location" value="${escapeHtml(b?.location || "")}" placeholder="Sân bay / khách sạn…">
+      </label>
+      <label>URL
+        <input name="url" type="url" value="${escapeHtml(b?.url || "")}" placeholder="https://…">
+      </label>
+      <label>Ghi chú
+        <textarea name="note">${escapeHtml(b?.note || "")}</textarea>
+      </label>
+      <button class="btn primary">Lưu</button>
+    </form>
+  `);
+  document.getElementById("bookingForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      if (b) {
+        await updateDoc(doc(db, "trips", TRIP_ID, "bookings", b.id), {
+          ...data, status: b.status === "deleted" ? "active" : (b.status || "active"), ...audit()
+        });
+      } else {
+        await addDoc(bookingsRef, {
+          ...data, status: "active", createdAt: new Date().toISOString(), ...audit()
+        });
+      }
+      closeModal();
+      showToast("Đã lưu booking");
+    } catch (err) { alert(err.message); }
+  };
 }
 
 
@@ -3123,6 +3421,7 @@ async function exportJson() {
     activities: state.activities,
     places: state.places,
     expenses: state.expenses,
+    bookings: state._allBookings || state.bookings,
     dsp: state.dsp,
     dspMain: state.dspMain
   };
