@@ -869,6 +869,89 @@
     }
     input, select, textarea { font-size: 15px !important; }
 
+  
+    /* ===== LAYOUT FIXES (mobile) ===== */
+    .tl-item {
+      grid-template-columns: 22px 48px minmax(0, 1fr) !important;
+      gap: 6px !important;
+      align-items: start;
+    }
+    .tl-body { min-width: 0; overflow: hidden; }
+    .tl-title {
+      font-size: 13px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .tl-meta {
+      font-size: 11px;
+      word-break: break-word;
+    }
+    .tl-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .tl-time { font-size: 11px; }
+    .activity {
+      grid-template-columns: 52px minmax(0, 1fr) !important;
+      gap: 8px !important;
+    }
+    .activity > .actions {
+      grid-column: 1 / -1 !important;
+      margin-top: 4px;
+    }
+    .activity-title, .activity-place, .activity-note {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .row {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .row > div { min-width: 0; }
+    .hero h1 { font-size: 20px !important; word-break: break-word; }
+    .now-card .grid-2 {
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+    }
+    .card { overflow: hidden; }
+    .pill { max-width: 100%; }
+    .stat strong { font-size: 18px !important; word-break: break-word; }
+    .list-item .row {
+      flex-wrap: wrap;
+    }
+    .list-item .actions {
+      width: 100%;
+      margin-top: 6px;
+      justify-content: flex-start;
+    }
+    .bottom-nav button {
+      font-size: 9px !important;
+      line-height: 1.15;
+      padding: 4px 1px !important;
+    }
+    .bottom-nav button .ico { font-size: 18px !important; }
+    main {
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+      padding-bottom: calc(var(--nav-h, 64px) + var(--safe-b, 0px) + 28px) !important;
+      overflow-x: hidden;
+    }
+    .day-tabs .btn { flex-shrink: 0; }
+    .status-banner {
+      font-size: 13px !important;
+      word-break: break-word;
+    }
+    .grid-3 {
+      grid-template-columns: 1fr 1fr !important;
+    }
+    @media (max-width: 380px) {
+      .grid-3 { grid-template-columns: 1fr !important; }
+      .tl-item { grid-template-columns: 20px minmax(0, 1fr) !important; }
+      .tl-time { grid-column: 2; }
+    }
+
   </style>
 </head>
 
@@ -1868,9 +1951,7 @@ function renderDashboard() {
           <h2>Timeline</h2>
           <div class="small muted">${formatDay(focusDay)}</div>
         </div>
-        <button class="btn" id="markDoneBtn" ${current ? "" : "disabled"}>
-          ✓ Đánh dấu xong
-        </button>
+        <span class="small muted">Chạm ✓ để đánh dấu xong</span>
       </div>
       <div class="timeline" style="margin-top:8px">
         ${
@@ -1880,16 +1961,23 @@ function renderDashboard() {
                   c.state === "done" ? "✓" :
                   c.state === "current" ? "→" :
                   c.state === "skipped" ? "–" : "○";
+                const canMark = c.state !== "done" && c.state !== "skipped";
+                const canUndo = c.state === "done";
                 return `
                   <div class="tl-item ${c.state}">
                     <div class="tl-mark">${mark}</div>
                     <div class="tl-time">${escapeHtml(c.activity.startTime || "—")}</div>
-                    <div>
+                    <div class="tl-body">
                       <div class="tl-title">${escapeHtml(c.activity.title || "—")}</div>
                       <div class="tl-meta">
                         📍 ${escapeHtml(placeName(c.activity.placeId))}
                         ${c.activity.mode === "fixed" ? " · 🔒" : ""}
                         ${c.activity.dspAttractionId ? ' · <span class="pill blue">DSP</span>' : ""}
+                      </div>
+                      <div class="tl-actions">
+                        ${canMark ? `<button type="button" class="btn sm" data-mark-done="${escapeHtml(c.activity.id)}">✓ Xong</button>` : ""}
+                        ${canUndo ? `<button type="button" class="btn sm" data-mark-planned="${escapeHtml(c.activity.id)}">↩ Mở lại</button>` : ""}
+                        ${c.state === "current" || c.state === "upcoming" ? `<button type="button" class="btn sm" data-mark-skip="${escapeHtml(c.activity.id)}">Bỏ qua</button>` : ""}
                       </div>
                     </div>
                   </div>
@@ -1905,25 +1993,57 @@ function renderDashboard() {
   `;
 
   document.getElementById("imHereBtn").onclick = () => runImHere();
-  document.getElementById("goItinerary").onclick = () => {
-    state.tab = "itinerary";
-    document.querySelector('[data-tab="itinerary"]').click();
-  };
-
-  const markBtn = document.getElementById("markDoneBtn");
-  if (markBtn && current) {
-    markBtn.onclick = async () => {
-      try {
-        await updateDoc(
-          doc(db, "trips", TRIP_ID, "activities", current.activity.id),
-          { status: "done", ...audit() }
-        );
-        showToast("Đã đánh dấu xong");
-      } catch (err) {
-        alert(err.message);
-      }
+  const goIt = document.getElementById("goItinerary");
+  if (goIt) {
+    goIt.onclick = () => {
+      state.tab = "itinerary";
+      const btn = document.querySelector('#nav [data-tab="itinerary"], #navBottom [data-tab="itinerary"]');
+      if (btn) btn.click();
+      else switchTab && switchTab("itinerary");
     };
   }
+
+  // Per-item mark done / undo / skip — works even outside trip calendar day
+  element.querySelectorAll("[data-mark-done]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.getAttribute("data-mark-done");
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "activities", id), {
+          status: "done", ...audit()
+        });
+        const act = state.activities.find(a => a.id === id);
+        if (act?.dspAttractionId) {
+          const attr = state.dsp.find(d => d.id === act.dspAttractionId);
+          if (attr && !attr.visited && confirm("Đánh dấu DSP «" + (attr.name || "") + "» đã dùng?")) {
+            await updateDoc(doc(db, "trips", TRIP_ID, "dsp", attr.id), {
+              visited: true, ...audit()
+            });
+          }
+        }
+        showToast("Đã đánh dấu xong");
+      } catch (err) { alert(err.message); }
+    };
+  });
+  element.querySelectorAll("[data-mark-planned]").forEach(btn => {
+    btn.onclick = async () => {
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "activities", btn.getAttribute("data-mark-planned")), {
+          status: "planned", ...audit()
+        });
+        showToast("Đã mở lại");
+      } catch (err) { alert(err.message); }
+    };
+  });
+  element.querySelectorAll("[data-mark-skip]").forEach(btn => {
+    btn.onclick = async () => {
+      try {
+        await updateDoc(doc(db, "trips", TRIP_ID, "activities", btn.getAttribute("data-mark-skip")), {
+          status: "skipped", ...audit()
+        });
+        showToast("Đã bỏ qua");
+      } catch (err) { alert(err.message); }
+    };
+  });
 }
 
 
