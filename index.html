@@ -1408,7 +1408,7 @@ function isDeletedActivity(a) {
   const st = String(a.status || "").toLowerCase();
   return st === "deleted" || !!a.deletedAt;
 }
-function openPlaceMaps(placeId) {
+function openPlaceMaps(placeId, options = {}) {
   if (!placeId) {
     showToast("Activity chưa gắn địa điểm");
     return;
@@ -1422,31 +1422,21 @@ function openPlaceMaps(placeId) {
   const lng = Number(place.lng);
   const hasCoord = Number.isFinite(lat) && Number.isFinite(lng);
   const name = place.name || "";
+  const forceChooser = !!options.chooser;
 
-  const googleWeb = place.googleMapsUrl ||
-    (hasCoord
-      ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-      : (name ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}` : null));
+  // Luôn ưu tiên tọa độ — bỏ qua naverMapsUrl/googleMapsUrl kiểu search-by-name nếu có lat/lng
+  const googleWeb = hasCoord
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    : (place.googleMapsUrl || (name ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}` : null));
 
-  // Naver: ưu tiên tọa độ (chính xác hơn search theo tên)
-  // Web: map.naver.com với center lat,lng
-  // App: nmap://place?lat=&lng= hoặc nmap://map?lat=&lng=
-  let naverWeb = place.naverMapsUrl || null;
-  if (!naverWeb) {
-    if (hasCoord) {
-      // c=zoom,lng,lat,bearing,tilt,size,mode
-      naverWeb = `https://map.naver.com/p?c=15.00,${lng},${lat},0,0,0,dh`;
-    } else if (name) {
-      naverWeb = `https://map.naver.com/p/search/${encodeURIComponent(name)}`;
-    }
-  }
-  let naverApp = null;
-  if (hasCoord) {
-    naverApp = `nmap://place?lat=${lat}&lng=${lng}&zoom=15` +
-      (name ? `&name=${encodeURIComponent(name)}` : "");
-  } else if (name) {
-    naverApp = `nmap://search?query=${encodeURIComponent(name)}`;
-  }
+  const naverWeb = hasCoord
+    ? `https://map.naver.com/p?c=15.00,${lng},${lat},0,0,0,dh`
+    : (place.naverMapsUrl || (name ? `https://map.naver.com/p/search/${encodeURIComponent(name)}` : null));
+
+  // App schemes theo tọa độ
+  const naverApp = hasCoord
+    ? `nmap://place?lat=${lat}&lng=${lng}&zoom=15` + (name ? `&name=${encodeURIComponent(name)}` : "")
+    : (name ? `nmap://search?query=${encodeURIComponent(name)}` : null);
   const googleApp = hasCoord
     ? `comgooglemaps://?q=${lat},${lng}`
     : (name ? `comgooglemaps://?q=${encodeURIComponent(name)}` : null);
@@ -1454,13 +1444,12 @@ function openPlaceMaps(placeId) {
     ? `maps://?ll=${lat},${lng}&q=${encodeURIComponent(name || "Place")}`
     : (name ? `maps://?q=${encodeURIComponent(name)}` : null);
 
-  if (!naverWeb && !googleWeb && !appleMaps) {
+  if (!naverApp && !googleApp && !appleMaps && !naverWeb && !googleWeb) {
     showToast("Không có link bản đồ");
     return;
   }
 
   function openApp(appUrl) {
-    // Dùng hidden iframe/anchor để không rời trang hiện tại
     try {
       const iframe = document.createElement("iframe");
       iframe.style.cssText = "display:none;width:0;height:0;border:0";
@@ -1479,10 +1468,8 @@ function openPlaceMaps(placeId) {
   }
 
   function openWebNewTab(url) {
-    // Tab mới: trang Seoul Trip Companion không bị thay thế
     const w = window.open(url, "_blank", "noopener,noreferrer");
     if (!w) {
-      // Popup bị chặn → dùng anchor
       const a = document.createElement("a");
       a.href = url;
       a.target = "_blank";
@@ -1493,18 +1480,37 @@ function openPlaceMaps(placeId) {
     }
   }
 
+  // Mặc định: mở Naver app theo tọa độ (không qua web)
+  if (!forceChooser) {
+    if (naverApp) {
+      openApp(naverApp);
+      showToast(hasCoord ? "Đang mở Naver Map (theo tọa độ)…" : "Đang mở Naver Map…");
+      return;
+    }
+    if (googleApp) {
+      openApp(googleApp);
+      showToast("Đang mở Google Maps…");
+      return;
+    }
+    if (appleMaps) {
+      openApp(appleMaps);
+      showToast("Đang mở Apple Maps…");
+      return;
+    }
+  }
+
+  // Fallback / chooser: chọn app hoặc web
   openModal("🗺 " + (name || "Bản đồ"), `
     <p style="margin:0 0 6px;font-weight:700">${escapeHtml(name || "—")}</p>
-    <p class="small muted" style="margin:0 0 12px">
-      Lịch trình <b>không bị rời đi</b>. Mở app hoặc tab map riêng, rồi vuốt về Safari tab này.
-    </p>
+    ${hasCoord ? `<p class="small muted" style="margin:0 0 8px">${lat}, ${lng}</p>` : ""}
+    <p class="small muted" style="margin:0 0 12px">Ưu tiên mở <b>app</b> theo tọa độ. Web chỉ khi cần.</p>
     <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
       ${naverApp ? `<button type="button" class="btn primary" id="openNaverApp">Naver Map (app)</button>` : ""}
-      ${naverWeb ? `<button type="button" class="btn" id="openNaverWeb">Naver Map (web · tab mới)</button>` : ""}
       ${googleApp ? `<button type="button" class="btn" id="openGoogleApp">Google Maps (app)</button>` : ""}
-      ${googleWeb ? `<button type="button" class="btn" id="openGoogleWeb">Google Maps (web · tab mới)</button>` : ""}
       ${appleMaps ? `<button type="button" class="btn" id="openAppleMap">Apple Maps</button>` : ""}
-      <button type="button" class="btn" id="copyPlaceName">📋 Sao chép tên</button>
+      ${naverWeb ? `<button type="button" class="btn" id="openNaverWeb">Naver web (tab mới)</button>` : ""}
+      ${googleWeb ? `<button type="button" class="btn" id="openGoogleWeb">Google web (tab mới)</button>` : ""}
+      <button type="button" class="btn" id="copyPlaceName">📋 Sao chép tên / tọa độ</button>
     </div>
   `);
 
@@ -1518,15 +1524,17 @@ function openPlaceMaps(placeId) {
   bind("openGoogleWeb", () => { closeModal(); openWebNewTab(googleWeb); });
   bind("openAppleMap", () => { closeModal(); openApp(appleMaps); showToast("Đang mở Apple Maps…"); });
   bind("copyPlaceName", async () => {
+    const text = hasCoord ? `${name} (${lat}, ${lng})` : name;
     try {
-      await navigator.clipboard.writeText(name || (hasCoord ? `${lat},${lng}` : ""));
-      showToast("Đã sao chép tên địa điểm");
+      await navigator.clipboard.writeText(text || "");
+      showToast("Đã sao chép");
     } catch (_) {
-      prompt("Sao chép:", name || "");
+      prompt("Sao chép:", text || "");
     }
   });
 }
 window.openPlaceMaps = openPlaceMaps;
+
 
 
 function tripDays() {
@@ -1743,31 +1751,16 @@ function subscribeFirestore() {
 ========================================================= */
 
 function mapButtons(placeId) {
+  if (!placeId) return "";
   const place = state.places.find(p => p.id === placeId);
   if (!place) return "";
-
-  const google =
-    place.googleMapsUrl ||
-    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
-      ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
-      : null);
-
-  const naver =
-    place.naverMapsUrl ||
-    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
-      ? `https://map.naver.com/p?c=15.00,${place.lng},${place.lat},0,0,0,dh`
-      : (place.name
-        ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`
-        : null));
-
-  let html = "";
-  if (google) {
-    html += `<button class="btn" onclick="window.open('${escapeHtml(google)}','_blank')">Google Maps</button>`;
-  }
-  if (naver) {
-    html += `<button class="btn" onclick="window.open('${escapeHtml(naver)}','_blank')">Naver Map</button>`;
-  }
-  return html;
+  const hasCoord = Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng));
+  if (!hasCoord && !place.name && !place.naverMapsUrl && !place.googleMapsUrl) return "";
+  // Mặc định mở app (Naver theo tọa độ). Nút "…" mở chooser.
+  return `
+    <button type="button" class="btn sm blue" onclick="openPlaceMaps('${escapeHtml(placeId)}')">🗺 Map</button>
+    <button type="button" class="btn sm" onclick="openPlaceMaps('${escapeHtml(placeId)}',{chooser:true})">…</button>
+  `;
 }
 
 
@@ -1797,6 +1790,7 @@ function activityHtml(activity) {
         }
       </div>
       <div class="actions">
+        ${activity.placeId ? `<button type="button" class="btn sm blue" onclick="openPlaceMaps('${escapeHtml(activity.placeId)}')">🗺 Map</button>` : ""}
         <button class="btn" onclick="editActivity('${escapeHtml(activity.id)}')">Sửa</button>
         <button class="btn danger" onclick="removeActivity('${escapeHtml(activity.id)}')">Ẩn</button>
       </div>
@@ -2412,13 +2406,6 @@ function runImHere() {
           ? `${Math.round(nearestM)} m`
           : `${(nearestM / 1000).toFixed(2)} km`;
 
-      const google =
-        nearest.googleMapsUrl ||
-        `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
-      const naver =
-        nearest.naverMapsUrl ||
-        `https://map.naver.com/p/search/${encodeURIComponent(nearest.name || "")}`;
-
       slot.innerHTML = `
         <div class="card here-result" style="margin-top:14px">
           <div class="now-label" style="color:var(--muted)">📍 Bạn đang gần</div>
@@ -2428,8 +2415,8 @@ function runImHere() {
             ${accuracy ? ` · GPS ±${Math.round(accuracy)} m` : ""}
           </div>
           <div class="actions" style="margin-top:10px">
-            <button class="btn" onclick="window.open('${escapeHtml(google)}','_blank')">Google Maps</button>
-            <button class="btn" onclick="window.open('${escapeHtml(naver)}','_blank')">Naver Map</button>
+            <button class="btn primary" onclick="openPlaceMaps('${escapeHtml(nearest.id)}')">🗺 Mở Naver Map (app)</button>
+            <button class="btn" onclick="openPlaceMaps('${escapeHtml(nearest.id)}',{chooser:true})">Chọn app khác…</button>
           </div>
         </div>
       `;
@@ -2569,24 +2556,28 @@ function initOrUpdateDayMap(day) {
     const marker = L.marker([pt.lat, pt.lng], { icon }).addTo(dayMapLayerGroup);
     const timeStr = [pt.activity.startTime || "", pt.activity.endTime || ""]
       .filter(Boolean).join(" – ");
-    const googleUrl = pt.place.googleMapsUrl ||
-      `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`;
-    const naverUrl = pt.place.naverMapsUrl ||
-      (Number.isFinite(pt.lat) && Number.isFinite(pt.lng)
-        ? `https://map.naver.com/p?c=15.00,${pt.lng},${pt.lat},0,0,0,dh`
-        : (pt.place.name
-          ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}`
-          : null));
     let popupHtml = `<b>${escapeHtml(pt.place.name || "—")}</b><br>
       <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>`;
     if (pt.activity.notes) {
       popupHtml += `<br><span style="color:#64748b;font-size:12px">${escapeHtml(pt.activity.notes)}</span>`;
     }
-    const links = [];
-    if (googleUrl) links.push(`<a href="${escapeHtml(googleUrl)}" target="_blank" rel="noopener">Google Maps</a>`);
-    if (naverUrl) links.push(`<a href="${escapeHtml(naverUrl)}" target="_blank" rel="noopener">Naver Map</a>`);
-    if (links.length) popupHtml += `<div class="popup-actions">${links.join("")}</div>`;
+    // Mở app theo tọa độ qua openPlaceMaps (không web search theo tên)
+    const pid = pt.place.id || pt.activity.placeId || "";
+    if (pid) {
+      popupHtml += `<div class="popup-actions">
+        <a href="#" class="popup-open-map" data-place-id="${escapeHtml(pid)}">🗺 Mở Naver Map (app)</a>
+      </div>`;
+    }
     marker.bindPopup(popupHtml);
+    marker.on("popupopen", () => {
+      const link = document.querySelector(".popup-open-map[data-place-id]");
+      if (link) {
+        link.onclick = (e) => {
+          e.preventDefault();
+          openPlaceMaps(link.getAttribute("data-place-id"));
+        };
+      }
+    });
     latLngs.push([pt.lat, pt.lng]);
   });
 
