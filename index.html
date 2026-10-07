@@ -3,309 +3,665 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seoul Trip 2026 – Firebase Data Seeder</title>
+  <meta name="theme-color" content="#111827" />
+  <title>Seoul Trip Companion · 2026</title>
 
   <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #e5e7eb;
+      --primary: #111827;
+      --blue: #2563eb;
+      --green: #15803d;
+      --orange: #c2410c;
+      --red: #b91c1c;
+      --radius: 16px;
+      --shadow: 0 8px 30px rgba(15, 23, 42, .07);
+    }
+
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f7fb;
-      color: #1f2937;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 30px 20px 60px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 30px;
-    }
-
-    h2 {
-      margin-top: 30px;
-      font-size: 20px;
-    }
-
-    .subtitle {
-      color: #6b7280;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-    }
-
-    .status {
-      padding: 14px 16px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-
-    .status.info {
-      background: #eef2ff;
-      color: #3730a3;
-    }
-
-    .status.success {
-      background: #ecfdf5;
-      color: #047857;
-    }
-
-    .status.error {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
     }
 
     button {
-      border: 0;
-      border-radius: 9px;
-      padding: 11px 16px;
       cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ---------- LOGIN ---------- */
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: min(440px, 100%);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .login-card h1 {
+      margin: 12px 0 8px;
+    }
+
+    /* ---------- HEADER ---------- */
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner,
+    .nav,
+    main {
+      max-width: 1250px;
+      margin: auto;
+    }
+
+    .topbar-inner {
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    /* ---------- NAV ---------- */
+
+    .nav {
+      padding: 0 18px 10px;
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 13px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .nav button.active {
+      background: #eef2ff;
+      color: #3730a3;
       font-weight: 700;
-      font-size: 14px;
     }
 
-    button.primary {
-      background: #2563eb;
-      color: white;
+    /* ---------- COMMON ---------- */
+
+    main {
+      padding: 20px 18px 60px;
     }
 
-    button.secondary {
-      background: #e5e7eb;
-      color: #111827;
+    h1,
+    h2,
+    h3 {
+      margin: 0 0 6px;
+      letter-spacing: -.025em;
     }
 
-    button.danger {
-      background: #dc2626;
-      color: white;
+    h1 {
+      font-size: 26px;
     }
 
-    button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
+    h2 {
+      font-size: 19px;
+    }
+
+    h3 {
+      font-size: 16px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
     }
 
     .actions {
       display: flex;
+      gap: 7px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
+      align-items: center;
     }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
+    .btn {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 650;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn.blue {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
+
+    .btn.green {
+      color: var(--green);
+    }
+
+    .btn.danger {
+      color: var(--red);
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pill.blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .pill.green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .pill.orange {
+      background: #ffedd5;
+      color: #9a3412;
     }
 
     .stat {
-      background: #f9fafb;
-      border-radius: 10px;
-      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 10px;
     }
 
     .stat strong {
-      display: block;
-      font-size: 25px;
-      margin-bottom: 5px;
+      font-size: 24px;
     }
 
-    .stat span {
-      color: #6b7280;
+    .progress {
+      height: 9px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      background: var(--blue);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px;
+    }
+
+    /* ---------- TIMELINE ---------- */
+
+    .timeline {
+      margin-top: 8px;
+    }
+
+    .activity {
+      display: grid;
+      grid-template-columns: 82px 1fr auto;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .activity:first-child {
+      border-top: 0;
+    }
+
+    .activity-time {
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .activity-title {
+      font-weight: 750;
+    }
+
+    .activity-place {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .activity-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .fixed .activity-title::before {
+      content: "🔒 ";
+    }
+
+    .flexible .activity-title::before {
+      content: "◇ ";
+    }
+
+    /* ---------- DAY TABS ---------- */
+
+    .day-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .day-tabs .active {
+      background: #111827;
+      color: white;
+    }
+
+    /* ---------- FORMS ---------- */
+
+    .form {
+      display: grid;
+      gap: 11px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: white;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    /* ---------- LIST ---------- */
+
+    .list-item {
+      padding: 11px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .list-item:first-child {
+      border-top: 0;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    /* ---------- MODAL ---------- */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(15,23,42,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .modal-box {
+      width: min(620px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .close-btn {
+      border: 0;
+      background: #f1f5f9;
+      border-radius: 9px;
+      width: 34px;
+      height: 34px;
+      font-size: 20px;
+    }
+
+    /* ---------- TOAST ---------- */
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 100;
+      background: #111827;
+      color: white;
+      padding: 11px 14px;
+      border-radius: 10px;
       font-size: 13px;
     }
 
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: #111827;
-      color: #e5e7eb;
-      padding: 16px;
+    .error {
+      margin-top: 12px;
+      padding: 10px;
+      color: var(--red);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
       border-radius: 10px;
-      max-height: 500px;
-      overflow: auto;
-      font-size: 12px;
-      line-height: 1.5;
+      font-size: 13px;
     }
 
-    .warning {
-      background: #fffbeb;
-      border: 1px solid #f59e0b;
-      color: #92400e;
-      border-radius: 10px;
-      padding: 14px;
-      line-height: 1.5;
-    }
+    @media (max-width: 800px) {
+      .grid-2,
+      .grid-3,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
 
-    .hidden {
-      display: none;
-    }
+      .hero {
+        display: block;
+      }
 
-    code {
-      background: #f3f4f6;
-      padding: 2px 5px;
-      border-radius: 4px;
+      .hero .actions {
+        margin-top: 10px;
+      }
+
+      .activity {
+        grid-template-columns: 68px 1fr;
+      }
+
+      .activity > .actions {
+        grid-column: 2;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 
-  <h1>🇰🇷 Seoul Trip 2026</h1>
-  <div class="subtitle">
-    Firebase / Firestore data setup
+<div id="loginView" class="login-screen">
+  <div class="login-card">
+    <span class="pill blue">SEOUL 2026</span>
+
+    <h1>Seoul Trip Companion</h1>
+
+    <p class="muted">
+      Lịch trình · DSP · Chi tiêu · Địa điểm
+    </p>
+
+    <button id="loginBtn" class="btn primary" style="width:100%">
+      Đăng nhập bằng Google
+    </button>
+
+    <div id="loginError" class="error hidden"></div>
   </div>
+</div>
 
-  <div id="status" class="status info">
-    Đang khởi tạo Firebase...
-  </div>
 
-  <div class="card">
+<!-- =========================================================
+     APP
+========================================================= -->
 
-    <h2>Google Account</h2>
+<div id="appView" class="hidden">
 
-    <div id="userInfo" class="hidden">
-      <div class="user">
-        <img id="userPhoto" src="" alt="Avatar">
-        <div>
-          <strong id="userName"></strong><br>
-          <span id="userEmail"></span>
-        </div>
+  <header class="topbar">
+
+    <div class="topbar-inner">
+
+      <div class="brand">
+        Seoul Trip Companion
+        <small>18–25/10/2026 · Seoul</small>
       </div>
 
-      <div class="actions">
-        <button id="saveBtn" class="primary">
-          💾 SAVE TO FIREBASE
+      <div class="user-area">
+
+        <img
+          id="avatar"
+          class="avatar hidden"
+          alt=""
+        />
+
+        <span id="userName"></span>
+
+        <button id="logoutBtn" class="btn">
+          Thoát
         </button>
 
-        <button id="logoutBtn" class="secondary">
-          Đăng xuất
-        </button>
       </div>
+
     </div>
 
-    <div id="loginArea">
-      <button id="loginBtn" class="primary">
-        🔐 Đăng nhập bằng Google
+
+    <nav class="nav" id="nav">
+
+      <button
+        data-tab="dashboard"
+        class="active"
+      >
+        Tổng quan
       </button>
+
+      <button data-tab="itinerary">
+        Lịch trình
+      </button>
+
+      <button data-tab="dsp">
+        DSP
+      </button>
+
+      <button data-tab="expenses">
+        Chi tiêu
+      </button>
+
+      <button data-tab="places">
+        Địa điểm
+      </button>
+
+      <button data-tab="more">
+        Khác
+      </button>
+
+    </nav>
+
+  </header>
+
+
+  <main>
+
+    <section id="tab-dashboard"></section>
+
+    <section
+      id="tab-itinerary"
+      class="hidden"
+    ></section>
+
+    <section
+      id="tab-dsp"
+      class="hidden"
+    ></section>
+
+    <section
+      id="tab-expenses"
+      class="hidden"
+    ></section>
+
+    <section
+      id="tab-places"
+      class="hidden"
+    ></section>
+
+    <section
+      id="tab-more"
+      class="hidden"
+    ></section>
+
+  </main>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL
+========================================================= -->
+
+<div id="modal" class="modal hidden">
+
+  <div class="modal-box">
+
+    <div class="row">
+
+      <h2 id="modalTitle"></h2>
+
+      <button
+        id="modalClose"
+        class="close-btn"
+      >
+        ×
+      </button>
+
     </div>
 
-  </div>
-
-
-  <div class="card">
-
-    <h2>Trip data</h2>
-
-    <div class="stats">
-      <div class="stat">
-        <strong id="activityCount">0</strong>
-        <span>Activities</span>
-      </div>
-
-      <div class="stat">
-        <strong id="placeCount">0</strong>
-        <span>Places</span>
-      </div>
-
-      <div class="stat">
-        <strong id="dspCount">0</strong>
-        <span>DSP attractions</span>
-      </div>
-
-      <div class="stat">
-        <strong id="milestoneCount">0</strong>
-        <span>Milestones</span>
-      </div>
-    </div>
-
-  </div>
-
-
-  <div class="card">
-
-    <h2>Firestore structure</h2>
-
-    <pre>
-trips/
-└── seoul-2026/
-    ├── settings/
-    │   └── main
-    │
-    ├── places/
-    │   ├── kyung-hee-university
-    │   ├── hwarangdae-railway-park
-    │   ├── nami-island
-    │   └── ...
-    │
-    ├── activities/
-    │   ├── 2026-10-18-01
-    │   ├── 2026-10-18-02
-    │   └── ...
-    │
-    ├── milestones/
-    │   ├── flight-han-icn
-    │   └── flight-icn-han
-    │
-    ├── dsp/
-    │   ├── main
-    │   ├── football-fantasium
-    │   ├── seoul-zoo-sky-lift
-    │   ├── aquafield-goyang
-    │   └── ...
-    │
-    └── notes/
-        └── planning
-    </pre>
-
-    <div class="warning">
-      <strong>Lưu ý:</strong>
-      DSP attractions được lưu trực tiếp dưới
-      <code>trips/seoul-2026/dsp/</code>.
-      Không sử dụng đường dẫn
-      <code>dsp/attractions/...</code>
-      vì Firestore yêu cầu document reference phải có số segment chẵn.
-    </div>
-
-  </div>
-
-
-  <div class="card">
-
-    <h2>JSON Preview</h2>
-
-    <pre id="preview"></pre>
+    <div id="modalBody"></div>
 
   </div>
 
 </div>
 
+
+<div
+  id="toast"
+  class="toast hidden"
+></div>
+
+
+<!-- =========================================================
+     FIREBASE + APP
+========================================================= -->
 
 <script type="module">
 
@@ -323,22 +679,22 @@ import {
 
 import {
   getFirestore,
-  doc,
-  writeBatch,
-  deleteDoc,
   collection,
-  getDocs,
-  serverTimestamp,
-  deleteField
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
 /* =========================================================
-   FIREBASE CONFIG
-   ========================================================= */
+   FIREBASE
+========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
+  apiKey: "AIzaSyCoHYgOl4hAs4ECxz8iMrc8d9458dOth3Q",
   authDomain: "seol-8eb80.firebaseapp.com",
   projectId: "seol-8eb80",
   storageBucket: "seol-8eb80.firebasestorage.app",
@@ -347,1213 +703,177 @@ const firebaseConfig = {
   measurementId: "G-MZQ5L465GV"
 };
 
-
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
-const db = getFirestore(app);
-
 const provider = new GoogleAuthProvider();
 
-const TRIP_ID = "seoul-2026";
+const db = getFirestore(app);
 
 
 /* =========================================================
-   UI
-   ========================================================= */
+   CONSTANTS
+========================================================= */
 
-const statusEl = document.getElementById("status");
+const TRIP_ID = "seoul-2026";
 
-const loginBtn = document.getElementById("loginBtn");
+const tripRef = collection(
+  db,
+  "trips",
+  TRIP_ID,
+  "activities"
+);
 
-const logoutBtn = document.getElementById("logoutBtn");
+const placesRef = collection(
+  db,
+  "trips",
+  TRIP_ID,
+  "places"
+);
 
-const saveBtn = document.getElementById("saveBtn");
+const expensesRef = collection(
+  db,
+  "trips",
+  TRIP_ID,
+  "expenses"
+);
 
-const loginArea = document.getElementById("loginArea");
+const dspRef = collection(
+  db,
+  "trips",
+  TRIP_ID,
+  "dsp"
+);
 
-const userInfo = document.getElementById("userInfo");
-
-const userName = document.getElementById("userName");
-
-const userEmail = document.getElementById("userEmail");
-
-const userPhoto = document.getElementById("userPhoto");
-
-const preview = document.getElementById("preview");
+const notesRef = collection(
+  db,
+  "trips",
+  TRIP_ID,
+  "notes"
+);
 
 
-function setStatus(message, type = "info") {
+/* =========================================================
+   STATE
+========================================================= */
 
-  statusEl.textContent = message;
+const state = {
 
-  statusEl.className = `status ${type}`;
+  user: null,
+
+  tab: "dashboard",
+
+  selectedDay: "2026-10-18",
+
+  activities: [],
+
+  places: [],
+
+  expenses: [],
+
+  dsp: [],
+
+  dspMain: null,
+
+  unsubscribe: []
+
+};
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[char]));
 
 }
 
 
-/* =========================================================
-   PLACES
-   ========================================================= */
+function money(value) {
 
-const places = [
-  {
-    id: "home-nowon",
-    name: "Home – Nowon",
-    address: "Nowon-gu, Seoul, South Korea",
-    lat: 37.62536,
-    lng: 127.07348,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Nowon-gu+Seoul",
-    naverMapsUrl: "https://map.naver.com/p/search/Nowon-gu%20Seoul"
-  },
-  {
-    id: "incheon-airport-t1",
-    name: "Incheon International Airport Terminal 1",
-    address: "272 Gonghang-ro, Jung-gu, Incheon, South Korea",
-    lat: 37.46020,
-    lng: 126.44070,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport+Terminal+1",
-    naverMapsUrl: "https://map.naver.com/p/search/Incheon%20International%20Airport%20Terminal%201"
-  },
-  {
-    id: "kyung-hee-university",
-    name: "Kyung Hee University",
-    address: "26 Kyungheedae-ro, Dongdaemun-gu, Seoul",
-    lat: 37.59616,
-    lng: 127.05252,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Kyung+Hee+University+Seoul",
-    naverMapsUrl: "https://map.naver.com/p/search/Kyung%20Hee%20University"
-  },
-  {
-    id: "hwarangdae-railway-park",
-    name: "Hwarangdae Railway Park",
-    address: "1455 Gongneung-dong, Nowon-gu, Seoul",
-    lat: 37.62382,
-    lng: 127.08535,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Hwarangdae+Railway+Park",
-    naverMapsUrl: "https://map.naver.com/p/search/Hwarangdae%20Railway%20Park"
-  },
-  {
-    id: "nami-island",
-    name: "Nami Island",
-    address: "1 Namiseom-gil, Namsan-myeon, Chuncheon-si, Gangwon-do",
-    lat: 37.80587,
-    lng: 127.52558,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Nami+Island+Korea",
-    naverMapsUrl: "https://map.naver.com/p/search/Nami%20Island"
-  },
-  {
-    id: "gwangjang-market",
-    name: "Gwangjang Market",
-    address: "88 Changgyeonggung-ro, Jongno-gu, Seoul",
-    lat: 37.57022,
-    lng: 126.99951,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Gwangjang+Market",
-    naverMapsUrl: "https://map.naver.com/p/search/Gwangjang%20Market"
-  },
-  {
-    id: "dongmyo-market",
-    name: "Dongmyo Flea Market",
-    address: "Dongmyo-dong, Jongno-gu, Seoul",
-    lat: 37.57310,
-    lng: 127.01770,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Dongmyo+Flea+Market",
-    naverMapsUrl: "https://map.naver.com/p/search/Dongmyo%20Flea%20Market"
-  },
-  {
-    id: "ewha-womans-university",
-    name: "Ewha Womans University",
-    address: "52 Ewhayeodae-gil, Seodaemun-gu, Seoul",
-    lat: 37.55663,
-    lng: 126.94503,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Ewha+Womans+University",
-    naverMapsUrl: "https://map.naver.com/p/search/Ewha%20Womans%20University"
-  },
-  {
-    id: "haneul-park",
-    name: "Haneul Park",
-    address: "95 Haneulgongwon-ro, Mapo-gu, Seoul",
-    lat: 37.56821,
-    lng: 126.88547,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Haneul+Park+Seoul",
-    naverMapsUrl: "https://map.naver.com/p/search/Haneul%20Park"
-  },
-  {
-    id: "suwon-hwaseong",
-    name: "Suwon Hwaseong Fortress",
-    address: "Suwon, Gyeonggi-do, South Korea",
-    lat: 37.28740,
-    lng: 127.01260,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Suwon+Hwaseong+Fortress",
-    naverMapsUrl: "https://map.naver.com/p/search/Suwon%20Hwaseong"
-  },
-  {
-    id: "starfield-suwon",
-    name: "Starfield Suwon",
-    address: "175 Suwoncheon-ro, Jangan-gu, Suwon",
-    lat: 37.28612,
-    lng: 126.99124,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Starfield+Suwon",
-    naverMapsUrl: "https://map.naver.com/p/search/Starfield%20Suwon"
-  },
-  {
-    id: "korean-folk-village",
-    name: "Korean Folk Village",
-    address: "90 Minsokchon-ro, Giheung-gu, Yongin-si",
-    lat: 37.25959,
-    lng: 127.12057,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Korean+Folk+Village+Yongin",
-    naverMapsUrl: "https://map.naver.com/p/search/Korean%20Folk%20Village"
-  },
-  {
-    id: "gyeongbokgung",
-    name: "Gyeongbokgung Palace",
-    address: "161 Sajik-ro, Jongno-gu, Seoul",
-    lat: 37.57952,
-    lng: 126.97709,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Gyeongbokgung+Palace",
-    naverMapsUrl: "https://map.naver.com/p/search/Gyeongbokgung"
-  },
-  {
-    id: "bukchon-hanok-village",
-    name: "Bukchon Hanok Village",
-    address: "Bukchon-ro, Jongno-gu, Seoul",
-    lat: 37.58239,
-    lng: 126.98587,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Bukchon+Hanok+Village",
-    naverMapsUrl: "https://map.naver.com/p/search/Bukchon%20Hanok%20Village"
-  },
-  {
-    id: "insadong",
-    name: "Insadong / Ssamzigil",
-    address: "Insadong-gil, Jongno-gu, Seoul",
-    lat: 37.57144,
-    lng: 126.98632,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Insadong+Ssamzigil",
-    naverMapsUrl: "https://map.naver.com/p/search/Insadong%20Ssamzigil"
-  },
-  {
-    id: "ikseon-dong",
-    name: "Ikseon-dong",
-    address: "Ikseon-dong, Jongno-gu, Seoul",
-    lat: 37.57436,
-    lng: 126.98978,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Ikseon-dong+Seoul",
-    naverMapsUrl: "https://map.naver.com/p/search/Ikseon-dong"
-  },
-  {
-    id: "myeongdong-cathedral",
-    name: "Myeongdong Cathedral",
-    address: "74 Myeongdong-gil, Jung-gu, Seoul",
-    lat: 37.56327,
-    lng: 126.98726,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Myeongdong+Cathedral",
-    naverMapsUrl: "https://map.naver.com/p/search/Myeongdong%20Cathedral"
-  },
-  {
-    id: "n-seoul-tower",
-    name: "N Seoul Tower",
-    address: "105 Namsangongwon-gil, Yongsan-gu, Seoul",
-    lat: 37.55122,
-    lng: 126.988275,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=N+Seoul+Tower",
-    naverMapsUrl: "https://map.naver.com/p/search/N%20Seoul%20Tower"
-  },
-  {
-    id: "hwadam-forest",
-    name: "Hwadam Forest",
-    address: "278-1 Docheokwitangol-gil, Docheok-myeon, Gwangju-si, Gyeonggi-do",
-    lat: 37.33924,
-    lng: 127.29221,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Hwadam+Forest",
-    naverMapsUrl: "https://map.naver.com/p/search/Hwadam%20Forest"
-  },
-  {
-    id: "banpo-hangang-park",
-    name: "Banpo Hangang Park",
-    address: "40 Banpo-dong, Seocho-gu, Seoul",
-    lat: 37.50912,
-    lng: 126.99219,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Banpo+Hangang+Park",
-    naverMapsUrl: "https://map.naver.com/p/search/Banpo%20Hangang%20Park"
-  },
-  {
-    id: "lotte-world",
-    name: "Lotte World",
-    address: "240 Olympic-ro, Songpa-gu, Seoul",
-    lat: 37.51132,
-    lng: 127.09825,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Lotte+World+Seoul",
-    naverMapsUrl: "https://map.naver.com/p/search/Lotte%20World"
-  },
-  {
-    id: "coex-aquarium",
-    name: "COEX Aquarium",
-    address: "513 Yeongdong-daero, Gangnam-gu, Seoul",
-    lat: 37.51318,
-    lng: 127.05835,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=COEX+Aquarium",
-    naverMapsUrl: "https://map.naver.com/p/search/COEX%20Aquarium"
-  },
-  {
-    id: "unseo",
-    name: "Unseo / Airport area",
-    address: "Unseo-dong, Jung-gu, Incheon",
-    lat: 37.49275,
-    lng: 126.49273,
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Unseo+Station+Incheon",
-    naverMapsUrl: "https://map.naver.com/p/search/Unseo%20Station"
-  }
-];
+  return new Intl.NumberFormat("ko-KR")
+    .format(Number(value) || 0) + " ₩";
 
+}
 
-/* =========================================================
-   ACTIVITIES
-   ========================================================= */
 
-const activities = [
+function minutes(time) {
 
-  /* 18/10 */
+  if (!time) return 0;
 
-  {
-    id: "2026-10-18-flight-han-icn",
-    date: "2026-10-18",
-    title: "✈️ Vietjet VJ960 – Hanoi → Seoul",
-    startTime: "01:40",
-    endTime: "07:55",
-    duration: 375,
-    type: "flight",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "incheon-airport-t1",
-    notes: "Direct flight. A321. ICN Terminal 1.",
-    order: 10
-  },
+  const [h, m] = time.split(":").map(Number);
 
-  {
-    id: "2026-10-18-home-rest",
-    date: "2026-10-18",
-    title: "Về nhà / nghỉ ngơi",
-    startTime: "08:00",
-    endTime: "13:30",
-    duration: 330,
-    type: "rest",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "home-nowon",
-    notes: "Về Nowon sau khi rời sân bay.",
-    order: 20
-  },
+  return h * 60 + m;
 
-  {
-    id: "2026-10-18-kyung-hee",
-    date: "2026-10-18",
-    title: "Kyung Hee University",
-    startTime: "14:15",
-    endTime: "16:15",
-    duration: 120,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "kyung-hee-university",
-    notes: "",
-    order: 30
-  },
+}
 
-  {
-    id: "2026-10-18-hwarangdae",
-    date: "2026-10-18",
-    title: "Hwarangdae Railway Park / Gyeongchun Line Forest",
-    startTime: "16:45",
-    endTime: "18:15",
-    duration: 90,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "hwarangdae-railway-park",
-    notes: "",
-    order: 40
-  },
 
-  {
-    id: "2026-10-18-dinner",
-    date: "2026-10-18",
-    title: "Dinner",
-    startTime: "18:30",
-    endTime: "20:00",
-    duration: 90,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "home-nowon",
-    notes: "Có thể thay đổi nhà hàng.",
-    order: 50
-  },
+function formatDay(date) {
 
+  return new Intl.DateTimeFormat(
+    "vi-VN",
+    {
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit"
+    }
+  ).format(
+    new Date(date + "T12:00:00")
+  );
 
-  /* 19/10 */
+}
 
-  {
-    id: "2026-10-19-nami-depart",
-    date: "2026-10-19",
-    title: "🚆 Khởi hành đi Nami Island",
-    startTime: "06:00",
-    endTime: "08:30",
-    duration: 150,
-    type: "transport",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "nami-island",
-    notes: "Không kích hoạt DSP trong ngày này.",
-    order: 10
-  },
 
-  {
-    id: "2026-10-19-nami-morning",
-    date: "2026-10-19",
-    title: "Nami Island – buổi sáng",
-    startTime: "08:30",
-    endTime: "12:00",
-    duration: 210,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "nami-island",
-    notes: "",
-    order: 20
-  },
+function placeName(id) {
 
-  {
-    id: "2026-10-19-nami-lunch",
-    date: "2026-10-19",
-    title: "Lunch",
-    startTime: "12:00",
-    endTime: "13:00",
-    duration: 60,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "nami-island",
-    order: 30
-  },
+  const place = state.places.find(
+    p => p.id === id
+  );
 
-  {
-    id: "2026-10-19-nami-afternoon",
-    date: "2026-10-19",
-    title: "Nami Island – buổi chiều",
-    startTime: "13:00",
-    endTime: "15:00",
-    duration: 120,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "nami-island",
-    order: 40
-  },
+  return place?.name || id || "—";
 
-  {
-    id: "2026-10-19-return-seoul",
-    date: "2026-10-19",
-    title: "🚆 Quay lại Seoul",
-    startTime: "15:00",
-    endTime: "17:30",
-    duration: 150,
-    type: "transport",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "home-nowon",
-    order: 50
-  },
+}
 
-  {
-    id: "2026-10-19-dinner",
-    date: "2026-10-19",
-    title: "Dinner – Gongneung",
-    startTime: "18:00",
-    endTime: "19:30",
-    duration: 90,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "home-nowon",
-    notes: "Có thể kết hợp Gyeongchun Line Forest / café.",
-    order: 60
-  },
 
+function showToast(message) {
 
-  /* 20/10 */
+  const element =
+    document.getElementById("toast");
 
-  {
-    id: "2026-10-20-gwangjang",
-    date: "2026-10-20",
-    title: "Gwangjang Market",
-    startTime: "09:00",
-    endTime: "10:00",
-    duration: 60,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "gwangjang-market",
-    order: 10
-  },
+  element.textContent = message;
 
-  {
-    id: "2026-10-20-dongmyo",
-    date: "2026-10-20",
-    title: "Dongmyo 2hand Market",
-    startTime: "10:30",
-    endTime: "13:00",
-    duration: 150,
-    type: "shopping",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "dongmyo-market",
-    order: 20
-  },
+  element.classList.remove("hidden");
 
-  {
-    id: "2026-10-20-ewha",
-    date: "2026-10-20",
-    title: "Ewha",
-    startTime: "13:30",
-    endTime: "15:00",
-    duration: 90,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "ewha-womans-university",
-    order: 30
-  },
+  clearTimeout(window.__toastTimer);
 
-  {
-    id: "2026-10-20-haneul",
-    date: "2026-10-20",
-    title: "Haneul Park / Silver Grass Festival",
-    startTime: "16:00",
-    endTime: "21:00",
-    duration: 300,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "haneul-park",
-    notes: "Hoàng hôn + lighting/media art.",
-    order: 40
-  },
+  window.__toastTimer =
+    setTimeout(() => {
+      element.classList.add("hidden");
+    }, 2200);
 
+}
 
-  /* 21/10 */
 
-  {
-    id: "2026-10-21-suwon-hwaseong",
-    date: "2026-10-21",
-    title: "Suwon Hwaseong",
-    startTime: "08:15",
-    endTime: "11:30",
-    duration: 195,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "suwon-hwaseong",
-    order: 10
-  },
-
-  {
-    id: "2026-10-21-starfield",
-    date: "2026-10-21",
-    title: "Starfield Suwon",
-    startTime: "12:15",
-    endTime: "14:00",
-    duration: 105,
-    type: "shopping",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "starfield-suwon",
-    order: 20
-  },
-
-  {
-    id: "2026-10-21-folk-village",
-    date: "2026-10-21",
-    title: "Korean Folk Village",
-    startTime: "15:00",
-    endTime: "18:15",
-    duration: 195,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "korean-folk-village",
-    notes: "DSP active. Ăn tối tại đây nếu phù hợp.",
-    dsp: true,
-    order: 30
-  },
-
-  {
-    id: "2026-10-21-return",
-    date: "2026-10-21",
-    title: "🚆 Quay lại Seoul",
-    startTime: "18:15",
-    endTime: "20:30",
-    duration: 135,
-    type: "transport",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "home-nowon",
-    order: 40
-  },
-
-
-  /* 22/10 */
-
-  {
-    id: "2026-10-22-gyeongbokgung",
-    date: "2026-10-22",
-    title: "Gyeongbokgung + Hanbok",
-    startTime: "09:00",
-    endTime: "11:00",
-    duration: 120,
-    type: "attraction",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "gyeongbokgung",
-    notes: "Hanbok rental – DSP.",
-    dsp: true,
-    order: 10
-  },
-
-  {
-    id: "2026-10-22-bukchon",
-    date: "2026-10-22",
-    title: "Bukchon Hanok Village",
-    startTime: "11:00",
-    endTime: "12:30",
-    duration: 90,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "bukchon-hanok-village",
-    order: 20
-  },
-
-  {
-    id: "2026-10-22-lunch",
-    date: "2026-10-22",
-    title: "Lunch",
-    startTime: "12:30",
-    endTime: "13:30",
-    duration: 60,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "insadong",
-    order: 30
-  },
-
-  {
-    id: "2026-10-22-insadong",
-    date: "2026-10-22",
-    title: "Insadong / Ssamzigil",
-    startTime: "13:30",
-    endTime: "14:45",
-    duration: 75,
-    type: "shopping",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "insadong",
-    order: 40
-  },
-
-  {
-    id: "2026-10-22-ikseon",
-    date: "2026-10-22",
-    title: "Ikseon-dong",
-    startTime: "14:45",
-    endTime: "15:30",
-    duration: 45,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "ikseon-dong",
-    order: 50
-  },
-
-  {
-    id: "2026-10-22-myeongdong-cathedral",
-    date: "2026-10-22",
-    title: "Myeongdong Cathedral",
-    startTime: "16:00",
-    endTime: "16:30",
-    duration: 30,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "myeongdong-cathedral",
-    order: 60
-  },
-
-  {
-    id: "2026-10-22-n-seoul-tower",
-    date: "2026-10-22",
-    title: "Namsan / N Seoul Tower",
-    startTime: "16:30",
-    endTime: "19:00",
-    duration: 150,
-    type: "attraction",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "n-seoul-tower",
-    notes: "DSP.",
-    dsp: true,
-    order: 70
-  },
-
-  {
-    id: "2026-10-22-myeongdong",
-    date: "2026-10-22",
-    title: "Myeongdong dinner / shopping",
-    startTime: "19:00",
-    endTime: "21:30",
-    duration: 150,
-    type: "food",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "myeongdong-cathedral",
-    order: 80
-  },
-
-
-  /* 23/10 */
-
-  {
-    id: "2026-10-23-hwadam-travel",
-    date: "2026-10-23",
-    title: "🚗 Đi Hwadam Forest",
-    startTime: "06:00",
-    endTime: "08:00",
-    duration: 120,
-    type: "transport",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "hwadam-forest",
-    order: 10
-  },
-
-  {
-    id: "2026-10-23-hwadam",
-    date: "2026-10-23",
-    title: "Hwadam Forest",
-    startTime: "08:00",
-    endTime: "12:00",
-    duration: 240,
-    type: "attraction",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "hwadam-forest",
-    notes: "Khung thời gian chính.",
-    order: 20
-  },
-
-  {
-    id: "2026-10-23-lunch-rest",
-    date: "2026-10-23",
-    title: "Lunch / nghỉ",
-    startTime: "12:00",
-    endTime: "14:00",
-    duration: 120,
-    type: "rest",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "hwadam-forest",
-    order: 30
-  },
-
-  {
-    id: "2026-10-23-banpo",
-    date: "2026-10-23",
-    title: "Banpo Hangang Park",
-    startTime: "16:00",
-    endTime: "20:30",
-    duration: 270,
-    type: "attraction",
-    status: "planned",
-    flexibility: "flexible",
-    placeId: "banpo-hangang-park",
-    notes: "Cruise nếu timing cho phép. Có thể chọn chuyến 16:00 hoặc 17:30.",
-    order: 40
-  },
-
-
-  /* 24/10 */
-
-  {
-    id: "2026-10-24-lotte-world",
-    date: "2026-10-24",
-    title: "Lotte World",
-    startTime: "09:00",
-    endTime: "12:30",
-    duration: 210,
-    type: "attraction",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "lotte-world",
-    order: 10
-  },
-
-  {
-    id: "2026-10-24-coex",
-    date: "2026-10-24",
-    title: "COEX Aquarium",
-    startTime: "14:00",
-    endTime: "15:40",
-    duration: 100,
-    type: "attraction",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "coex-aquarium",
-    notes: "DSP.",
-    dsp: true,
-    order: 20
-  },
-
-  {
-    id: "2026-10-24-airport",
-    date: "2026-10-24",
-    title: "🚆 AREX → Incheon Airport",
-    startTime: "16:30",
-    endTime: "18:00",
-    duration: 90,
-    type: "transport",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "incheon-airport-t1",
-    notes: "Ở khu vực Unseo / sân bay.",
-    order: 30
-  },
-
-
-  /* 25/10 */
-
-  {
-    id: "2026-10-25-flight-icn-han",
-    date: "2026-10-25",
-    title: "✈️ Vietjet – Seoul → Hanoi",
-    startTime: "11:00",
-    endTime: null,
-    duration: null,
-    type: "flight",
-    status: "planned",
-    flexibility: "fixed",
-    placeId: "incheon-airport-t1",
-    notes: "Departure 11:00. ICN Terminal 1.",
-    order: 10
-  }
-
-];
-
-
-/* =========================================================
-   MILESTONES
-   ========================================================= */
-
-const milestones = [
-
-  {
-    id: "flight-han-icn",
-    type: "flight",
-    title: "Vietjet VJ960 – Hanoi → Seoul",
-    date: "2026-10-18",
-    time: "01:40",
-    location: "Hanoi → Incheon T1",
-    status: "confirmed",
-    notes: "Direct / A321 / ICN T1 / 2 passengers"
-  },
-
-  {
-    id: "flight-icn-han",
-    type: "flight",
-    title: "Vietjet – Seoul → Hanoi",
-    date: "2026-10-25",
-    time: "11:00",
-    location: "Incheon T1 → Hanoi",
-    status: "confirmed",
-    notes: "Departure 11:00"
-  }
-
-];
-
-
-/* =========================================================
-   DSP
-   ========================================================= */
-
-const dspAttractions = [
-
-  {
-    id: "football-fantasium",
-    name: "Football Fæntasium",
-    normalPrice: 15000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "seoul-zoo-sky-lift",
-    name: "Seoul Zoo & Sky Lift",
-    normalPrice: 21000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "aquafield-goyang",
-    name: "AQUAFIELD GOYANG – Jjimjil Spa",
-    normalPrice: 26000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "mokdong-ice-rink",
-    name: "Mokdong Ice Rink",
-    normalPrice: 9200,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "lotte-museum-of-art",
-    name: "LOTTE Museum of Art",
-    normalPrice: 20000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "seoul-botanic-park",
-    name: "Seoul Botanic Park",
-    normalPrice: 5000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "n-seoul-tower",
-    name: "N Seoul Tower",
-    normalPrice: 26000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "mmca-seoul",
-    name: "MMCA Seoul",
-    normalPrice: 5000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "suwon-ipark-museum",
-    name: "Suwon Ipark Museum of Art",
-    normalPrice: 4000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "seoul-cruise",
-    name: "Seoul Cruise",
-    normalPrice: 250000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "heolleung-illeung-tombs",
-    name: "Heolleung / Illeung Tombs",
-    normalPrice: 1000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "golden-blue-marina",
-    name: "Golden Blue Marina Kayak / Yacht",
-    normalPrice: 30000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "hanboknam-gyeongbokgung",
-    name: "Hanboknam – Gyeongbokgung",
-    normalPrice: 50000,
-    currency: "KRW",
-    freeWithDSP: true
-  },
-
-  {
-    id: "aquafield-anseong",
-    name: "Aquafield Anseong",
-    normalPrice: 26000,
-    currency: "KRW",
-    freeWithDSP: true
-  }
-
-];
-
-
-/* =========================================================
-   DSP SETTINGS
-   ========================================================= */
-
-const dspMain = {
-
-  passType: "72h",
-
-  activationDate: "2026-10-21",
-
-  activationTime: "15:00",
-
-  expirationDate: "2026-10-24",
-
-  expirationTime: "15:00",
-
-  status: "planned",
-
-  notes:
-    "Dự kiến kích hoạt khoảng 15:00 ngày 21/10 tại Korean Folk Village. Không kích hoạt ngày 19/10 vì Nami Island không dùng DSP. Không đưa Seoraksan vào DSP."
-
-};
-
-
-/* =========================================================
-   TRIP SETTINGS
-   ========================================================= */
-
-const tripSettings = {
-
-  tripId: TRIP_ID,
-
-  name: "Seoul Trip 2026",
-
-  country: "South Korea",
-
-  city: "Seoul",
-
-  startDate: "2026-10-18",
-
-  endDate: "2026-10-25",
-
-  travelers: 2,
-
-  homeBase: "Nowon",
-
-  timezone: "Asia/Seoul",
-
-  currency: "KRW",
-
-  secondaryCurrency: "VND",
-
-  transportPreference: "public_transport",
-
-  avoidRushHour: true,
-
-  avoidGuessedTravelTimes: true,
-
-  notes:
-    "Website hỗ trợ chuyến đi Seoul. Ưu tiên dữ liệu route thực tế từ Google Maps/Naver Map thay vì tự đoán thời gian di chuyển."
-
-};
-
-
-/* =========================================================
-   PLANNING NOTES
-   ========================================================= */
-
-const planningNotes = {
-
-  title: "Planning notes",
-
-  content: `
-Mục tiêu website:
-
-- Theo dõi itinerary thực tế.
-- Có thể thêm địa điểm bất ngờ giữa lịch trình.
-- Theo dõi planned vs actual.
-- Tính ảnh hưởng khi một hoạt động bị trễ.
-- Không tự động phá fixed activity / booking.
-- Theo dõi chi tiêu.
-- Theo dõi Discover Seoul Pass.
-- Lưu địa điểm.
-- Mở Google Maps / Naver Map.
-- Có thể mở rộng thành PWA / offline.
-- Hai vợ chồng cùng sử dụng dữ liệu Firestore.
-
-Nguyên tắc:
-
-1. Không đoán thời gian di chuyển.
-2. Route thực tế sẽ lấy từ Google Maps / Naver Map khi app hoàn thiện.
-3. Fixed activity không tự động bị dịch.
-4. Flexible activity có thể được đề xuất dịch.
-5. Weather chỉ đưa ra cảnh báo/gợi ý, không tự động thay đổi lịch.
-6. Firestore chứa dữ liệu chuyến đi.
-7. Logic xử lý nằm trong JavaScript.
-8. UI state không cần lưu Firestore trừ khi cần chia sẻ.
-`
-
-};
-
-
-/* =========================================================
-   PREVIEW
-   ========================================================= */
-
-const seedPreview = {
-
-  trip: tripSettings,
-
-  places,
-
-  activities,
-
-  milestones,
-
-  dsp: {
-
-    main: dspMain,
-
-    attractions: dspAttractions
-
-  },
-
-  notes: planningNotes
-
-};
-
-preview.textContent = JSON.stringify(seedPreview, null, 2);
-
-
-/* =========================================================
-   COUNTS
-   ========================================================= */
-
-document.getElementById("activityCount").textContent =
-  activities.length;
-
-document.getElementById("placeCount").textContent =
-  places.length;
-
-document.getElementById("dspCount").textContent =
-  dspAttractions.length;
-
-document.getElementById("milestoneCount").textContent =
-  milestones.length;
-
-
-/* =========================================================
-   AUTH
-   ========================================================= */
-
-loginBtn.addEventListener("click", async () => {
-
-  try {
-
-    setStatus("Đang đăng nhập Google...", "info");
-
-    await signInWithPopup(auth, provider);
-
-  } catch (error) {
-
-    console.error(error);
-
-    setStatus(
-      "Đăng nhập thất bại: " + error.message,
-      "error"
-    );
-
-  }
-
-});
-
-
-logoutBtn.addEventListener("click", async () => {
-
-  try {
-
-    await signOut(auth);
-
-  } catch (error) {
-
-    console.error(error);
-
-    setStatus(
-      "Đăng xuất thất bại: " + error.message,
-      "error"
-    );
-
-  }
-
-});
-
-
-onAuthStateChanged(auth, user => {
-
-  if (user) {
-
-    loginArea.classList.add("hidden");
-
-    userInfo.classList.remove("hidden");
-
-    userName.textContent =
-      user.displayName || "Google User";
-
-    userEmail.textContent =
-      user.email || "";
-
-    userPhoto.src =
-      user.photoURL ||
-      "https://via.placeholder.com/42";
-
-    setStatus(
-      `Đã đăng nhập: ${user.email}`,
-      "success"
-    );
-
-  } else {
-
-    loginArea.classList.remove("hidden");
-
-    userInfo.classList.add("hidden");
-
-    setStatus(
-      "Hãy đăng nhập bằng Google để lưu dữ liệu.",
-      "info"
-    );
-
-  }
-
-});
-
-
-/* =========================================================
-   AUDIT DATA
-   ========================================================= */
-
-function auditData(user) {
+function audit() {
 
   return {
 
-    updatedAt: serverTimestamp(),
+    updatedAt: new Date().toISOString(),
 
     updatedBy: {
-
-      uid: user.uid,
-
-      name: user.displayName || "",
-
-      email: user.email || ""
-
+      uid: state.user?.uid || "",
+      name: state.user?.displayName || "",
+      email: state.user?.email || ""
     }
 
   };
@@ -1562,270 +882,2325 @@ function auditData(user) {
 
 
 /* =========================================================
-   DELETE OLD INVALID DSP STRUCTURE
-   ========================================================= */
+   MODAL
+========================================================= */
 
-/*
-  Nếu trước đây file cũ đã tạo:
+function openModal(title, html) {
 
-  trips/seoul-2026/dsp/attractions
+  document.getElementById(
+    "modalTitle"
+  ).textContent = title;
 
-  thì đây là DOCUMENT "attractions".
+  document.getElementById(
+    "modalBody"
+  ).innerHTML = html;
 
-  Các attraction cũ không thể tồn tại dưới đó như document,
-  vì path 5 segment là invalid.
+  document.getElementById(
+    "modal"
+  ).classList.remove("hidden");
 
-  Hàm này chỉ xoá document "attractions" nếu nó tồn tại.
+}
 
-  Cấu trúc mới:
 
-  trips/seoul-2026/dsp/main
-  trips/seoul-2026/dsp/football-fantasium
-  ...
-*/
+function closeModal() {
 
-async function cleanupOldDSPStructure() {
+  document.getElementById(
+    "modal"
+  ).classList.add("hidden");
 
-  const oldAttractionsRef = doc(
-    db,
-    "trips",
-    TRIP_ID,
-    "dsp",
-    "attractions"
+}
+
+
+document.getElementById(
+  "modalClose"
+).onclick = closeModal;
+
+
+document.getElementById(
+  "modal"
+).onclick = event => {
+
+  if (event.target.id === "modal") {
+    closeModal();
+  }
+
+};
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+document
+  .querySelectorAll("#nav button")
+  .forEach(button => {
+
+    button.onclick = () => {
+
+      state.tab = button.dataset.tab;
+
+      document
+        .querySelectorAll("#nav button")
+        .forEach(btn => {
+
+          btn.classList.toggle(
+            "active",
+            btn === button
+          );
+
+        });
+
+      [
+        "dashboard",
+        "itinerary",
+        "dsp",
+        "expenses",
+        "places",
+        "more"
+      ].forEach(tab => {
+
+        document
+          .getElementById("tab-" + tab)
+          .classList.toggle(
+            "hidden",
+            tab !== state.tab
+          );
+
+      });
+
+      render();
+
+    };
+
+  });
+
+
+/* =========================================================
+   FIRESTORE REALTIME
+========================================================= */
+
+function subscribeFirestore() {
+
+  state.unsubscribe.forEach(
+    unsubscribe => unsubscribe?.()
   );
 
-  try {
+  state.unsubscribe = [];
 
-    await deleteDoc(oldAttractionsRef);
 
-  } catch (error) {
+  state.unsubscribe.push(
 
-    /*
-      Nếu document không tồn tại thì Firestore vẫn có thể
-      trả về thành công trong nhiều trường hợp.
-      Không coi đây là lỗi nghiêm trọng.
-    */
+    onSnapshot(
+      tripRef,
+      snapshot => {
 
-    console.warn(
-      "Không cần cleanup DSP structure cũ hoặc document cũ không tồn tại:",
-      error
+        state.activities =
+          snapshot.docs
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }))
+            .sort((a, b) =>
+              (
+                a.date +
+                a.startTime
+              ).localeCompare(
+                b.date +
+                b.startTime
+              )
+            );
+
+        render();
+
+      }
+
+    )
+
+  );
+
+
+  state.unsubscribe.push(
+
+    onSnapshot(
+      placesRef,
+      snapshot => {
+
+        state.places =
+          snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+
+        render();
+
+      }
+
+    )
+
+  );
+
+
+  state.unsubscribe.push(
+
+    onSnapshot(
+      expensesRef,
+      snapshot => {
+
+        state.expenses =
+          snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+
+        render();
+
+      }
+
+    )
+
+  );
+
+
+  state.unsubscribe.push(
+
+    onSnapshot(
+      dspRef,
+      snapshot => {
+
+        state.dsp =
+          snapshot.docs
+
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }))
+
+            .filter(
+              item => item.id !== "main"
+            );
+
+
+        const main =
+          snapshot.docs.find(
+            doc => doc.id === "main"
+          );
+
+        state.dspMain =
+          main?.data() || null;
+
+        render();
+
+      }
+
+    )
+
+  );
+
+}
+
+
+/* =========================================================
+   MAP BUTTONS
+========================================================= */
+
+function mapButtons(placeId) {
+
+  const place =
+    state.places.find(
+      p => p.id === placeId
     );
+
+  if (!place) return "";
+
+  const google =
+    place.googleMapsUrl ||
+    `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+
+  const naver =
+    place.naverMapsUrl ||
+    `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`;
+
+  return `
+
+    <button
+      class="btn"
+      onclick="window.open('${escapeHtml(google)}','_blank')"
+    >
+      Google Maps
+    </button>
+
+    <button
+      class="btn"
+      onclick="window.open('${escapeHtml(naver)}','_blank')"
+    >
+      Naver Map
+    </button>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ACTIVITY HTML
+========================================================= */
+
+function activityHtml(activity) {
+
+  return `
+
+    <div class="activity ${
+      activity.mode === "fixed"
+        ? "fixed"
+        : "flexible"
+    }">
+
+      <div class="activity-time">
+
+        ${escapeHtml(activity.startTime)}
+
+        <br>
+
+        <span class="muted">
+          ${escapeHtml(activity.endTime)}
+        </span>
+
+      </div>
+
+
+      <div>
+
+        <div class="activity-title">
+          ${escapeHtml(activity.title)}
+        </div>
+
+        <div class="activity-place">
+          📍 ${escapeHtml(
+            placeName(activity.placeId)
+          )}
+          · ${escapeHtml(activity.mode)}
+        </div>
+
+        ${
+          activity.notes
+            ? `
+              <div class="activity-note">
+                ${escapeHtml(activity.notes)}
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="btn"
+          onclick="editActivity('${escapeHtml(activity.id)}')"
+        >
+          Sửa
+        </button>
+
+        <button
+          class="btn danger"
+          onclick="removeActivity('${escapeHtml(activity.id)}')"
+        >
+          Xóa
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function renderDashboard() {
+
+  const element =
+    document.getElementById(
+      "tab-dashboard"
+    );
+
+
+  const todayActivities =
+    state.activities.filter(
+      a => a.date === state.selectedDay
+    );
+
+
+  const totalExpense =
+    state.expenses.reduce(
+      (sum, expense) =>
+        sum + Number(expense.amount || 0),
+      0
+    );
+
+
+  const dspUsed =
+    state.dsp
+
+      .filter(item => item.visited)
+
+      .reduce(
+        (sum, item) =>
+          sum + Number(item.normalPrice || 0),
+        0
+      );
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill blue">
+          TRIP CONTROL
+        </span>
+
+        <h1 style="margin-top:8px">
+          ${formatDay(state.selectedDay)}
+        </h1>
+
+        <div class="muted">
+          Seoul · 18–25/10/2026
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="btn"
+          id="quickAdd"
+        >
+          + Activity
+        </button>
+
+        <button
+          class="btn blue"
+          id="goItinerary"
+        >
+          Lịch trình
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="grid grid-3">
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+            <div class="small muted">
+              Activities
+            </div>
+
+            <strong>
+              ${state.activities.length}
+            </strong>
+          </div>
+
+          📅
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+            <div class="small muted">
+              Chi tiêu
+            </div>
+
+            <strong>
+              ${money(totalExpense)}
+            </strong>
+          </div>
+
+          💳
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+            <div class="small muted">
+              DSP đã dùng
+            </div>
+
+            <strong>
+              ${money(dspUsed)}
+            </strong>
+          </div>
+
+          🎫
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    ${
+      renderDSPSummary()
+    }
+
+
+    <div
+      class="card"
+      style="margin-top:14px"
+    >
+
+      <div class="row">
+
+        <div>
+
+          <h2>
+            ${formatDay(state.selectedDay)}
+          </h2>
+
+          <div class="small muted">
+            ${todayActivities.length}
+            activities
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="timeline">
+
+        ${
+          todayActivities.length
+            ? todayActivities
+                .map(activityHtml)
+                .join("")
+            : `
+              <div class="empty">
+                Không có activity.
+              </div>
+            `
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "quickAdd"
+  ).onclick = () =>
+    openActivityForm();
+
+
+  document.getElementById(
+    "goItinerary"
+  ).onclick = () => {
+
+    state.tab = "itinerary";
+
+    document
+      .querySelector(
+        '[data-tab="itinerary"]'
+      )
+      .click();
+
+  };
+
+}
+
+
+function renderDSPSummary() {
+
+  if (!state.dspMain) {
+
+    return `
+
+      <div
+        class="card"
+        style="margin-top:14px"
+      >
+
+        <h3>
+          🎫 Discover Seoul Pass
+        </h3>
+
+        <div class="muted small">
+          Chưa có thông tin activation.
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  const expiration =
+    new Date(
+      state.dspMain.expiresAt
+    );
+
+
+  const remaining =
+    Math.max(
+      0,
+      expiration.getTime() -
+      Date.now()
+    );
+
+
+  const hours =
+    remaining /
+    1000 /
+    60 /
+    60;
+
+
+  return `
+
+    <div
+      class="card"
+      style="margin-top:14px"
+    >
+
+      <div class="stat">
+
+        <div>
+
+          <h3>
+            🎫 Discover Seoul Pass
+          </h3>
+
+          <div class="small muted">
+            Hết hạn:
+            ${expiration.toLocaleString("vi-VN")}
+          </div>
+
+        </div>
+
+        <strong>
+          ${hours.toFixed(1)}h
+        </strong>
+
+      </div>
+
+      <div
+        class="progress"
+        style="margin-top:10px"
+      >
+
+        <i
+          style="
+            width:${Math.min(
+              100,
+              hours / 72 * 100
+            )}%
+          "
+        ></i>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ITINERARY
+========================================================= */
+
+function renderItinerary() {
+
+  const element =
+    document.getElementById(
+      "tab-itinerary"
+    );
+
+
+  const days =
+    [...new Set(
+      state.activities.map(
+        a => a.date
+      )
+    )].sort();
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill">
+          ITINERARY
+        </span>
+
+        <h1>
+          Lịch trình
+        </h1>
+
+        <div class="muted">
+          🔒 Fixed · ◇ Flexible
+        </div>
+
+      </div>
+
+
+      <button
+        class="btn primary"
+        id="addActivity"
+      >
+        + Activity
+      </button>
+
+    </div>
+
+
+    <div class="day-tabs">
+
+      ${
+        days.map(day => `
+
+          <button
+            class="btn ${
+              day === state.selectedDay
+                ? "active"
+                : ""
+            }"
+            data-day="${day}"
+          >
+            ${formatDay(day)}
+          </button>
+
+        `).join("")
+      }
+
+    </div>
+
+
+    <div
+      class="card"
+      style="margin-top:12px"
+    >
+
+      <h2>
+        ${formatDay(state.selectedDay)}
+      </h2>
+
+      <div class="timeline">
+
+        ${
+          state.activities
+            .filter(
+              a =>
+                a.date ===
+                state.selectedDay
+            )
+            .map(activityHtml)
+            .join("")
+            ||
+          `
+            <div class="empty">
+              Chưa có activity.
+            </div>
+          `
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  element
+    .querySelectorAll("[data-day]")
+    .forEach(button => {
+
+      button.onclick = () => {
+
+        state.selectedDay =
+          button.dataset.day;
+
+        render();
+
+      };
+
+    });
+
+
+  document.getElementById(
+    "addActivity"
+  ).onclick = () =>
+    openActivityForm();
+
+}
+
+
+/* =========================================================
+   ACTIVITY FORM
+========================================================= */
+
+function openActivityForm(activityId = null) {
+
+  const activity =
+    activityId
+      ? state.activities.find(
+          a => a.id === activityId
+        )
+      : null;
+
+
+  const dates =
+    [
+      ...new Set([
+        ...state.activities.map(
+          a => a.date
+        ),
+        "2026-10-18",
+        "2026-10-19",
+        "2026-10-20",
+        "2026-10-21",
+        "2026-10-22",
+        "2026-10-23",
+        "2026-10-24",
+        "2026-10-25"
+      ])
+    ].sort();
+
+
+  openModal(
+
+    activity
+      ? "Sửa activity"
+      : "Thêm activity",
+
+    `
+
+      <form
+        id="activityForm"
+        class="form"
+      >
+
+        <div class="form-grid">
+
+          <label>
+
+            Ngày
+
+            <select name="date">
+
+              ${dates.map(day => `
+
+                <option
+                  value="${day}"
+                  ${
+                    day ===
+                    (
+                      activity?.date ||
+                      state.selectedDay
+                    )
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  ${formatDay(day)}
+                </option>
+
+              `).join("")}
+
+            </select>
+
+          </label>
+
+
+          <label>
+
+            Địa điểm
+
+            <select name="placeId">
+
+              <option value="">
+                — Không chọn —
+              </option>
+
+              ${
+                state.places.map(place => `
+
+                  <option
+                    value="${escapeHtml(place.id)}"
+                    ${
+                      place.id ===
+                      activity?.placeId
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${escapeHtml(place.name)}
+                  </option>
+
+                `).join("")
+              }
+
+            </select>
+
+          </label>
+
+        </div>
+
+
+        <div class="form-grid">
+
+          <label>
+
+            Bắt đầu
+
+            <input
+              type="time"
+              name="startTime"
+              value="${
+                activity?.startTime ||
+                "09:00"
+              }"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Kết thúc
+
+            <input
+              type="time"
+              name="endTime"
+              value="${
+                activity?.endTime ||
+                "10:00"
+              }"
+              required
+            >
+
+          </label>
+
+        </div>
+
+
+        <label>
+
+          Tên activity
+
+          <input
+            name="title"
+            required
+            value="${escapeHtml(
+              activity?.title || ""
+            )}"
+          >
+
+        </label>
+
+
+        <div class="form-grid">
+
+          <label>
+
+            Loại
+
+            <select name="type">
+
+              ${
+                [
+                  "sightseeing",
+                  "food",
+                  "shopping",
+                  "transport",
+                  "rest",
+                  "flight",
+                  "other"
+                ].map(type => `
+
+                  <option
+                    value="${type}"
+                    ${
+                      type ===
+                      (
+                        activity?.type ||
+                        "sightseeing"
+                      )
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${type}
+                  </option>
+
+                `).join("")
+              }
+
+            </select>
+
+          </label>
+
+
+          <label>
+
+            Kiểu
+
+            <select name="mode">
+
+              <option
+                value="fixed"
+                ${
+                  activity?.mode === "fixed"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Fixed
+              </option>
+
+              <option
+                value="flexible"
+                ${
+                  activity?.mode !== "fixed"
+                    ? "selected"
+                    : ""
+                }
+              >
+                Flexible
+              </option>
+
+            </select>
+
+          </label>
+
+        </div>
+
+
+        <label>
+
+          Ghi chú
+
+          <textarea
+            name="notes"
+          >${escapeHtml(
+            activity?.notes || ""
+          )}</textarea>
+
+        </label>
+
+
+        <div class="actions">
+
+          <button
+            class="btn primary"
+          >
+            Lưu
+          </button>
+
+          ${
+            activity
+              ? `
+                <button
+                  type="button"
+                  class="btn danger"
+                  id="deleteActivity"
+                >
+                  Xóa
+                </button>
+              `
+              : ""
+          }
+
+        </div>
+
+      </form>
+
+    `
+  );
+
+
+  document.getElementById(
+    "activityForm"
+  ).onsubmit = async event => {
+
+    event.preventDefault();
+
+    const form =
+      Object.fromEntries(
+        new FormData(
+          event.target
+        ).entries()
+      );
+
+
+    try {
+
+      if (activity) {
+
+        await updateDoc(
+          doc(
+            db,
+            "trips",
+            TRIP_ID,
+            "activities",
+            activity.id
+          ),
+          {
+            ...form,
+            ...audit()
+          }
+        );
+
+      } else {
+
+        await addDoc(
+          tripRef,
+          {
+            ...form,
+            status: "planned",
+            createdAt:
+              new Date().toISOString(),
+            ...audit()
+          }
+        );
+
+      }
+
+
+      closeModal();
+
+      showToast(
+        "Đã lưu activity"
+      );
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  };
+
+
+  if (activity) {
+
+    document.getElementById(
+      "deleteActivity"
+    ).onclick = () =>
+      removeActivity(
+        activity.id
+      );
 
   }
 
 }
 
 
+window.editActivity =
+  openActivityForm;
+
+
+window.removeActivity =
+  async function(id) {
+
+    if (
+      !confirm(
+        "Xóa activity này?"
+      )
+    ) return;
+
+
+    try {
+
+      await deleteDoc(
+        doc(
+          db,
+          "trips",
+          TRIP_ID,
+          "activities",
+          id
+        )
+      );
+
+      closeModal();
+
+      showToast(
+        "Đã xóa activity"
+      );
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  };
+
+
 /* =========================================================
-   SAVE TO FIREBASE
-   ========================================================= */
+   DSP
+========================================================= */
 
-saveBtn.addEventListener("click", async () => {
+function renderDSP() {
 
-  const user = auth.currentUser;
-
-  if (!user) {
-
-    setStatus(
-      "Bạn chưa đăng nhập Google.",
-      "error"
+  const element =
+    document.getElementById(
+      "tab-dsp"
     );
 
-    return;
+
+  const used =
+    state.dsp
+      .filter(
+        item => item.visited
+      )
+      .reduce(
+        (sum, item) =>
+          sum +
+          Number(
+            item.normalPrice || 0
+          ),
+        0
+      );
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill orange">
+          DISCOVER SEOUL PASS
+        </span>
+
+        <h1>
+          DSP
+        </h1>
+
+        <div class="muted">
+          72 giờ
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="grid grid-3">
+
+      <div class="card">
+
+        <div class="small muted">
+          Activation
+        </div>
+
+        <h2>
+          ${
+            state.dspMain
+              ? new Date(
+                  state.dspMain.activatedAt
+                ).toLocaleString(
+                  "vi-VN"
+                )
+              : "21/10 · 15:00"
+          }
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="small muted">
+          Expiration
+        </div>
+
+        <h2>
+          ${
+            state.dspMain
+              ? new Date(
+                  state.dspMain.expiresAt
+                ).toLocaleString(
+                  "vi-VN"
+                )
+              : "24/10 · 15:00"
+          }
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="small muted">
+          Giá trị đã dùng
+        </div>
+
+        <h2>
+          ${money(used)}
+        </h2>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="card"
+      style="margin-top:14px"
+    >
+
+      <h2>
+        Attractions
+      </h2>
+
+
+      <div>
+
+        ${
+          state.dsp.map(item => `
+
+            <div class="list-item">
+
+              <div class="row">
+
+                <div>
+
+                  <b>
+                    ${escapeHtml(
+                      item.name
+                    )}
+                  </b>
+
+                  <div class="small muted">
+                    ${money(
+                      item.normalPrice
+                    )}
+                    · FREE với DSP
+                  </div>
+
+                </div>
+
+
+                <div class="actions">
+
+                  <button
+                    class="btn ${
+                      item.planned
+                        ? "blue"
+                        : ""
+                    }"
+                    onclick="toggleDSP(
+                      '${escapeHtml(
+                        item.id
+                      )}',
+                      'planned'
+                    )"
+                  >
+                    ${
+                      item.planned
+                        ? "✓ Đã lên lịch"
+                        : "Lên lịch"
+                    }
+                  </button>
+
+
+                  <button
+                    class="btn ${
+                      item.visited
+                        ? "green"
+                        : ""
+                    }"
+                    onclick="toggleDSP(
+                      '${escapeHtml(
+                        item.id
+                      )}',
+                      'visited'
+                    )"
+                  >
+                    ${
+                      item.visited
+                        ? "✓ Đã dùng"
+                        : "Đã dùng"
+                    }
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          `).join("")
+          ||
+          `
+            <div class="empty">
+              Chưa có dữ liệu DSP.
+            </div>
+          `
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+window.toggleDSP =
+  async function(id, field) {
+
+    const item =
+      state.dsp.find(
+        x => x.id === id
+      );
+
+    if (!item) return;
+
+
+    await updateDoc(
+      doc(
+        db,
+        "trips",
+        TRIP_ID,
+        "dsp",
+        id
+      ),
+      {
+        [field]: !item[field],
+        ...audit()
+      }
+    );
+
+  };
+
+
+/* =========================================================
+   EXPENSES
+========================================================= */
+
+function renderExpenses() {
+
+  const element =
+    document.getElementById(
+      "tab-expenses"
+    );
+
+
+  const total =
+    state.expenses.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.amount || 0),
+      0
+    );
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill">
+          MONEY
+        </span>
+
+        <h1>
+          Chi tiêu
+        </h1>
+
+        <div class="muted">
+          Tổng:
+          <b>${money(total)}</b>
+        </div>
+
+      </div>
+
+
+      <button
+        class="btn primary"
+        id="addExpense"
+      >
+        + Khoản chi
+      </button>
+
+    </div>
+
+
+    <div class="grid grid-3">
+
+      ${[
+        "food",
+        "transport",
+        "shopping"
+      ].map(category => `
+
+        <div class="card">
+
+          <div class="small muted">
+            ${category}
+          </div>
+
+          <h2>
+            ${money(
+              state.expenses
+                .filter(
+                  item =>
+                    item.category ===
+                    category
+                )
+                .reduce(
+                  (sum, item) =>
+                    sum +
+                    Number(
+                      item.amount || 0
+                    ),
+                  0
+                )
+            )}
+          </h2>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+
+    <div
+      class="card"
+      style="margin-top:14px"
+    >
+
+      ${
+        state.expenses.length
+
+          ? state.expenses
+              .sort(
+                (a,b) =>
+                  String(b.date)
+                    .localeCompare(
+                      String(a.date)
+                    )
+              )
+              .map(item => `
+
+                <div class="list-item">
+
+                  <div class="row">
+
+                    <div>
+
+                      <b>
+                        ${escapeHtml(
+                          item.description
+                        )}
+                      </b>
+
+                      <div class="small muted">
+
+                        ${escapeHtml(
+                          item.date || ""
+                        )}
+
+                        ·
+
+                        ${escapeHtml(
+                          item.category || ""
+                        )}
+
+                        ${
+                          item.payer
+                            ? " · " +
+                              escapeHtml(
+                                item.payer
+                              )
+                            : ""
+                        }
+
+                      </div>
+
+                    </div>
+
+
+                    <div class="actions">
+
+                      <strong>
+                        ${money(
+                          item.amount
+                        )}
+                      </strong>
+
+                      <button
+                        class="btn danger"
+                        onclick="removeExpense(
+                          '${escapeHtml(
+                            item.id
+                          )}'
+                        )"
+                      >
+                        Xóa
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              `).join("")
+
+          : `
+            <div class="empty">
+              Chưa có khoản chi.
+            </div>
+          `
+      }
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "addExpense"
+  ).onclick =
+    openExpenseForm;
+
+}
+
+
+function openExpenseForm() {
+
+  openModal(
+
+    "Thêm khoản chi",
+
+    `
+
+      <form
+        id="expenseForm"
+        class="form"
+      >
+
+        <div class="form-grid">
+
+          <label>
+
+            Ngày
+
+            <input
+              type="date"
+              name="date"
+              value="${state.selectedDay}"
+              required
+            >
+
+          </label>
+
+
+          <label>
+
+            Số tiền KRW
+
+            <input
+              type="number"
+              name="amount"
+              min="0"
+              required
+            >
+
+          </label>
+
+        </div>
+
+
+        <div class="form-grid">
+
+          <label>
+
+            Danh mục
+
+            <select name="category">
+
+              <option value="food">
+                food
+              </option>
+
+              <option value="transport">
+                transport
+              </option>
+
+              <option value="shopping">
+                shopping
+              </option>
+
+              <option value="ticket">
+                ticket
+              </option>
+
+              <option value="other">
+                other
+              </option>
+
+            </select>
+
+          </label>
+
+
+          <label>
+
+            Người trả
+
+            <input
+              name="payer"
+              placeholder="Tôi / Vợ"
+            >
+
+          </label>
+
+        </div>
+
+
+        <label>
+
+          Mô tả
+
+          <input
+            name="description"
+            required
+            placeholder="Ví dụ: ăn trưa..."
+          >
+
+        </label>
+
+
+        <button
+          class="btn primary"
+        >
+          Lưu
+        </button>
+
+      </form>
+
+    `
+  );
+
+
+  document.getElementById(
+    "expenseForm"
+  ).onsubmit =
+    async event => {
+
+      event.preventDefault();
+
+      const data =
+        Object.fromEntries(
+          new FormData(
+            event.target
+          ).entries()
+        );
+
+      data.amount =
+        Number(data.amount);
+
+
+      await addDoc(
+        expensesRef,
+        {
+          ...data,
+          ...audit()
+        }
+      );
+
+
+      closeModal();
+
+      showToast(
+        "Đã thêm khoản chi"
+      );
+
+    };
+
+}
+
+
+window.removeExpense =
+  async function(id) {
+
+    if (
+      !confirm(
+        "Xóa khoản chi?"
+      )
+    ) return;
+
+
+    await deleteDoc(
+      doc(
+        db,
+        "trips",
+        TRIP_ID,
+        "expenses",
+        id
+      )
+    );
+
+  };
+
+
+/* =========================================================
+   PLACES
+========================================================= */
+
+function renderPlaces() {
+
+  const element =
+    document.getElementById(
+      "tab-places"
+    );
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill">
+          PLACES
+        </span>
+
+        <h1>
+          Địa điểm
+        </h1>
+
+        <div class="muted">
+          ${state.places.length}
+          địa điểm
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <input
+        id="placeSearch"
+        placeholder="Tìm địa điểm..."
+      >
+
+
+      <div
+        id="placeList"
+        style="margin-top:8px"
+      >
+
+        ${placeListHtml(
+          state.places
+        )}
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "placeSearch"
+  ).oninput = event => {
+
+    const keyword =
+      event.target.value
+        .toLowerCase()
+        .trim();
+
+
+    document.getElementById(
+      "placeList"
+    ).innerHTML =
+      placeListHtml(
+        state.places.filter(
+          place =>
+            place.name
+              .toLowerCase()
+              .includes(keyword)
+        )
+      );
+
+  };
+
+}
+
+
+function placeListHtml(places) {
+
+  if (!places.length) {
+
+    return `
+      <div class="empty">
+        Không tìm thấy.
+      </div>
+    `;
 
   }
 
 
-  saveBtn.disabled = true;
+  return places.map(place => `
 
-  setStatus(
-    "Đang lưu dữ liệu vào Firestore...",
-    "info"
-  );
+    <div class="list-item">
 
+      <div class="row">
+
+        <div>
+
+          <b>
+            ${escapeHtml(
+              place.name
+            )}
+          </b>
+
+          <div class="small muted">
+            ${place.lat},
+            ${place.lng}
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          ${mapButtons(place.id)}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+/* =========================================================
+   MORE
+========================================================= */
+
+function renderMore() {
+
+  const element =
+    document.getElementById(
+      "tab-more"
+    );
+
+
+  element.innerHTML = `
+
+    <div class="hero">
+
+      <div>
+
+        <span class="pill">
+          TOOLS
+        </span>
+
+        <h1>
+          Khác
+        </h1>
+
+        <div class="muted">
+          Backup và ghi chú.
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="grid grid-2">
+
+      <div class="card">
+
+        <h2>
+          📝 Ghi chú chuyến đi
+        </h2>
+
+        <textarea
+          id="planningNote"
+          placeholder="Ghi chú chung..."
+        ></textarea>
+
+        <button
+          id="saveNote"
+          class="btn primary"
+          style="margin-top:8px"
+        >
+          Lưu
+        </button>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>
+          💾 Backup
+        </h2>
+
+        <p class="muted small">
+          Xuất dữ liệu hiện tại thành
+          file JSON.
+        </p>
+
+        <button
+          id="exportJson"
+          class="btn"
+        >
+          Export JSON
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  loadPlanningNote();
+
+
+  document.getElementById(
+    "saveNote"
+  ).onclick =
+    savePlanningNote;
+
+
+  document.getElementById(
+    "exportJson"
+  ).onclick =
+    exportJson;
+
+}
+
+
+async function loadPlanningNote() {
 
   try {
 
-    /*
-      Cleanup document DSP cũ trước.
-    */
-
-    await cleanupOldDSPStructure();
-
-
-    /*
-      Một batch Firestore tối đa 500 writes.
-
-      Dataset hiện tại nhỏ hơn rất nhiều so với giới hạn này.
-    */
-
-    let batch = writeBatch(db);
-
-    let operationCount = 0;
-
-
-    function addSet(path, data, options = { merge: true }) {
-
-      const ref = doc(db, path);
-
-      batch.set(
-        ref,
-        {
-          ...data,
-          ...auditData(user)
-        },
-        options
+    const snapshot =
+      await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+      ).then(module =>
+        module.getDocs(
+          notesRef
+        )
       );
 
-      operationCount++;
+
+    const note =
+      snapshot.docs.find(
+        doc =>
+          doc.id === "planning"
+      );
+
+
+    if (note) {
+
+      const textarea =
+        document.getElementById(
+          "planningNote"
+        );
+
+      if (textarea) {
+
+        textarea.value =
+          note.data().text || "";
+
+      }
 
     }
 
+  } catch (error) {
 
-    /* ---------------------------------------------
-       ROOT TRIP
-       --------------------------------------------- */
+    console.error(error);
 
-    addSet(
-      `trips/${TRIP_ID}`,
+  }
+
+}
+
+
+async function savePlanningNote() {
+
+  const text =
+    document.getElementById(
+      "planningNote"
+    ).value;
+
+
+  await setDoc(
+    doc(
+      db,
+      "trips",
+      TRIP_ID,
+      "notes",
+      "planning"
+    ),
+    {
+      text,
+      ...audit()
+    },
+    {
+      merge: true
+    }
+  );
+
+
+  showToast(
+    "Đã lưu ghi chú"
+  );
+
+}
+
+
+async function exportJson() {
+
+  const data = {
+
+    tripId: TRIP_ID,
+
+    exportedAt:
+      new Date().toISOString(),
+
+    activities:
+      state.activities,
+
+    places:
+      state.places,
+
+    expenses:
+      state.expenses,
+
+    dsp:
+      state.dsp,
+
+    dspMain:
+      state.dspMain
+
+  };
+
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
+      ],
       {
-        ...tripSettings,
-
-        createdBy: {
-
-          uid: user.uid,
-
-          name: user.displayName || "",
-
-          email: user.email || ""
-
-        }
+        type:
+          "application/json"
       }
     );
 
 
-    /* ---------------------------------------------
-       SETTINGS
-       --------------------------------------------- */
+  const url =
+    URL.createObjectURL(blob);
 
-    addSet(
-      `trips/${TRIP_ID}/settings/main`,
-      tripSettings
+
+  const link =
+    document.createElement("a");
+
+  link.href = url;
+
+  link.download =
+    "seoul-2026-backup.json";
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render() {
+
+  if (!state.user) return;
+
+  renderDashboard();
+
+  renderItinerary();
+
+  renderDSP();
+
+  renderExpenses();
+
+  renderPlaces();
+
+  renderMore();
+
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+document.getElementById(
+  "loginBtn"
+).onclick = async () => {
+
+  try {
+
+    await signInWithPopup(
+      auth,
+      provider
     );
-
-
-    /* ---------------------------------------------
-       PLACES
-       --------------------------------------------- */
-
-    for (const place of places) {
-
-      addSet(
-        `trips/${TRIP_ID}/places/${place.id}`,
-        place
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       ACTIVITIES
-       --------------------------------------------- */
-
-    for (const activity of activities) {
-
-      addSet(
-        `trips/${TRIP_ID}/activities/${activity.id}`,
-        activity
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       MILESTONES
-       --------------------------------------------- */
-
-    for (const milestone of milestones) {
-
-      addSet(
-        `trips/${TRIP_ID}/milestones/${milestone.id}`,
-        milestone
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       DSP MAIN
-       --------------------------------------------- */
-
-    addSet(
-      `trips/${TRIP_ID}/dsp/main`,
-      dspMain
-    );
-
-
-    /* ---------------------------------------------
-       DSP ATTRACTIONS
-       
-       IMPORTANT:
-       KHÔNG dùng:
-       dsp/attractions/id
-
-       Mà dùng:
-       dsp/id
-       --------------------------------------------- */
-
-    for (const attraction of dspAttractions) {
-
-      addSet(
-        `trips/${TRIP_ID}/dsp/${attraction.id}`,
-        attraction
-      );
-
-    }
-
-
-    /* ---------------------------------------------
-       NOTES
-       --------------------------------------------- */
-
-    addSet(
-      `trips/${TRIP_ID}/notes/planning`,
-      planningNotes
-    );
-
-
-    /* ---------------------------------------------
-       COMMIT
-       --------------------------------------------- */
-
-    await batch.commit();
-
-
-    setStatus(
-      `✓ SAVE THÀNH CÔNG – ${operationCount} documents đã được ghi vào Firestore.`,
-      "success"
-    );
-
 
   } catch (error) {
 
-    console.error("SAVE ERROR:", error);
+    const element =
+      document.getElementById(
+        "loginError"
+      );
 
-    setStatus(
-      "✕ SAVE THẤT BẠI\n\n" + error.message,
-      "error"
+    element.textContent =
+      error.message;
+
+    element.classList.remove(
+      "hidden"
     );
-
-  } finally {
-
-    saveBtn.disabled = false;
 
   }
 
-});
+};
+
+
+document.getElementById(
+  "logoutBtn"
+).onclick = () =>
+  signOut(auth);
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+onAuthStateChanged(
+  auth,
+  user => {
+
+    state.user = user;
+
+
+    document
+      .getElementById("loginView")
+      .classList.toggle(
+        "hidden",
+        !!user
+      );
+
+
+    document
+      .getElementById("appView")
+      .classList.toggle(
+        "hidden",
+        !user
+      );
+
+
+    if (!user) {
+
+      state.unsubscribe
+        .forEach(
+          unsubscribe =>
+            unsubscribe?.()
+        );
+
+      state.unsubscribe = [];
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      "userName"
+    ).textContent =
+      user.displayName ||
+      user.email ||
+      "";
+
+
+    if (user.photoURL) {
+
+      const avatar =
+        document.getElementById(
+          "avatar"
+        );
+
+      avatar.src =
+        user.photoURL;
+
+      avatar.classList.remove(
+        "hidden"
+      );
+
+    }
+
+
+    subscribeFirestore();
+
+    render();
+
+  }
+);
 
 </script>
 
