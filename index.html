@@ -269,416 +269,75 @@
 
 
 <script type="module">
-
-  /*
-   * Firebase SDK
-   */
-
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import {
     getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signOut
-  }
-  from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-
-
-  /*
-   * Firebase configuration
-   */
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-
     apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
-
     authDomain: "seol-8eb80.firebaseapp.com",
-
     projectId: "seol-8eb80",
-
     storageBucket: "seol-8eb80.firebasestorage.app",
-
     messagingSenderId: "545533388832",
-
     appId: "1:545533388832:web:441dad1a09916bb14eb445",
-
     measurementId: "G-MZQ5L465GV"
-
   };
 
-
-  /*
-   * Initialize Firebase
-   */
-
   const app = initializeApp(firebaseConfig);
-
   const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loginSection = document.getElementById("loginSection");
+  const userSection = document.getElementById("userSection");
+  const userInfo = document.getElementById("userInfo");
+  const message = document.getElementById("message");
 
-  /*
-   * Elements
-   */
+  loginBtn.addEventListener("click", async () => {
+    message.textContent = "Đang đăng nhập...";
 
-  const loginSection =
-    document.getElementById("loginSection");
-
-  const userSection =
-    document.getElementById("userSection");
-
-  const emailInput =
-    document.getElementById("email");
-
-  const passwordInput =
-    document.getElementById("password");
-
-  const loginButton =
-    document.getElementById("loginButton");
-
-  const registerButton =
-    document.getElementById("registerButton");
-
-  const logoutButton =
-    document.getElementById("logoutButton");
-
-  const userEmail =
-    document.getElementById("userEmail");
-
-  const userUid =
-    document.getElementById("userUid");
-
-  const message =
-    document.getElementById("message");
-
-  const debug =
-    document.getElementById("debug");
-
-
-  /*
-   * Helper
-   */
-
-  function showMessage(text, type = "") {
-
-    message.textContent = text;
-
-    message.className = "status";
-
-    if (type) {
-      message.classList.add(type);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      message.textContent = "Đăng nhập thất bại: " + error.message;
     }
+  });
 
-    message.classList.remove("hidden");
-
-  }
-
-
-  function showDebug(data) {
-
-    debug.textContent =
-      typeof data === "string"
-        ? data
-        : JSON.stringify(data, null, 2);
-
-  }
-
-
-  function setButtonsDisabled(disabled) {
-
-    loginButton.disabled = disabled;
-
-    registerButton.disabled = disabled;
-
-    logoutButton.disabled = disabled;
-
-  }
-
-
-  /*
-   * Firebase error → Vietnamese
-   */
-
-  function firebaseError(error) {
-
-    const errors = {
-
-      "auth/invalid-email":
-        "Email không hợp lệ.",
-
-      "auth/missing-password":
-        "Chưa nhập mật khẩu.",
-
-      "auth/invalid-credential":
-        "Email hoặc mật khẩu không đúng.",
-
-      "auth/email-already-in-use":
-        "Email này đã được đăng ký.",
-
-      "auth/weak-password":
-        "Mật khẩu quá yếu. Firebase yêu cầu tối thiểu 6 ký tự.",
-
-      "auth/operation-not-allowed":
-        "Email/Password Authentication chưa được bật trong Firebase Console.",
-
-      "auth/too-many-requests":
-        "Có quá nhiều lần thử. Hãy chờ một lúc rồi thử lại.",
-
-      "auth/network-request-failed":
-        "Không kết nối được Firebase. Kiểm tra mạng.",
-
-      "auth/unauthorized-domain":
-        "Domain hiện tại chưa được thêm vào Firebase Authorized Domains."
-
-    };
-
-    return errors[error.code] ||
-      `${error.code || "unknown"}: ${error.message}`;
-
-  }
-
-
-  /*
-   * Auth state
-   *
-   * Firebase sẽ gọi callback này:
-   *
-   * - khi chưa đăng nhập
-   * - sau khi đăng nhập
-   * - sau khi reload trang
-   * - sau khi logout
-   */
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      message.textContent = "Đã đăng xuất.";
+    } catch (error) {
+      console.error(error);
+      message.textContent = "Đăng xuất thất bại.";
+    }
+  });
 
   onAuthStateChanged(auth, (user) => {
-
     if (user) {
+      loginSection.hidden = true;
+      userSection.hidden = false;
 
-      loginSection.classList.add("hidden");
+      userInfo.innerHTML = `
+        <div><strong>${user.displayName || "Google User"}</strong></div>
+        <div>${user.email || ""}</div>
+        <div class="uid">UID: ${user.uid}</div>
+      `;
 
-      userSection.classList.remove("hidden");
-
-      userEmail.textContent =
-        user.email || "(không có email)";
-
-      userUid.textContent =
-        user.uid;
-
-      showMessage(
-        "Đăng nhập thành công.",
-        "success"
-      );
-
-      showDebug({
-
-        event: "auth-state-changed",
-
-        loggedIn: true,
-
-        email: user.email,
-
-        uid: user.uid
-
-      });
-
+      message.textContent = "Đăng nhập thành công.";
     } else {
-
-      loginSection.classList.remove("hidden");
-
-      userSection.classList.add("hidden");
-
-      showDebug({
-
-        event: "auth-state-changed",
-
-        loggedIn: false
-
-      });
-
+      loginSection.hidden = false;
+      userSection.hidden = true;
+      userInfo.innerHTML = "";
     }
-
   });
-
-
-  /*
-   * Login
-   */
-
-  loginButton.addEventListener("click", async () => {
-
-    const email =
-      emailInput.value.trim();
-
-    const password =
-      passwordInput.value;
-
-    if (!email || !password) {
-
-      showMessage(
-        "Vui lòng nhập email và mật khẩu.",
-        "error"
-      );
-
-      return;
-
-    }
-
-    setButtonsDisabled(true);
-
-    try {
-
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-    } catch (error) {
-
-      showMessage(
-        firebaseError(error),
-        "error"
-      );
-
-      showDebug({
-
-        operation: "login",
-
-        code: error.code,
-
-        message: error.message
-
-      });
-
-    } finally {
-
-      setButtonsDisabled(false);
-
-    }
-
-  });
-
-
-  /*
-   * Register
-   */
-
-  registerButton.addEventListener("click", async () => {
-
-    const email =
-      emailInput.value.trim();
-
-    const password =
-      passwordInput.value;
-
-    if (!email || !password) {
-
-      showMessage(
-        "Vui lòng nhập email và mật khẩu.",
-        "error"
-      );
-
-      return;
-
-    }
-
-    if (password.length < 6) {
-
-      showMessage(
-        "Mật khẩu phải có ít nhất 6 ký tự.",
-        "error"
-      );
-
-      return;
-
-    }
-
-    setButtonsDisabled(true);
-
-    try {
-
-      const result =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-      showMessage(
-        "Tạo tài khoản thành công.",
-        "success"
-      );
-
-      showDebug({
-
-        operation: "register",
-
-        email: result.user.email,
-
-        uid: result.user.uid
-
-      });
-
-    } catch (error) {
-
-      showMessage(
-        firebaseError(error),
-        "error"
-      );
-
-      showDebug({
-
-        operation: "register",
-
-        code: error.code,
-
-        message: error.message
-
-      });
-
-    } finally {
-
-      setButtonsDisabled(false);
-
-    }
-
-  });
-
-
-  /*
-   * Logout
-   */
-
-  logoutButton.addEventListener("click", async () => {
-
-    setButtonsDisabled(true);
-
-    try {
-
-      await signOut(auth);
-
-      showMessage(
-        "Đã đăng xuất.",
-        "success"
-      );
-
-    } catch (error) {
-
-      showMessage(
-        firebaseError(error),
-        "error"
-      );
-
-    } finally {
-
-      setButtonsDisabled(false);
-
-    }
-
-  });
-
 </script>
-
 </body>
 </html>
