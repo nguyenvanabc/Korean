@@ -2519,27 +2519,82 @@ function initOrUpdateDayMap(day) {
     zoomAnimation: true
   });
 
-  // OSM free tiles — không cần API key
-  // Dùng tile.openstreetmap.org (HTTPS, không subdomain {s} để tránh mixed issues)
-  const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    updateWhenIdle: true,
-    keepBuffer: 2,
-    errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+  // Tile layers miễn phí, không API key.
+  // OSM.org đôi khi chặn/rate-limit từ VN/KR → ưu tiên mirror + ESRI.
+  const tileBlank = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  const layers = [
+    L.tileLayer("https://tile.openstreetmap.de/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap contributors",
+      updateWhenIdle: true,
+      keepBuffer: 2,
+      errorTileUrl: tileBlank
+    }),
+    L.tileLayer("https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", {
+      maxZoom: 20,
+      subdomains: "abc",
+      attribution: "&copy; OpenStreetMap France",
+      updateWhenIdle: true,
+      errorTileUrl: tileBlank
+    }),
+    // ESRI World Street — thường vào được khi OSM bị chặn; không cần key cho usage nhẹ
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+      attribution: "Tiles &copy; Esri",
+      updateWhenIdle: true,
+      errorTileUrl: tileBlank
+    }),
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap",
+      updateWhenIdle: true,
+      errorTileUrl: tileBlank
+    })
+  ];
+
+  let layerIndex = 0;
+  let errorCount = 0;
+  const active = layers[0];
+  active.addTo(dayMap);
+  dayMap._baseLayers = layers;
+  dayMap._baseIndex = 0;
+
+  function switchTileLayer() {
+    if (layerIndex >= layers.length - 1) return;
+    try { dayMap.removeLayer(layers[layerIndex]); } catch (_) {}
+    layerIndex += 1;
+    errorCount = 0;
+    dayMap._baseIndex = layerIndex;
+    layers[layerIndex].addTo(dayMap);
+    console.info("[DayMap] switched tile layer →", layerIndex);
+  }
+
+  layers.forEach((layer, idx) => {
+    layer.on("tileerror", () => {
+      if (idx !== dayMap._baseIndex) return;
+      errorCount += 1;
+      // Nhiều tile lỗi liên tiếp → đổi nguồn
+      if (errorCount >= 4) switchTileLayer();
+    });
   });
-  // Fallback mirror nếu OSM chính lỗi
-  const osmFr = L.tileLayer("https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", {
-    maxZoom: 20,
-    subdomains: "abc",
-    attribution: '&copy; OpenStreetMap France'
-  });
-  osmLayer.on("tileerror", function (e) {
-    // một tile lỗi thì bỏ qua; nếu nhiều lỗi user vẫn thấy phần còn lại
-  });
-  osmLayer.addTo(dayMap);
-  dayMap._osmLayer = osmLayer;
-  dayMap._osmFr = osmFr;
+
+  // Nút đổi nguồn map (khi OSM/mirror vẫn trắng)
+  const switchBtnId = "dayMapSwitchTiles";
+  setTimeout(() => {
+    const host = document.getElementById("dayMapDistances");
+    if (!host || document.getElementById(switchBtnId)) return;
+    const row = document.createElement("div");
+    row.style.cssText = "margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center";
+    row.innerHTML = `<button type="button" class="btn sm" id="${switchBtnId}">Đổi nguồn bản đồ</button>
+      <span class="small muted" id="dayMapTileLabel">Nguồn: OSM.de</span>`;
+    host.parentNode.insertBefore(row, host);
+    const labels = ["OSM.de", "OSM France", "Esri Street", "OSM.org"];
+    document.getElementById(switchBtnId).onclick = () => {
+      switchTileLayer();
+      const lab = document.getElementById("dayMapTileLabel");
+      if (lab) lab.textContent = "Nguồn: " + (labels[dayMap._baseIndex] || "?");
+    };
+  }, 100);
 
   dayMapLayerGroup = L.layerGroup().addTo(dayMap);
 
