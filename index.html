@@ -1375,12 +1375,69 @@ function haversineM(lat1, lng1, lat2, lng2) {
  * Classify activities for a day relative to "now".
  * Uses status field if present (done/skipped), else time windows.
  */
+
+/** Activities not soft-deleted */
+function activeExpenses() {
+  return state.expenses.filter(e => {
+    const st = String(e.status || "").toLowerCase();
+    return st !== "deleted" && !e.deletedAt;
+  });
+}
+function activeActivities() {
+  return state.activities.filter(a => {
+    const st = String(a.status || "").toLowerCase();
+    return st !== "deleted" && !a.deletedAt;
+  });
+}
+function isDeletedActivity(a) {
+  const st = String(a.status || "").toLowerCase();
+  return st === "deleted" || !!a.deletedAt;
+}
+function openPlaceMaps(placeId) {
+  if (!placeId) {
+    showToast("Activity chưa gắn địa điểm");
+    return;
+  }
+  const place = state.places.find(p => p.id === placeId);
+  if (!place) {
+    showToast("Không tìm thấy địa điểm");
+    return;
+  }
+  const google = place.googleMapsUrl ||
+    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
+      ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
+      : null);
+  const naver = place.naverMapsUrl ||
+    (place.name ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}` : null);
+  // Prefer Naver in Korea, fallback Google
+  const url = naver || google;
+  if (!url) {
+    showToast("Không có link bản đồ");
+    return;
+  }
+  // Offer choice if both exist
+  if (google && naver) {
+    openModal("Mở bản đồ · " + (place.name || ""), `
+      <p class="muted small" style="margin:0 0 12px">${escapeHtml(place.name || "")}</p>
+      <div class="actions" style="flex-direction:column;align-items:stretch">
+        <button class="btn primary" id="openNaverMap">Naver Map</button>
+        <button class="btn" id="openGoogleMap">Google Maps</button>
+      </div>
+    `);
+    document.getElementById("openNaverMap").onclick = () => { window.open(naver, "_blank"); closeModal(); };
+    document.getElementById("openGoogleMap").onclick = () => { window.open(google, "_blank"); closeModal(); };
+  } else {
+    window.open(url, "_blank");
+  }
+}
+window.openPlaceMaps = openPlaceMaps;
+
 function classifyDayActivities(day, now = new Date()) {
   const dayStr = day;
   const todayStr = localDateString(now);
   const nowMin = localTimeMinutes(now);
 
-  const list = state.activities
+  const list = activeActivities()
     .filter(a => a.date === dayStr)
     .slice()
     .sort((a, b) => {
@@ -1416,7 +1473,7 @@ function classifyDayActivities(day, now = new Date()) {
 
 
 function getDayMapPoints(day) {
-  const dayActivities = state.activities
+  const dayActivities = activeActivities()
     .filter(a => a.date === day)
     .slice()
     .sort((a, b) => {
@@ -1608,7 +1665,7 @@ function activityHtml(activity) {
       </div>
       <div class="actions">
         <button class="btn" onclick="editActivity('${escapeHtml(activity.id)}')">Sửa</button>
-        <button class="btn danger" onclick="removeActivity('${escapeHtml(activity.id)}')">Xóa</button>
+        <button class="btn danger" onclick="removeActivity('${escapeHtml(activity.id)}')">Ẩn</button>
       </div>
     </div>
   `;
@@ -1621,11 +1678,11 @@ function minsToTime(m) {
   return String(h).padStart(2,"0") + ":" + String(mm).padStart(2,"0");
 }
 function dayBufferMinutes(day) {
-  return state.activities.filter(a => a.date === day)
+  return activeActivities().filter(a => a.date === day)
     .reduce((s, a) => s + (Number(a.bufferMinutesAfter) || 0), 0);
 }
 function freeWindows(day) {
-  const list = state.activities.filter(a => a.date === day).slice()
+  const list = activeActivities().filter(a => a.date === day).slice()
     .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
   const windows = [];
   for (let i = 0; i < list.length - 1; i++) {
@@ -1651,7 +1708,7 @@ function scheduleHealth(day, now = new Date()) {
     return { level: "gray", text: day < todayStr ? "Ngày đã qua" : "Ngày sắp tới" };
   }
   const nowMin = localTimeMinutes(now);
-  const dayActs = state.activities.filter(a => a.date === day)
+  const dayActs = activeActivities().filter(a => a.date === day)
     .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
   for (const a of dayActs) {
     const st = String(a.status||"").toLowerCase();
@@ -1691,7 +1748,7 @@ function analyzeImpact(newAct) {
   const day = newAct.date;
   const newStart = minutes(newAct.startTime);
   const newEnd = minutes(newAct.endTime) || newStart + 60;
-  const existing = state.activities.filter(a => a.date === day)
+  const existing = activeActivities().filter(a => a.date === day)
     .sort((a,b) => String(a.startTime||"").localeCompare(String(b.startTime||"")));
   const effects = [];
   let hasFixedConflict = false;
@@ -1839,7 +1896,7 @@ function renderDashboard() {
   }
 
   // Expenses today
-  const expenseToday = state.expenses
+  const expenseToday = activeExpenses()
     .filter(e => e.date === focusDay)
     .reduce((s, e) => s + Number(e.amount || 0), 0);
 
@@ -1962,22 +2019,25 @@ function renderDashboard() {
                   c.state === "current" ? "→" :
                   c.state === "skipped" ? "–" : "○";
                 const canMark = c.state !== "done" && c.state !== "skipped";
-                const canUndo = c.state === "done";
+                const canUndo = c.state === "done" || c.state === "skipped";
+                const placeId = c.activity.placeId || "";
                 return `
-                  <div class="tl-item ${c.state}">
+                  <div class="tl-item ${c.state}" data-open-place="${escapeHtml(placeId)}">
                     <div class="tl-mark">${mark}</div>
                     <div class="tl-time">${escapeHtml(c.activity.startTime || "—")}</div>
                     <div class="tl-body">
-                      <div class="tl-title">${escapeHtml(c.activity.title || "—")}</div>
-                      <div class="tl-meta">
+                      <div class="tl-title tl-tap">${escapeHtml(c.activity.title || "—")}</div>
+                      <div class="tl-meta tl-tap">
                         📍 ${escapeHtml(placeName(c.activity.placeId))}
                         ${c.activity.mode === "fixed" ? " · 🔒" : ""}
                         ${c.activity.dspAttractionId ? ' · <span class="pill blue">DSP</span>' : ""}
+                        ${placeId ? ' · <span class="pill">Map</span>' : ""}
                       </div>
                       <div class="tl-actions">
                         ${canMark ? `<button type="button" class="btn sm" data-mark-done="${escapeHtml(c.activity.id)}">✓ Xong</button>` : ""}
                         ${canUndo ? `<button type="button" class="btn sm" data-mark-planned="${escapeHtml(c.activity.id)}">↩ Mở lại</button>` : ""}
                         ${c.state === "current" || c.state === "upcoming" ? `<button type="button" class="btn sm" data-mark-skip="${escapeHtml(c.activity.id)}">Bỏ qua</button>` : ""}
+                        ${placeId ? `<button type="button" class="btn sm blue" data-open-maps="${escapeHtml(placeId)}">🗺 Map</button>` : ""}
                       </div>
                     </div>
                   </div>
@@ -2044,6 +2104,23 @@ function renderDashboard() {
       } catch (err) { alert(err.message); }
     };
   });
+
+  element.querySelectorAll("[data-open-maps]").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      openPlaceMaps(btn.getAttribute("data-open-maps"));
+    };
+  });
+  element.querySelectorAll(".tl-tap").forEach(el => {
+    el.style.cursor = "pointer";
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const row = el.closest("[data-open-place]");
+      const pid = row && row.getAttribute("data-open-place");
+      if (pid) openPlaceMaps(pid);
+    };
+  });
+
 }
 
 
@@ -2560,11 +2637,28 @@ function openActivityForm(activityId = null) {
 window.editActivity = openActivityForm;
 
 window.removeActivity = async function (id) {
-  if (!confirm("Xóa activity này?")) return;
+  if (!confirm("Ẩn activity này? (có thể khôi phục sau)")) return;
   try {
-    await deleteDoc(doc(db, "trips", TRIP_ID, "activities", id));
+    await updateDoc(doc(db, "trips", TRIP_ID, "activities", id), {
+      status: "deleted",
+      deletedAt: new Date().toISOString(),
+      ...audit()
+    });
     closeModal();
-    showToast("Đã xóa activity");
+    showToast("Đã ẩn activity — có thể khôi phục");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+window.restoreActivity = async function (id) {
+  try {
+    await updateDoc(doc(db, "trips", TRIP_ID, "activities", id), {
+      status: "planned",
+      deletedAt: null,
+      ...audit()
+    });
+    showToast("Đã khôi phục activity");
   } catch (error) {
     alert(error.message);
   }
@@ -2716,13 +2810,13 @@ window.toggleDSP = async function (id, field) {
 function renderExpenses() {
   const element = document.getElementById("tab-expenses");
 
-  const total = state.expenses.reduce(
+  const total = activeExpenses().reduce(
     (sum, item) => sum + Number(item.amount || 0),
     0
   );
 
   const todayStr = localDateString();
-  const todayTotal = state.expenses
+  const todayTotal = activeExpenses()
     .filter(e => e.date === todayStr)
     .reduce((s, e) => s + Number(e.amount || 0), 0);
 
@@ -2745,7 +2839,7 @@ function renderExpenses() {
           <div class="small muted">${category}</div>
           <h2>
             ${money(
-              state.expenses
+              activeExpenses()
                 .filter(item => item.category === category)
                 .reduce((sum, item) => sum + Number(item.amount || 0), 0)
             )}
@@ -2756,8 +2850,8 @@ function renderExpenses() {
 
     <div class="card" style="margin-top:14px">
       ${
-        state.expenses.length
-          ? state.expenses
+        activeExpenses().length
+          ? activeExpenses()
               .sort((a, b) => String(b.date).localeCompare(String(a.date)))
               .map(item => `
                 <div class="list-item">
@@ -2838,8 +2932,21 @@ function openExpenseForm() {
 
 
 window.removeExpense = async function (id) {
-  if (!confirm("Xóa khoản chi?")) return;
-  await deleteDoc(doc(db, "trips", TRIP_ID, "expenses", id));
+  if (!confirm("Ẩn khoản chi này? (có thể khôi phục)")) return;
+  await updateDoc(doc(db, "trips", TRIP_ID, "expenses", id), {
+    status: "deleted",
+    deletedAt: new Date().toISOString(),
+    ...audit()
+  });
+  showToast("Đã ẩn khoản chi");
+};
+window.restoreExpense = async function (id) {
+  await updateDoc(doc(db, "trips", TRIP_ID, "expenses", id), {
+    status: "active",
+    deletedAt: null,
+    ...audit()
+  });
+  showToast("Đã khôi phục khoản chi");
 };
 
 
@@ -2944,6 +3051,40 @@ function renderMore() {
   loadPlanningNote();
   document.getElementById("saveNote").onclick = savePlanningNote;
   document.getElementById("exportJson").onclick = exportJson;
+
+  // Soft-deleted activities restore panel
+  const deleted = state.activities.filter(a => isDeletedActivity(a));
+  const trashHost = document.createElement("div");
+  trashHost.className = "card";
+  trashHost.style.marginTop = "14px";
+  trashHost.innerHTML = `
+    <h2>🗑 Đã ẩn (khôi phục được)</h2>
+    ${deleted.length ? deleted.map(a => `
+      <div class="list-item">
+        <div class="row">
+          <div>
+            <b>${escapeHtml(a.title || "—")}</b>
+            <div class="small muted">${escapeHtml(a.date || "")} · ${escapeHtml(a.startTime || "")}</div>
+          </div>
+          <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
+        </div>
+      </div>
+    `).join("") : `<div class="empty">Không có activity đã ẩn.</div>`}
+  `;
+  const moreTab = document.getElementById("tab-more");
+  if (moreTab && !moreTab.querySelector("[data-restore-act], .empty")) {
+    /* always append once per render */
+  }
+  if (moreTab) {
+    const oldTrash = moreTab.querySelector("#trashPanel");
+    if (oldTrash) oldTrash.remove();
+    trashHost.id = "trashPanel";
+    moreTab.appendChild(trashHost);
+    trashHost.querySelectorAll("[data-restore-act]").forEach(btn => {
+      btn.onclick = () => restoreActivity(btn.getAttribute("data-restore-act"));
+    });
+  }
+
 }
 
 
