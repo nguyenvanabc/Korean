@@ -1427,13 +1427,26 @@ function openPlaceMaps(placeId) {
     (hasCoord
       ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
       : (name ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}` : null));
-  const naverWeb = place.naverMapsUrl ||
-    (name ? `https://map.naver.com/p/search/${encodeURIComponent(name)}` : null);
 
-  // App schemes: mở app, Safari giữ nguyên trang lịch trình
-  const naverApp = name
-    ? `nmap://search?query=${encodeURIComponent(name)}`
-    : (hasCoord ? `nmap://map?lat=${lat}&lng=${lng}&zoom=15` : null);
+  // Naver: ưu tiên tọa độ (chính xác hơn search theo tên)
+  // Web: map.naver.com với center lat,lng
+  // App: nmap://place?lat=&lng= hoặc nmap://map?lat=&lng=
+  let naverWeb = place.naverMapsUrl || null;
+  if (!naverWeb) {
+    if (hasCoord) {
+      // c=zoom,lng,lat,bearing,tilt,size,mode
+      naverWeb = `https://map.naver.com/p?c=15.00,${lng},${lat},0,0,0,dh`;
+    } else if (name) {
+      naverWeb = `https://map.naver.com/p/search/${encodeURIComponent(name)}`;
+    }
+  }
+  let naverApp = null;
+  if (hasCoord) {
+    naverApp = `nmap://place?lat=${lat}&lng=${lng}&zoom=15` +
+      (name ? `&name=${encodeURIComponent(name)}` : "");
+  } else if (name) {
+    naverApp = `nmap://search?query=${encodeURIComponent(name)}`;
+  }
   const googleApp = hasCoord
     ? `comgooglemaps://?q=${lat},${lng}`
     : (name ? `comgooglemaps://?q=${encodeURIComponent(name)}` : null);
@@ -1741,9 +1754,11 @@ function mapButtons(placeId) {
 
   const naver =
     place.naverMapsUrl ||
-    (place.name
-      ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`
-      : null);
+    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
+      ? `https://map.naver.com/p?c=15.00,${place.lng},${place.lat},0,0,0,dh`
+      : (place.name
+        ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`
+        : null));
 
   let html = "";
   if (google) {
@@ -2517,15 +2532,27 @@ function initOrUpdateDayMap(day) {
     zoomAnimation: true
   });
 
-  // Tile ổn định hơn tile.openstreetmap.org (CDN Carto, data OSM, miễn phí)
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    maxZoom: 20,
-    subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · CARTO',
+  // OSM free tiles — không cần API key
+  // Dùng tile.openstreetmap.org (HTTPS, không subdomain {s} để tránh mixed issues)
+  const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     updateWhenIdle: true,
     keepBuffer: 2,
     errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-  }).addTo(dayMap);
+  });
+  // Fallback mirror nếu OSM chính lỗi
+  const osmFr = L.tileLayer("https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", {
+    maxZoom: 20,
+    subdomains: "abc",
+    attribution: '&copy; OpenStreetMap France'
+  });
+  osmLayer.on("tileerror", function (e) {
+    // một tile lỗi thì bỏ qua; nếu nhiều lỗi user vẫn thấy phần còn lại
+  });
+  osmLayer.addTo(dayMap);
+  dayMap._osmLayer = osmLayer;
+  dayMap._osmFr = osmFr;
 
   dayMapLayerGroup = L.layerGroup().addTo(dayMap);
 
@@ -2545,7 +2572,11 @@ function initOrUpdateDayMap(day) {
     const googleUrl = pt.place.googleMapsUrl ||
       `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`;
     const naverUrl = pt.place.naverMapsUrl ||
-      (pt.place.name ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}` : null);
+      (Number.isFinite(pt.lat) && Number.isFinite(pt.lng)
+        ? `https://map.naver.com/p?c=15.00,${pt.lng},${pt.lat},0,0,0,dh`
+        : (pt.place.name
+          ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}`
+          : null));
     let popupHtml = `<b>${escapeHtml(pt.place.name || "—")}</b><br>
       <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>`;
     if (pt.activity.notes) {
