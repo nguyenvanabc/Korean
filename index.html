@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Seoul Trip - Firebase Auth Test</title>
+  <title>Seoul Trip - Firebase Test</title>
 
   <style>
     * {
@@ -13,6 +13,12 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -20,19 +26,17 @@
         Roboto,
         Arial,
         sans-serif;
+
       background: #f5f7fb;
       color: #1f2937;
     }
 
-    .container {
-      width: min(420px, calc(100% - 32px));
-      margin: 80px auto;
-    }
-
     .card {
+      width: 100%;
+      max-width: 420px;
       background: white;
+      padding: 30px;
       border-radius: 20px;
-      padding: 28px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
 
@@ -42,101 +46,71 @@
     }
 
     .subtitle {
-      margin: 0 0 28px;
       color: #6b7280;
-      line-height: 1.5;
+      margin: 0 0 25px;
     }
 
     button {
       width: 100%;
-      border: 0;
-      border-radius: 12px;
       padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
       font-size: 16px;
       font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
     }
 
     button:hover {
-      opacity: 0.9;
+      background: #f8f8f8;
     }
 
-    button:active {
-      transform: scale(0.98);
-    }
-
-    #loginBtn {
-      background: #ffffff;
-      color: #1f2937;
-      border: 1px solid #d1d5db;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    #logoutBtn {
-      margin-top: 20px;
-      background: #ef4444;
-      color: white;
-    }
-
-    .google-icon {
-      width: 20px;
-      height: 20px;
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
     }
 
     .user-box {
-      background: #f3f4f6;
-      border-radius: 12px;
-      padding: 16px;
       margin-top: 20px;
-      line-height: 1.6;
-      word-break: break-word;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 12px;
     }
 
     .user-name {
       font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 4px;
+      font-weight: 600;
     }
 
     .user-email {
-      color: #4b5563;
+      margin-top: 5px;
+      color: #666;
     }
 
     .uid {
-      margin-top: 10px;
+      margin-top: 12px;
       font-size: 12px;
-      color: #6b7280;
+      color: #888;
+      word-break: break-all;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 14px;
     }
 
     #message {
       margin-top: 20px;
       text-align: center;
-      font-size: 14px;
-      color: #6b7280;
+      color: #666;
       min-height: 20px;
     }
 
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 13px;
-      color: #16a34a;
-      margin-top: 18px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #22c55e;
-    }
-
-    [hidden] {
+    .hidden {
       display: none !important;
     }
   </style>
@@ -144,86 +118,70 @@
 
 <body>
 
-  <main class="container">
+  <div class="card">
 
-    <!-- LOGIN -->
-    <section id="loginSection" class="card">
+    <!-- CHƯA ĐĂNG NHẬP -->
+    <div id="login-prompt">
 
       <h1>Seoul Trip</h1>
 
       <p class="subtitle">
-        Firebase Authentication test
+        Firebase Authentication Test
       </p>
 
-      <button id="loginBtn">
-        <svg
-          class="google-icon"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#4285F4"
-            d="M21.35 12.27c0-.79-.07-1.55-.22-2.27H12v4.3h5.23a4.47 4.47 0 0 1-1.94 2.93v2.45h3.14c1.84-1.69 2.92-4.18 2.92-7.41z"
-          />
-          <path
-            fill="#34A853"
-            d="M12 21.75c2.63 0 4.84-.87 6.45-2.36l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.75 9.75 0 0 0 12 21.75z"
-          />
-          <path
-            fill="#FBBC05"
-            d="M6.54 13.84A5.86 5.86 0 0 1 6.23 12c0-.64.11-1.27.31-1.84V7.63H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.06 1.05 4.37l3.24-2.53z"
-          />
-          <path
-            fill="#EA4335"
-            d="M12 6.13c1.43 0 2.72.49 3.73 1.45l2.8-2.8C16.84 3.2 14.63 2.25 12 2.25a9.75 9.75 0 0 0-8.7 5.38l3.24 2.53C7.31 7.85 9.46 6.13 12 6.13z"
-          />
-        </svg>
-
-        Đăng nhập bằng Google
+      <button id="btn-login">
+        Đăng nhập Google
       </button>
 
-    </section>
+    </div>
 
 
-    <!-- USER -->
-    <section id="userSection" class="card" hidden>
+    <!-- ĐÃ ĐĂNG NHẬP -->
+    <div id="app-content" class="hidden">
 
-      <h1>Xin chào 👋</h1>
+      <h1>Đã đăng nhập 🎉</h1>
 
       <p class="subtitle">
-        Firebase Authentication đang hoạt động.
+        Firebase Authentication hoạt động bình thường.
       </p>
 
       <div class="user-box">
 
-        <div id="userInfo"></div>
+        <div id="user-name" class="user-name"></div>
+
+        <div id="user-info" class="user-email"></div>
+
+        <div id="user-uid" class="uid"></div>
 
       </div>
 
       <div class="status">
-        <span class="status-dot"></span>
-        Đã xác thực
+        ✓ Đã xác thực bằng Google
       </div>
 
-      <button id="logoutBtn">
-        Đăng xuất
-      </button>
+      <div style="margin-top:20px;">
+        <button id="btn-logout">
+          Đăng xuất
+        </button>
+      </div>
 
-    </section>
-
-
-    <!-- MESSAGE -->
-    <p id="message"></p>
-
-  </main>
+    </div>
 
 
-  <!-- FIREBASE -->
+    <div id="message"></div>
+
+  </div>
+
+
   <script type="module">
+
+    // =========================================================
+    // FIREBASE
+    // =========================================================
 
     import {
       initializeApp
-    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
     import {
       getAuth,
@@ -231,12 +189,12 @@
       signInWithPopup,
       signOut,
       onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 
-    // ============================================================
-    // FIREBASE CONFIG
-    // ============================================================
+    // =========================================================
+    // FIREBASE CONFIG - SEOUL TRIP
+    // =========================================================
 
     const firebaseConfig = {
       apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
@@ -249,9 +207,9 @@
     };
 
 
-    // ============================================================
-    // INITIALIZE FIREBASE
-    // ============================================================
+    // =========================================================
+    // INIT
+    // =========================================================
 
     const app = initializeApp(firebaseConfig);
 
@@ -260,201 +218,147 @@
     const provider = new GoogleAuthProvider();
 
 
-    // ============================================================
+    // =========================================================
+    // VARIABLES
+    // =========================================================
+
+    let currentUser = null;
+
+
+    // =========================================================
     // ELEMENTS
-    // ============================================================
+    // =========================================================
 
-    const loginSection = document.getElementById("loginSection");
-    const userSection = document.getElementById("userSection");
+    const btnLogin = document.getElementById("btn-login");
+    const btnLogout = document.getElementById("btn-logout");
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const loginPrompt = document.getElementById("login-prompt");
+    const appContent = document.getElementById("app-content");
 
-    const userInfo = document.getElementById("userInfo");
+    const userName = document.getElementById("user-name");
+    const userInfo = document.getElementById("user-info");
+    const userUid = document.getElementById("user-uid");
+
     const message = document.getElementById("message");
 
 
-    // ============================================================
-    // GOOGLE LOGIN
-    // ============================================================
+    // =========================================================
+    // ĐĂNG NHẬP GOOGLE
+    // =========================================================
 
-    loginBtn.addEventListener("click", async () => {
-
-      loginBtn.disabled = true;
-      message.textContent = "Đang mở Google...";
+    btnLogin.addEventListener("click", async () => {
 
       try {
+
+        btnLogin.innerText = "Đang xử lý...";
+        btnLogin.disabled = true;
+
+        message.innerText = "";
 
         await signInWithPopup(auth, provider);
 
-        message.textContent = "Đăng nhập thành công.";
-
       } catch (error) {
 
-        console.error("Firebase Auth error:", error);
+        console.error("Lỗi đăng nhập:", error);
 
-        message.textContent = getFirebaseErrorMessage(error);
+        message.innerText =
+          "Đăng nhập thất bại: " + error.message;
 
-      } finally {
-
-        loginBtn.disabled = false;
+        btnLogin.innerText = "Đăng nhập Google";
+        btnLogin.disabled = false;
 
       }
 
     });
 
 
-    // ============================================================
-    // LOGOUT
-    // ============================================================
+    // =========================================================
+    // ĐĂNG XUẤT
+    // =========================================================
 
-    logoutBtn.addEventListener("click", async () => {
-
-      logoutBtn.disabled = true;
+    btnLogout.addEventListener("click", async () => {
 
       try {
 
-        await signOut(auth);
+        btnLogout.innerText = "Đang xử lý...";
+        btnLogout.disabled = true;
 
-        message.textContent = "Đã đăng xuất.";
+        await signOut(auth);
 
       } catch (error) {
 
-        console.error("Logout error:", error);
+        console.error("Lỗi đăng xuất:", error);
 
-        message.textContent = "Đăng xuất thất bại.";
+        message.innerText =
+          "Đăng xuất thất bại: " + error.message;
 
-      } finally {
-
-        logoutBtn.disabled = false;
+        btnLogout.innerText = "Đăng xuất";
+        btnLogout.disabled = false;
 
       }
 
     });
 
 
-    // ============================================================
+    // =========================================================
     // AUTH STATE
-    // ============================================================
+    // =========================================================
 
     onAuthStateChanged(auth, (user) => {
 
+      currentUser = user;
+
       if (user) {
 
-        // User đã đăng nhập
+        // -----------------------------------------
+        // ĐÃ ĐĂNG NHẬP
+        // -----------------------------------------
 
-        loginSection.hidden = true;
-        userSection.hidden = false;
-
-        const displayName =
+        userName.innerText =
           user.displayName || "Google User";
 
-        const email =
+        userInfo.innerText =
           user.email || "";
 
-        const photoURL =
-          user.photoURL || "";
+        userUid.innerText =
+          "UID: " + user.uid;
 
-        userInfo.innerHTML = `
+        loginPrompt.classList.add("hidden");
 
-          <div class="user-name">
-            ${escapeHtml(displayName)}
-          </div>
+        appContent.classList.remove("hidden");
 
-          <div class="user-email">
-            ${escapeHtml(email)}
-          </div>
+        message.innerText = "";
 
-          ${
-            photoURL
-              ? `
-                <div style="margin-top:12px">
-                  <img
-                    src="${escapeHtml(photoURL)}"
-                    alt="Avatar"
-                    width="56"
-                    height="56"
-                    style="
-                      border-radius:50%;
-                      object-fit:cover;
-                    "
-                  >
-                </div>
-              `
-              : ""
-          }
+        btnLogin.innerText = "Đăng nhập Google";
+        btnLogin.disabled = false;
 
-          <div class="uid">
-            UID: ${escapeHtml(user.uid)}
-          </div>
+        btnLogout.innerText = "Đăng xuất";
+        btnLogout.disabled = false;
 
-        `;
+        console.log("Firebase user:", user);
 
       } else {
 
-        // Chưa đăng nhập
+        // -----------------------------------------
+        // CHƯA ĐĂNG NHẬP
+        // -----------------------------------------
 
-        loginSection.hidden = false;
-        userSection.hidden = true;
+        userName.innerText = "";
+        userInfo.innerText = "Chưa đăng nhập";
+        userUid.innerText = "";
 
-        userInfo.innerHTML = "";
+        appContent.classList.add("hidden");
+
+        loginPrompt.classList.remove("hidden");
+
+        btnLogin.innerText = "Đăng nhập Google";
+        btnLogin.disabled = false;
+
+        console.log("Chưa đăng nhập");
 
       }
 
     });
-
-
-    // ============================================================
-    // ERROR MESSAGE
-    // ============================================================
-
-    function getFirebaseErrorMessage(error) {
-
-      switch (error.code) {
-
-        case "auth/popup-closed-by-user":
-          return "Bạn đã đóng cửa sổ đăng nhập.";
-
-        case "auth/popup-blocked":
-          return "Trình duyệt đã chặn cửa sổ đăng nhập Google.";
-
-        case "auth/cancelled-popup-request":
-          return "Yêu cầu đăng nhập đã bị hủy.";
-
-        case "auth/account-exists-with-different-credential":
-          return "Email này đã tồn tại với phương thức đăng nhập khác.";
-
-        case "auth/unauthorized-domain":
-          return "Domain website chưa được thêm vào Firebase Authorized Domains.";
-
-        case "auth/network-request-failed":
-          return "Lỗi mạng. Hãy kiểm tra kết nối Internet.";
-
-        case "auth/operation-not-allowed":
-          return "Google Sign-In chưa được bật trong Firebase Authentication.";
-
-        default:
-          return `Đăng nhập thất bại: ${error.code || error.message}`;
-
-      }
-
-    }
-
-
-    // ============================================================
-    // ESCAPE HTML
-    // ============================================================
-
-    function escapeHtml(value) {
-
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-    }
 
   </script>
 
