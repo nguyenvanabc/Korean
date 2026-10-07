@@ -24,10 +24,30 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
+      authDomain: "seol-8eb80.firebaseapp.com",
+      projectId: "seol-8eb80",
+      storageBucket: "seol-8eb80.firebasestorage.app",
+      messagingSenderId: "545533388832",
+      appId: "1:545533388832:web:441dad1a09916bb14eb445",
+      measurementId: "G-MZQ5L465GV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // Expose to global for the rest of the script
+    window.fb = { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc };
+  </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -291,19 +311,20 @@
   </div>
 
 <script>
-// ====================== FIREBASE ======================
-const firebaseConfig = {
-  apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
-  authDomain: "seol-8eb80.firebaseapp.com",
-  projectId: "seol-8eb80",
-  storageBucket: "seol-8eb80.firebasestorage.app",
-  messagingSenderId: "545533388832",
-  appId: "1:545533388832:web:441dad1a09916bb14eb445",
-  measurementId: "G-MZQ5L465GV"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+// ====================== FIREBASE (đợi module load) ======================
+let auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc;
+
+function waitFirebase() {
+  return new Promise(resolve => {
+    const check = () => {
+      if (window.fb) {
+        ({ auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc } = window.fb);
+        resolve();
+      } else setTimeout(check, 50);
+    };
+    check();
+  });
+}
 
 // ====================== DATA ======================
 const DAYS = [
@@ -445,49 +466,78 @@ async function fetchRate(){
 }
 
 // ====================== AUTH ======================
-auth.onAuthStateChanged(async (u) => {
-  user = u;
-  if (u) {
-    hide($('btn-login'));
-    show($('user-info'));
-    $('user-info').classList.add('flex');
-    $('user-avatar').src = u.photoURL || '';
-    tripRef = db.collection('users').doc(u.uid).collection('trips').doc('seoul-2026');
-    await loadUserData();
-    hide($('view-login'));
-    switchView('today');
-  } else {
-    show($('btn-login'));
-    hide($('user-info'));
-    $('user-info').classList.remove('flex');
-    show($('view-login'));
-    hideAllViews();
-  }
-});
+async function initAuth() {
+  await waitFirebase();
 
-$('btn-login').onclick = $('btn-login-main').onclick = () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
-};
-$('btn-logout').onclick = () => auth.signOut();
+  onAuthStateChanged(auth, async (u) => {
+    user = u;
+    if (u) {
+      hide($('btn-login'));
+      show($('user-info'));
+      $('user-info').classList.add('flex');
+      $('user-avatar').src = u.photoURL || '';
+      // Modular path
+      window.tripPath = `users/${u.uid}/trips/seoul-2026`;
+      await loadUserData();
+      hide($('view-login'));
+      switchView('today');
+    } else {
+      show($('btn-login'));
+      hide($('user-info'));
+      $('user-info').classList.remove('flex');
+      show($('view-login'));
+      hideAllViews();
+    }
+  });
+
+  const doLogin = async () => {
+    try {
+      $('btn-login').innerText = 'Đang xử lý...';
+      $('btn-login-main').innerText = 'Đang xử lý...';
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      alert('Đăng nhập thất bại: ' + error.message);
+      $('btn-login').innerText = 'Đăng nhập';
+      $('btn-login-main').innerText = 'Đăng nhập bằng Google';
+    }
+  };
+
+  $('btn-login').onclick = doLogin;
+  $('btn-login-main').onclick = doLogin;
+  $('btn-logout').onclick = async () => {
+    try { await signOut(auth); } catch(e) { console.error(e); }
+  };
+}
 
 // ====================== DATA LOAD / SAVE ======================
 async function loadUserData(){
-  if (!tripRef) return;
-  const snap = await tripRef.get();
-  const data = snap.exists ? snap.data() : {};
-  statusMap = data.statusMap || {};
-  expenses = data.expenses || [];
-  customPlaces = data.customPlaces || [];
-  tickets = data.tickets || [];
-  dspUsed = data.dspUsed || {};
-  notes = data.notes || {};
-  renderAll();
+  if (!user) return;
+  try {
+    const ref = doc(db, 'users', user.uid, 'trips', 'seoul-2026');
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() : {};
+    statusMap = data.statusMap || {};
+    expenses = data.expenses || [];
+    customPlaces = data.customPlaces || [];
+    tickets = data.tickets || [];
+    dspUsed = data.dspUsed || {};
+    notes = data.notes || {};
+    renderAll();
+  } catch (e) {
+    console.error('Load data error:', e);
+  }
 }
 
 async function saveField(field, value){
-  if (!tripRef) return;
-  await tripRef.set({ [field]: value }, { merge: true });
+  if (!user) return;
+  try {
+    const ref = doc(db, 'users', user.uid, 'trips', 'seoul-2026');
+    await setDoc(ref, { [field]: value }, { merge: true });
+  } catch (e) {
+    console.error('Save error:', e);
+    alert('Lỗi lưu dữ liệu: ' + e.message);
+  }
 }
 
 async function setStatus(itemId, status){
@@ -887,20 +937,27 @@ $('btn-save-location').onclick = () => {
       time: new Date().toISOString(),
       note: ''
     };
-    // save to firestore
-    if (tripRef) {
-      const snap = await tripRef.get();
-      const data = snap.exists ? snap.data() : {};
-      const locs = data.locations || [];
-      locs.push(loc);
-      await saveField('locations', locs);
+    if (user) {
+      try {
+        const ref = doc(db, 'users', user.uid, 'trips', 'seoul-2026');
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() : {};
+        const locs = data.locations || [];
+        locs.push(loc);
+        await saveField('locations', locs);
+        alert(`Đã lưu vị trí:\n${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`);
+      } catch(e) {
+        alert('Lỗi lưu vị trí: ' + e.message);
+      }
+    } else {
+      alert('Bạn cần đăng nhập trước');
     }
-    alert(`Đã lưu vị trí:\n${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`);
   }, () => alert('Không lấy được vị trí'));
 };
 
 // Init
 fetchRate();
+initAuth();
 </script>
 </body>
 </html>
