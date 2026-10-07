@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Seoul Trip - Firebase Test</title>
+  <title>Seoul 2026 - Firebase Data Setup</title>
 
   <style>
     * {
@@ -13,354 +12,1793 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-
+      font-family: Arial, sans-serif;
       background: #f5f7fb;
-      color: #1f2937;
+      color: #202124;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
     }
 
     .card {
-      width: 100%;
-      max-width: 420px;
       background: white;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+      margin-top: 0;
     }
 
-    .subtitle {
-      color: #6b7280;
-      margin: 0 0 25px;
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
     }
 
     button {
-      width: 100%;
-      padding: 14px 18px;
+      border: 0;
       border-radius: 10px;
-      border: 1px solid #ddd;
-      background: white;
+      padding: 12px 18px;
+      font-size: 15px;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
+      background: #1a73e8;
+      color: white;
     }
 
     button:hover {
-      background: #f8f8f8;
+      opacity: .9;
     }
 
     button:disabled {
-      opacity: 0.6;
-      cursor: wait;
+      opacity: .5;
+      cursor: not-allowed;
     }
 
-    .user-box {
-      margin-top: 20px;
-      padding: 16px;
-      background: #f5f5f5;
-      border-radius: 12px;
+    .logout {
+      background: #666;
     }
 
-    .user-name {
-      font-size: 18px;
-      font-weight: 600;
+    .save {
+      background: #188038;
+      font-size: 17px;
+      font-weight: bold;
+      padding: 14px 24px;
     }
 
-    .user-email {
-      margin-top: 5px;
-      color: #666;
+    .user {
+      margin: 12px 0;
+      color: #555;
     }
 
-    .uid {
-      margin-top: 12px;
-      font-size: 12px;
-      color: #888;
-      word-break: break-all;
+    .hidden {
+      display: none;
     }
 
     .status {
       margin-top: 20px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #ecfdf5;
-      color: #047857;
-      font-size: 14px;
+      padding: 15px;
+      background: #f1f3f4;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 13px;
+      min-height: 80px;
     }
 
-    #message {
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
       margin-top: 20px;
-      text-align: center;
-      color: #666;
-      min-height: 20px;
     }
 
-    .hidden {
-      display: none !important;
+    .stat {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .stat-number {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      color: #666;
+      margin-top: 5px;
+      font-size: 13px;
+    }
+
+    .success {
+      color: #137333;
+    }
+
+    .error {
+      color: #c5221f;
+    }
+
+    .warning {
+      color: #b06000;
+    }
+
+    .data-preview {
+      max-height: 400px;
+      overflow: auto;
+      background: #202124;
+      color: #eee;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.5;
     }
   </style>
 </head>
 
 <body>
 
+<div class="container">
+
   <div class="card">
+    <h1>🇰🇷 Seoul Trip 2026</h1>
+    <p>
+      Firebase data bootstrap tool
+    </p>
 
-    <!-- CHƯA ĐĂNG NHẬP -->
-    <div id="login-prompt">
+    <div id="login-section">
+      <button id="btn-login">Đăng nhập Google</button>
+    </div>
 
-      <h1>Seoul Trip</h1>
+    <div id="user-section" class="hidden">
+      <div class="user">
+        Đang đăng nhập: <strong id="user-info"></strong>
+      </div>
 
-      <p class="subtitle">
-        Firebase Authentication Test
-      </p>
-
-      <button id="btn-login">
-        Đăng nhập Google
+      <button id="btn-logout" class="logout">
+        Đăng xuất
       </button>
-
     </div>
-
-
-    <!-- ĐÃ ĐĂNG NHẬP -->
-    <div id="app-content" class="hidden">
-
-      <h1>Đã đăng nhập 🎉</h1>
-
-      <p class="subtitle">
-        Firebase Authentication hoạt động bình thường.
-      </p>
-
-      <div class="user-box">
-
-        <div id="user-name" class="user-name"></div>
-
-        <div id="user-info" class="user-email"></div>
-
-        <div id="user-uid" class="uid"></div>
-
-      </div>
-
-      <div class="status">
-        ✓ Đã xác thực bằng Google
-      </div>
-
-      <div style="margin-top:20px;">
-        <button id="btn-logout">
-          Đăng xuất
-        </button>
-      </div>
-
-    </div>
-
-
-    <div id="message"></div>
-
   </div>
 
 
-  <script type="module">
+  <div id="app-section" class="hidden">
 
-    // =========================================================
-    // FIREBASE
-    // =========================================================
+    <div class="card">
+      <h2>📦 Dữ liệu sẽ lưu</h2>
 
-    import {
-      initializeApp
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      <div class="summary">
 
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        <div class="stat">
+          <div class="stat-number" id="count-days">0</div>
+          <div class="stat-label">Ngày</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-number" id="count-activities">0</div>
+          <div class="stat-label">Activities</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-number" id="count-flights">0</div>
+          <div class="stat-label">Flights</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-number" id="count-dsp">0</div>
+          <div class="stat-label">DSP attractions</div>
+        </div>
+
+      </div>
+
+      <br>
+
+      <button id="btn-save" class="save">
+        💾 SAVE TO FIREBASE
+      </button>
+
+      <div id="status" class="status">
+        Sẵn sàng.
+      </div>
+    </div>
 
 
-    // =========================================================
-    // FIREBASE CONFIG - SEOUL TRIP
-    // =========================================================
+    <div class="card">
+      <h2>🔎 Preview dữ liệu</h2>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
-      authDomain: "seol-8eb80.firebaseapp.com",
-      projectId: "seol-8eb80",
-      storageBucket: "seol-8eb80.firebasestorage.app",
-      messagingSenderId: "545533388832",
-      appId: "1:545533388832:web:441dad1a09916bb14eb445",
-      measurementId: "G-MZQ5L465GV"
+      <div class="data-preview" id="preview"></div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+  /* =========================================================
+     FIREBASE
+     ========================================================= */
+
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    serverTimestamp,
+    writeBatch
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
+    authDomain: "seol-8eb80.firebaseapp.com",
+    projectId: "seol-8eb80",
+    storageBucket: "seol-8eb80.firebasestorage.app",
+    messagingSenderId: "545533388832",
+    appId: "1:545533388832:web:441dad1a09916bb14eb445",
+    measurementId: "G-MZQ5L465GV"
+  };
+
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const provider = new GoogleAuthProvider();
+
+
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+
+  const TRIP_ID = "seoul-2026";
+  const SCHEMA_VERSION = 1;
+
+  const TRIP_PATH = `trips/${TRIP_ID}`;
+
+
+  /* =========================================================
+     DOM
+     ========================================================= */
+
+  const btnLogin = document.getElementById("btn-login");
+  const btnLogout = document.getElementById("btn-logout");
+  const btnSave = document.getElementById("btn-save");
+
+  const loginSection = document.getElementById("login-section");
+  const userSection = document.getElementById("user-section");
+  const appSection = document.getElementById("app-section");
+
+  const userInfo = document.getElementById("user-info");
+  const statusBox = document.getElementById("status");
+  const preview = document.getElementById("preview");
+
+
+  let currentUser = null;
+
+
+  /* =========================================================
+     HELPER
+     ========================================================= */
+
+  function userMeta() {
+
+    if (!currentUser) {
+      return null;
+    }
+
+    return {
+      uid: currentUser.uid,
+      name: currentUser.displayName || "",
+      email: currentUser.email || ""
+    };
+  }
+
+
+  function activity(
+    id,
+    date,
+    title,
+    startTime,
+    endTime,
+    type,
+    flexibility,
+    location,
+    notes = "",
+    extra = {}
+  ) {
+
+    return {
+      id,
+      date,
+      title,
+      startTime,
+      endTime,
+
+      duration: calculateDuration(startTime, endTime),
+
+      type,
+      status: "planned",
+      flexibility,
+
+      location: {
+        name: location || "",
+        address: null,
+        lat: null,
+        lng: null,
+        mapUrl: null
+      },
+
+      notes,
+
+      ...extra
+    };
+  }
+
+
+  function calculateDuration(start, end) {
+
+    if (!start || !end) return null;
+
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+
+    return (eh * 60 + em) - (sh * 60 + sm);
+  }
+
+
+  /* =========================================================
+     TRIP SETTINGS
+     ========================================================= */
+
+  const tripSettings = {
+
+    tripId: TRIP_ID,
+
+    name: "Seoul 2026",
+
+    country: "South Korea",
+
+    city: "Seoul",
+
+    startDate: "2026-10-18",
+
+    endDate: "2026-10-25",
+
+    travelers: 2,
+
+    currency: "KRW",
+
+    timezone: "Asia/Seoul",
+
+    schemaVersion: SCHEMA_VERSION,
+
+    planningRules: {
+
+      avoidRushHour: true,
+
+      useRealTransitTimes: true,
+
+      doNotGuessTransitTime: true,
+
+      prioritizeExperienceDuration: true,
+
+      allowLightExtraActivitiesIfTimeAllows: true,
+
+      fixedActivitiesMustNotBeAutomaticallyShifted: true,
+
+      fixedActivitiesMustNotBeAutomaticallyDeleted: true,
+
+      spontaneousActivitiesRequireImpactCheck: true,
+
+      weatherShouldNotAutomaticallyChangeSchedule: true
+
+    },
+
+    dsp: {
+
+      durationHours: 72,
+
+      plannedActivation: "2026-10-21T15:00:00+09:00",
+
+      plannedExpiration: "2026-10-24T15:00:00+09:00",
+
+      activated: false
+
+    },
+
+    notes: [
+
+      "DSP không kích hoạt ngày 19/10.",
+
+      "DSP dự kiến kích hoạt khoảng 15:00 ngày 21/10.",
+
+      "DSP được ưu tiên sử dụng từ 21/10 đến 24/10.",
+
+      "Không đưa Seoraksan vào lịch DSP vì quãng đường di chuyển quá xa và mất nhiều thời gian.",
+
+      "Chiaksan từng được cân nhắc nhưng không đưa vào baseline itinerary.",
+
+      "Ưu tiên thời gian trải nghiệm thực tế của từng attraction.",
+
+      "Nếu còn thời gian có thể bổ sung các hoạt động ngoài lề nhẹ nhàng.",
+
+      "Không tự động đoán thời gian di chuyển bằng khoảng cách đường chim bay.",
+
+      "Các activity fixed/booked không được tự động dịch chuyển hoặc xóa.",
+
+      "Khi thêm địa điểm bất ngờ phải tính ảnh hưởng tới lịch trình trước khi áp dụng.",
+
+      "Ngày 18/10 ưu tiên nghỉ ngơi sau chuyến bay.",
+
+      "Ngày 19/10 dành cho Nami Island và không dùng DSP.",
+
+      "Ngày 20/10 là ngày Seoul nội đô trước khi kích hoạt DSP.",
+
+      "Ngày 24/10 phải ưu tiên quay lại lấy hành lý và di chuyển ra sân bay."
+
+    ]
+
+  };
+
+
+  /* =========================================================
+     FLIGHTS / MILESTONES
+     ========================================================= */
+
+  const milestones = [
+
+    {
+      id: "flight-han-seoul",
+
+      type: "flight",
+
+      title: "Hanoi → Seoul",
+
+      date: "2026-10-18",
+
+      startTime: "01:40",
+
+      endTime: "07:55",
+
+      airline: "Vietjet",
+
+      flightNumber: "VJ960",
+
+      from: "HAN",
+
+      to: "ICN",
+
+      terminal: "ICN T1",
+
+      aircraft: "A321",
+
+      status: "booked",
+
+      notes: "Direct flight. 2 passengers."
+
+    },
+
+    {
+      id: "flight-seoul-han",
+
+      type: "flight",
+
+      title: "Seoul → Hanoi",
+
+      date: "2026-10-25",
+
+      startTime: "11:00",
+
+      endTime: null,
+
+      airline: "Vietjet",
+
+      flightNumber: null,
+
+      from: "ICN",
+
+      to: "HAN",
+
+      terminal: "ICN T1",
+
+      status: "booked",
+
+      notes: "Check-in, tax refund and airport procedures before departure."
+
+    }
+
+  ];
+
+
+  /* =========================================================
+     ITINERARY
+     ========================================================= */
+
+  const activities = [
+
+    /* ---------------------------------------------------------
+       18 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-18-01",
+      "2026-10-18",
+      "Hanoi → Seoul",
+      "01:40",
+      "07:55",
+      "flight",
+      "fixed",
+      "Incheon International Airport",
+      "Vietjet VJ960. Direct. ICN Terminal 1."
+    ),
+
+    activity(
+      "2026-10-18-02",
+      "2026-10-18",
+      "Di chuyển về nhà ở Nowon",
+      "07:55",
+      "08:00",
+      "transport",
+      "flexible",
+      "Nowon",
+      "Thời gian về nhà sẽ phụ thuộc thủ tục nhập cảnh và di chuyển thực tế."
+    ),
+
+    activity(
+      "2026-10-18-03",
+      "2026-10-18",
+      "Nghỉ ngơi",
+      "08:00",
+      "14:00",
+      "rest",
+      "flexible",
+      "Nowon",
+      "Ưu tiên nghỉ sau chuyến bay đêm."
+    ),
+
+    activity(
+      "2026-10-18-04",
+      "2026-10-18",
+      "Kyung Hee University",
+      "14:15",
+      "16:15",
+      "attraction",
+      "fixed",
+      "Kyung Hee University",
+      "Hoạt động buổi chiều."
+    ),
+
+    activity(
+      "2026-10-18-05",
+      "2026-10-18",
+      "Hwarangdae Railway Park / Gyeongchun Line Forest",
+      "16:45",
+      "18:15",
+      "attraction",
+      "flexible",
+      "Hwarangdae Railway Park",
+      "Tham quan sau Kyung Hee University."
+    ),
+
+    activity(
+      "2026-10-18-06",
+      "2026-10-18",
+      "Ăn tối",
+      "18:30",
+      "20:00",
+      "food",
+      "flexible",
+      "Nowon",
+      "Ăn tối và nghỉ."
+    ),
+
+
+    /* ---------------------------------------------------------
+       19 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-19-01",
+      "2026-10-19",
+      "Di chuyển Nowon → Nami Island",
+      "06:00",
+      "08:30",
+      "transport",
+      "fixed",
+      "Nami Island",
+      "Ngày đi Nami Island. Không kích hoạt DSP."
+    ),
+
+    activity(
+      "2026-10-19-02",
+      "2026-10-19",
+      "Nami Island",
+      "08:30",
+      "12:00",
+      "attraction",
+      "fixed",
+      "Nami Island",
+      "Khung trải nghiệm buổi sáng."
+    ),
+
+    activity(
+      "2026-10-19-03",
+      "2026-10-19",
+      "Nghỉ / ăn trưa Nami Island",
+      "12:00",
+      "13:00",
+      "food",
+      "flexible",
+      "Nami Island",
+      ""
+    ),
+
+    activity(
+      "2026-10-19-04",
+      "2026-10-19",
+      "Nami Island",
+      "13:00",
+      "15:00",
+      "attraction",
+      "fixed",
+      "Nami Island",
+      "Tiếp tục tham quan."
+    ),
+
+    activity(
+      "2026-10-19-05",
+      "2026-10-19",
+      "Nami Island → Seoul",
+      "15:00",
+      "17:30",
+      "transport",
+      "fixed",
+      "Seoul",
+      "Dự kiến về Seoul khoảng 17:30."
+    ),
+
+    activity(
+      "2026-10-19-06",
+      "2026-10-19",
+      "Ăn tối Gongneung",
+      "18:00",
+      "19:00",
+      "food",
+      "flexible",
+      "Gongneung",
+      ""
+    ),
+
+    activity(
+      "2026-10-19-07",
+      "2026-10-19",
+      "Gyeongchun Line Forest / Café",
+      "19:00",
+      "20:30",
+      "leisure",
+      "flexible",
+      "Gyeongchun Line Forest",
+      "Hoạt động nhẹ sau khi về Seoul."
+    ),
+
+
+    /* ---------------------------------------------------------
+       20 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-20-01",
+      "2026-10-20",
+      "Gwangjang Market",
+      "09:00",
+      "10:00",
+      "food",
+      "flexible",
+      "Gwangjang Market",
+      "Ăn sáng / khám phá chợ."
+    ),
+
+    activity(
+      "2026-10-20-02",
+      "2026-10-20",
+      "Dongmyo 2hand Market",
+      "10:30",
+      "13:00",
+      "shopping",
+      "flexible",
+      "Dongmyo",
+      "Khám phá khu đồ second-hand."
+    ),
+
+    activity(
+      "2026-10-20-03",
+      "2026-10-20",
+      "Ewha",
+      "13:30",
+      "15:00",
+      "attraction",
+      "flexible",
+      "Ewha Womans University",
+      ""
+    ),
+
+    activity(
+      "2026-10-20-04",
+      "2026-10-20",
+      "Haneul Park / Silver Grass Festival",
+      "16:00",
+      "20:00",
+      "attraction",
+      "fixed",
+      "Haneul Park",
+      "Ưu tiên thời điểm chiều, hoàng hôn và cảnh cỏ lau."
+    ),
+
+    activity(
+      "2026-10-20-05",
+      "2026-10-20",
+      "Về khách sạn",
+      "20:00",
+      "21:30",
+      "transport",
+      "flexible",
+      "Hotel",
+      "Dự kiến về khoảng 21:15–21:30."
+    ),
+
+
+    /* ---------------------------------------------------------
+       21 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-21-01",
+      "2026-10-21",
+      "Suwon Hwaseong",
+      "08:15",
+      "11:30",
+      "attraction",
+      "fixed",
+      "Suwon Hwaseong",
+      "Tham quan buổi sáng."
+    ),
+
+    activity(
+      "2026-10-21-02",
+      "2026-10-21",
+      "Starfield Suwon",
+      "12:15",
+      "14:00",
+      "shopping",
+      "flexible",
+      "Starfield Suwon",
+      "Ăn trưa / nghỉ."
+    ),
+
+    activity(
+      "2026-10-21-03",
+      "2026-10-21",
+      "Kích hoạt Discover Seoul Pass",
+      "15:00",
+      "15:00",
+      "milestone",
+      "fixed",
+      "Suwon",
+      "Dự kiến bắt đầu 72 giờ DSP."
+    ),
+
+    activity(
+      "2026-10-21-04",
+      "2026-10-21",
+      "Korean Folk Village",
+      "15:00",
+      "18:15",
+      "attraction",
+      "fixed",
+      "Korean Folk Village",
+      "Sử dụng DSP."
+    ),
+
+    activity(
+      "2026-10-21-05",
+      "2026-10-21",
+      "Ăn tối",
+      "18:15",
+      "19:15",
+      "food",
+      "flexible",
+      "Korean Folk Village",
+      "Ăn tối sau attraction."
+    ),
+
+    activity(
+      "2026-10-21-06",
+      "2026-10-21",
+      "Korean Folk Village → Seoul",
+      "19:15",
+      "20:30",
+      "transport",
+      "flexible",
+      "Seoul",
+      "Dự kiến về Seoul khoảng 20:30."
+    ),
+
+
+    /* ---------------------------------------------------------
+       22 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-22-01",
+      "2026-10-22",
+      "Gyeongbokgung + Hanbok",
+      "09:00",
+      "11:00",
+      "attraction",
+      "fixed",
+      "Gyeongbokgung",
+      "Hanbok rental. DSP: Hanboknam–Gyeongbokgung."
+    ),
+
+    activity(
+      "2026-10-22-02",
+      "2026-10-22",
+      "Bukchon Hanok Village",
+      "11:00",
+      "12:30",
+      "attraction",
+      "flexible",
+      "Bukchon Hanok Village",
+      ""
+    ),
+
+    activity(
+      "2026-10-22-03",
+      "2026-10-22",
+      "Ăn trưa",
+      "12:30",
+      "13:30",
+      "food",
+      "flexible",
+      "Bukchon",
+      ""
+    ),
+
+    activity(
+      "2026-10-22-04",
+      "2026-10-22",
+      "Insadong / Ssamzigil",
+      "13:30",
+      "14:45",
+      "shopping",
+      "flexible",
+      "Insadong",
+      ""
+    ),
+
+    activity(
+      "2026-10-22-05",
+      "2026-10-22",
+      "Ikseon-dong",
+      "14:45",
+      "15:30",
+      "attraction",
+      "flexible",
+      "Ikseon-dong",
+      "Có thể dùng làm hoạt động linh hoạt nếu lịch cho phép."
+    ),
+
+    activity(
+      "2026-10-22-06",
+      "2026-10-22",
+      "Myeongdong Cathedral",
+      "16:00",
+      "16:30",
+      "attraction",
+      "flexible",
+      "Myeongdong Cathedral",
+      ""
+    ),
+
+    activity(
+      "2026-10-22-07",
+      "2026-10-22",
+      "Namsan / N Seoul Tower",
+      "16:30",
+      "19:00",
+      "attraction",
+      "fixed",
+      "N Seoul Tower",
+      "Sử dụng DSP. Ưu tiên thời điểm chiều tối / hoàng hôn."
+    ),
+
+    activity(
+      "2026-10-22-08",
+      "2026-10-22",
+      "Ăn tối + Shopping Myeongdong",
+      "19:00",
+      "21:30",
+      "food",
+      "flexible",
+      "Myeongdong",
+      ""
+    ),
+
+
+    /* ---------------------------------------------------------
+       23 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-23-01",
+      "2026-10-23",
+      "Di chuyển tới Hwadam Forest",
+      "06:00",
+      "08:00",
+      "transport",
+      "fixed",
+      "Hwadam Forest",
+      "Rời khách sạn sớm."
+    ),
+
+    activity(
+      "2026-10-23-02",
+      "2026-10-23",
+      "Hwadam Forest",
+      "09:00",
+      "12:00",
+      "attraction",
+      "fixed",
+      "Hwadam Forest",
+      "Ưu tiên mùa lá mùa thu."
+    ),
+
+    activity(
+      "2026-10-23-03",
+      "2026-10-23",
+      "Ăn trưa / nghỉ",
+      "12:00",
+      "14:00",
+      "food",
+      "flexible",
+      "Hwadam Forest",
+      ""
+    ),
+
+    activity(
+      "2026-10-23-04",
+      "2026-10-23",
+      "Banpo Hangang Park",
+      "16:00",
+      "17:30",
+      "attraction",
+      "flexible",
+      "Banpo Hangang Park",
+      "Thời gian có thể điều chỉnh theo lịch Hwadam."
+    ),
+
+    activity(
+      "2026-10-23-05",
+      "2026-10-23",
+      "Seoul Cruise",
+      "17:30",
+      "19:00",
+      "attraction",
+      "fixed",
+      "Han River",
+      "Sử dụng DSP nếu chuyến cruise phù hợp thời gian."
+    ),
+
+    activity(
+      "2026-10-23-06",
+      "2026-10-23",
+      "Ăn tối bên sông Hàn",
+      "19:00",
+      "20:00",
+      "food",
+      "flexible",
+      "Han River",
+      ""
+    ),
+
+    activity(
+      "2026-10-23-07",
+      "2026-10-23",
+      "Về khách sạn",
+      "20:00",
+      "20:30",
+      "transport",
+      "flexible",
+      "Hotel",
+      ""
+    ),
+
+
+    /* ---------------------------------------------------------
+       24 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-24-01",
+      "2026-10-24",
+      "Lotte World",
+      "09:00",
+      "12:30",
+      "attraction",
+      "fixed",
+      "Lotte World",
+      "Hoạt động buổi sáng."
+    ),
+
+    activity(
+      "2026-10-24-02",
+      "2026-10-24",
+      "Di chuyển tới COEX",
+      "12:30",
+      "14:00",
+      "transport",
+      "fixed",
+      "COEX",
+      ""
+    ),
+
+    activity(
+      "2026-10-24-03",
+      "2026-10-24",
+      "COEX Aquarium",
+      "14:00",
+      "15:40",
+      "attraction",
+      "fixed",
+      "COEX Aquarium",
+      "Sử dụng DSP."
+    ),
+
+    activity(
+      "2026-10-24-04",
+      "2026-10-24",
+      "Về khách sạn lấy hành lý",
+      "15:40",
+      "16:30",
+      "transport",
+      "fixed",
+      "Hotel",
+      "Phải đảm bảo đủ buffer cho việc ra sân bay."
+    ),
+
+    activity(
+      "2026-10-24-05",
+      "2026-10-24",
+      "AREX → Incheon T1",
+      "16:30",
+      "18:00",
+      "transport",
+      "fixed",
+      "Incheon International Airport T1",
+      "Dự kiến tới sân bay khoảng 18:00."
+    ),
+
+    activity(
+      "2026-10-24-06",
+      "2026-10-24",
+      "Nghỉ gần sân bay / Unseo",
+      "18:00",
+      "22:00",
+      "rest",
+      "flexible",
+      "Unseo",
+      "Ở gần sân bay trước chuyến bay ngày 25/10."
+    ),
+
+
+    /* ---------------------------------------------------------
+       25 OCT
+       --------------------------------------------------------- */
+
+    activity(
+      "2026-10-25-01",
+      "2026-10-25",
+      "Check-in + Tax Refund",
+      "07:30",
+      "10:00",
+      "airport",
+      "fixed",
+      "Incheon International Airport T1",
+      "Ưu tiên check-in và tax refund."
+    ),
+
+    activity(
+      "2026-10-25-02",
+      "2026-10-25",
+      "Seoul → Hanoi",
+      "11:00",
+      "14:00",
+      "flight",
+      "fixed",
+      "Incheon International Airport",
+      "Chuyến bay về Việt Nam."
+    )
+
+  ];
+
+
+  /* =========================================================
+     DSP DATA
+     ========================================================= */
+
+  const dspAttractions = [
+
+    {
+      id: "football-fantasium",
+      name: "Football Fæntasium",
+      normalPrice: 15000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "seoul-zoo-sky-lift",
+      name: "Seoul Zoo & Sky Lift",
+      normalPrice: 21000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "aquafield-goyang",
+      name: "AQUAFIELD GOYANG – Jjimjil Spa",
+      normalPrice: 26000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "mokdong-ice-rink",
+      name: "Mokdong Ice Rink",
+      normalPrice: 9200,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "lotte-museum-art",
+      name: "LOTTE Museum of Art",
+      normalPrice: 20000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "seoul-botanic-park",
+      name: "Seoul Botanic Park",
+      normalPrice: 5000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "n-seoul-tower",
+      name: "N Seoul Tower",
+      normalPrice: 26000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "mmca-seoul",
+      name: "MMCA Seoul",
+      normalPrice: 5000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "suwon-ipark-museum",
+      name: "Suwon Ipark Museum of Art",
+      normalPrice: 4000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "seoul-cruise",
+      name: "Seoul Cruise",
+      normalPrice: 250000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "heolleung-illeung",
+      name: "Heolleung / Illeung Tombs",
+      normalPrice: 1000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "golden-blue-marina",
+      name: "Golden Blue Marina Kayak / Yacht",
+      normalPrice: 30000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "hanboknam-gyeongbokgung",
+      name: "Hanboknam – Gyeongbokgung",
+      normalPrice: 50000,
+      currency: "KRW",
+      dspFree: true
+    },
+
+    {
+      id: "aquafield-anseong",
+      name: "Aquafield Anseong",
+      normalPrice: 26000,
+      currency: "KRW",
+      dspFree: true
+    }
+
+  ];
+
+
+  /* =========================================================
+     BUILD DATA PREVIEW
+     ========================================================= */
+
+  function buildPreview() {
+
+    const data = {
+
+      trip: tripSettings,
+
+      activities,
+
+      milestones,
+
+      dsp: {
+        durationHours: 72,
+        attractions: dspAttractions
+      }
+
     };
 
-
-    // =========================================================
-    // INIT
-    // =========================================================
-
-    const app = initializeApp(firebaseConfig);
-
-    const auth = getAuth(app);
-
-    const provider = new GoogleAuthProvider();
+    preview.textContent =
+      JSON.stringify(data, null, 2);
+  }
 
 
-    // =========================================================
-    // VARIABLES
-    // =========================================================
+  /* =========================================================
+     UPDATE SUMMARY
+     ========================================================= */
 
-    let currentUser = null;
+  function updateSummary() {
+
+    const dates = [
+      ...new Set(
+        activities.map(a => a.date)
+      )
+    ];
+
+    document.getElementById("count-days")
+      .textContent = dates.length;
+
+    document.getElementById("count-activities")
+      .textContent = activities.length;
+
+    document.getElementById("count-flights")
+      .textContent = milestones.length;
+
+    document.getElementById("count-dsp")
+      .textContent = dspAttractions.length;
+  }
 
 
-    // =========================================================
-    // ELEMENTS
-    // =========================================================
+  /* =========================================================
+     SAVE TRIP SETTINGS
+     ========================================================= */
 
-    const btnLogin = document.getElementById("btn-login");
-    const btnLogout = document.getElementById("btn-logout");
+  async function saveTripSettings(batch) {
 
-    const loginPrompt = document.getElementById("login-prompt");
-    const appContent = document.getElementById("app-content");
+    const ref =
+      doc(
+        db,
+        "trips",
+        TRIP_ID,
+        "settings",
+        "main"
+      );
 
-    const userName = document.getElementById("user-name");
-    const userInfo = document.getElementById("user-info");
-    const userUid = document.getElementById("user-uid");
+    batch.set(
+      ref,
+      {
+        ...tripSettings,
 
-    const message = document.getElementById("message");
+        updatedAt: serverTimestamp(),
+        updatedBy: userMeta()
+      },
+      {
+        merge: true
+      }
+    );
+  }
 
 
-    // =========================================================
-    // ĐĂNG NHẬP GOOGLE
-    // =========================================================
+  /* =========================================================
+     SAVE ACTIVITIES
+     ========================================================= */
 
-    btnLogin.addEventListener("click", async () => {
+  function saveActivities(batch) {
+
+    for (const item of activities) {
+
+      const ref =
+        doc(
+          db,
+          "trips",
+          TRIP_ID,
+          "activities",
+          item.id
+        );
+
+      batch.set(
+        ref,
+        {
+          ...item,
+
+          tripId: TRIP_ID,
+
+          schemaVersion: SCHEMA_VERSION,
+
+          updatedAt: serverTimestamp(),
+
+          updatedBy: userMeta()
+        },
+        {
+          merge: true
+        }
+      );
+    }
+  }
+
+
+  /* =========================================================
+     SAVE MILESTONES
+     ========================================================= */
+
+  function saveMilestones(batch) {
+
+    for (const item of milestones) {
+
+      const ref =
+        doc(
+          db,
+          "trips",
+          TRIP_ID,
+          "milestones",
+          item.id
+        );
+
+      batch.set(
+        ref,
+        {
+          ...item,
+
+          tripId: TRIP_ID,
+
+          schemaVersion: SCHEMA_VERSION,
+
+          updatedAt: serverTimestamp(),
+
+          updatedBy: userMeta()
+        },
+        {
+          merge: true
+        }
+      );
+    }
+  }
+
+
+  /* =========================================================
+     SAVE DSP
+     ========================================================= */
+
+  function saveDSP(batch) {
+
+    const dspRef =
+      doc(
+        db,
+        "trips",
+        TRIP_ID,
+        "dsp",
+        "main"
+      );
+
+    batch.set(
+      dspRef,
+      {
+        durationHours: 72,
+
+        plannedActivation:
+          "2026-10-21T15:00:00+09:00",
+
+        plannedExpiration:
+          "2026-10-24T15:00:00+09:00",
+
+        activated: false,
+
+        schemaVersion: SCHEMA_VERSION,
+
+        updatedAt: serverTimestamp(),
+
+        updatedBy: userMeta()
+      },
+      {
+        merge: true
+      }
+    );
+
+
+    for (const item of dspAttractions) {
+
+      const ref =
+        doc(
+          db,
+          "trips",
+          TRIP_ID,
+          "dsp",
+          "attractions",
+          item.id
+        );
+
+      batch.set(
+        ref,
+        {
+          ...item,
+
+          tripId: TRIP_ID,
+
+          schemaVersion: SCHEMA_VERSION,
+
+          updatedAt: serverTimestamp(),
+
+          updatedBy: userMeta()
+        },
+        {
+          merge: true
+        }
+      );
+    }
+  }
+
+
+  /* =========================================================
+     SAVE METADATA
+     ========================================================= */
+
+  function saveMetadata(batch) {
+
+    const ref =
+      doc(
+        db,
+        "trips",
+        TRIP_ID
+      );
+
+    batch.set(
+      ref,
+      {
+        tripId: TRIP_ID,
+
+        name: "Seoul 2026",
+
+        schemaVersion: SCHEMA_VERSION,
+
+        status: "planning",
+
+        startDate: "2026-10-18",
+
+        endDate: "2026-10-25",
+
+        travelers: 2,
+
+        updatedAt: serverTimestamp(),
+
+        updatedBy: userMeta()
+      },
+      {
+        merge: true
+      }
+    );
+  }
+
+
+  /* =========================================================
+     SAVE NOTES
+     ========================================================= */
+
+  function saveNotes(batch) {
+
+    const ref =
+      doc(
+        db,
+        "trips",
+        TRIP_ID,
+        "notes",
+        "planning"
+      );
+
+    batch.set(
+      ref,
+      {
+        title: "Planning notes",
+
+        notes: tripSettings.notes,
+
+        planningRules:
+          tripSettings.planningRules,
+
+        schemaVersion: SCHEMA_VERSION,
+
+        updatedAt: serverTimestamp(),
+
+        updatedBy: userMeta()
+      },
+      {
+        merge: true
+      }
+    );
+  }
+
+
+  /* =========================================================
+     FIRESTORE BATCH SAVE
+     ========================================================= */
+
+  async function saveAllData() {
+
+    if (!currentUser) {
+
+      alert("Vui lòng đăng nhập trước.");
+
+      return;
+    }
+
+
+    btnSave.disabled = true;
+
+    statusBox.className = "status";
+
+    statusBox.textContent =
+      "Đang chuẩn bị dữ liệu...\n";
+
+
+    try {
+
+      /*
+       * Firestore batch giới hạn 500 writes.
+       *
+       * Hiện tại dữ liệu của chúng ta < 500,
+       * nên có thể lưu thành một batch.
+       */
+
+      let batch = writeBatch(db);
+
+      let writeCount = 0;
+
+
+      saveMetadata(batch);
+      writeCount++;
+
+
+      saveTripSettings(batch);
+      writeCount++;
+
+
+      saveActivities(batch);
+      writeCount += activities.length;
+
+
+      saveMilestones(batch);
+      writeCount += milestones.length;
+
+
+      saveDSP(batch);
+
+      writeCount +=
+        1 + dspAttractions.length;
+
+
+      saveNotes(batch);
+      writeCount++;
+
+
+      statusBox.textContent +=
+        `Đã chuẩn bị ${writeCount} document.\n`;
+
+      statusBox.textContent +=
+        "Đang ghi vào Firestore...\n";
+
+
+      await batch.commit();
+
+
+      statusBox.className =
+        "status success";
+
+
+      statusBox.textContent =
+        `✓ SAVE THÀNH CÔNG\n\n` +
+
+        `Trip: ${TRIP_ID}\n` +
+
+        `Activities: ${activities.length}\n` +
+
+        `Milestones: ${milestones.length}\n` +
+
+        `DSP attractions: ${dspAttractions.length}\n` +
+
+        `Tổng writes: ${writeCount}\n\n` +
+
+        `Người lưu: ${currentUser.email}\n\n` +
+
+        `Dữ liệu đã được lưu vào Firestore.`;
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      statusBox.className =
+        "status error";
+
+      statusBox.textContent =
+        "✕ SAVE THẤT BẠI\n\n" +
+        error.message;
+
+    }
+
+    finally {
+
+      btnSave.disabled = false;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     AUTH
+     ========================================================= */
+
+  btnLogin.addEventListener(
+    "click",
+    async () => {
 
       try {
 
-        btnLogin.innerText = "Đang xử lý...";
         btnLogin.disabled = true;
 
-        message.innerText = "";
+        btnLogin.textContent =
+          "Đang đăng nhập...";
 
-        await signInWithPopup(auth, provider);
+        await signInWithPopup(
+          auth,
+          provider
+        );
 
-      } catch (error) {
+      }
 
-        console.error("Lỗi đăng nhập:", error);
+      catch (error) {
 
-        message.innerText =
-          "Đăng nhập thất bại: " + error.message;
+        console.error(error);
 
-        btnLogin.innerText = "Đăng nhập Google";
+        alert(
+          "Đăng nhập thất bại: " +
+          error.message
+        );
+
+      }
+
+      finally {
+
         btnLogin.disabled = false;
 
-      }
-
-    });
-
-
-    // =========================================================
-    // ĐĂNG XUẤT
-    // =========================================================
-
-    btnLogout.addEventListener("click", async () => {
-
-      try {
-
-        btnLogout.innerText = "Đang xử lý...";
-        btnLogout.disabled = true;
-
-        await signOut(auth);
-
-      } catch (error) {
-
-        console.error("Lỗi đăng xuất:", error);
-
-        message.innerText =
-          "Đăng xuất thất bại: " + error.message;
-
-        btnLogout.innerText = "Đăng xuất";
-        btnLogout.disabled = false;
+        btnLogin.textContent =
+          "Đăng nhập Google";
 
       }
 
-    });
+    }
+  );
 
 
-    // =========================================================
-    // AUTH STATE
-    // =========================================================
+  btnLogout.addEventListener(
+    "click",
+    async () => {
 
-    onAuthStateChanged(auth, (user) => {
+      await signOut(auth);
+
+    }
+  );
+
+
+  onAuthStateChanged(
+    auth,
+    (user) => {
 
       currentUser = user;
 
       if (user) {
 
-        // -----------------------------------------
-        // ĐÃ ĐĂNG NHẬP
-        // -----------------------------------------
+        loginSection.classList.add(
+          "hidden"
+        );
 
-        userName.innerText =
-          user.displayName || "Google User";
+        userSection.classList.remove(
+          "hidden"
+        );
 
-        userInfo.innerText =
-          user.email || "";
+        appSection.classList.remove(
+          "hidden"
+        );
 
-        userUid.innerText =
-          "UID: " + user.uid;
+        userInfo.textContent =
+          user.email;
 
-        loginPrompt.classList.add("hidden");
-
-        appContent.classList.remove("hidden");
-
-        message.innerText = "";
-
-        btnLogin.innerText = "Đăng nhập Google";
-        btnLogin.disabled = false;
-
-        btnLogout.innerText = "Đăng xuất";
-        btnLogout.disabled = false;
-
-        console.log("Firebase user:", user);
-
-      } else {
-
-        // -----------------------------------------
-        // CHƯA ĐĂNG NHẬP
-        // -----------------------------------------
-
-        userName.innerText = "";
-        userInfo.innerText = "Chưa đăng nhập";
-        userUid.innerText = "";
-
-        appContent.classList.add("hidden");
-
-        loginPrompt.classList.remove("hidden");
-
-        btnLogin.innerText = "Đăng nhập Google";
-        btnLogin.disabled = false;
-
-        console.log("Chưa đăng nhập");
+        statusBox.textContent =
+          "Đã đăng nhập. Sẵn sàng lưu dữ liệu.";
 
       }
 
-    });
+      else {
 
-  </script>
+        loginSection.classList.remove(
+          "hidden"
+        );
+
+        userSection.classList.add(
+          "hidden"
+        );
+
+        appSection.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     INIT
+     ========================================================= */
+
+  updateSummary();
+
+  buildPreview();
+
+</script>
 
 </body>
 </html>
