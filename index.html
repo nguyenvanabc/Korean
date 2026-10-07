@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Seoul 2026 - Firebase Data Setup</title>
 
   <style>
@@ -12,13 +13,20 @@
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
       background: #f5f7fb;
       color: #202124;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 960px;
       margin: 40px auto;
       padding: 0 20px;
     }
@@ -28,16 +36,20 @@
       border-radius: 16px;
       padding: 24px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
     }
 
     h1 {
-      margin-top: 0;
+      margin: 0 0 8px;
     }
 
     h2 {
       margin-top: 0;
       font-size: 20px;
+    }
+
+    p {
+      color: #5f6368;
     }
 
     button {
@@ -66,7 +78,7 @@
     .save {
       background: #188038;
       font-size: 17px;
-      font-weight: bold;
+      font-weight: 700;
       padding: 14px 24px;
     }
 
@@ -76,7 +88,7 @@
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .status {
@@ -87,14 +99,27 @@
       white-space: pre-wrap;
       font-family: monospace;
       font-size: 13px;
+      line-height: 1.6;
       min-height: 80px;
+    }
+
+    .success {
+      color: #137333;
+      background: #e6f4ea;
+    }
+
+    .error {
+      color: #c5221f;
+      background: #fce8e6;
     }
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns:
+        repeat(auto-fit, minmax(150px, 1fr));
+
       gap: 12px;
-      margin-top: 20px;
+      margin: 20px 0;
     }
 
     .stat {
@@ -104,8 +129,8 @@
     }
 
     .stat-number {
-      font-size: 25px;
-      font-weight: bold;
+      font-size: 26px;
+      font-weight: 700;
     }
 
     .stat-label {
@@ -114,102 +139,241 @@
       font-size: 13px;
     }
 
-    .success {
-      color: #137333;
-    }
-
-    .error {
-      color: #c5221f;
-    }
-
-    .warning {
-      color: #b06000;
-    }
-
     .data-preview {
-      max-height: 400px;
+      max-height: 500px;
       overflow: auto;
+
       background: #202124;
       color: #eee;
-      padding: 15px;
+
+      padding: 16px;
       border-radius: 10px;
+
+      font-family: monospace;
       font-size: 12px;
       line-height: 1.5;
     }
+
+    .info {
+      background: #e8f0fe;
+      border-radius: 10px;
+      padding: 14px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    code {
+      background: #f1f3f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
   </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
+  <!-- =====================================================
+       HEADER / AUTH
+       ===================================================== -->
+
   <div class="card">
+
     <h1>🇰🇷 Seoul Trip 2026</h1>
+
     <p>
-      Firebase data bootstrap tool
+      Firebase data bootstrap
     </p>
 
     <div id="login-section">
-      <button id="btn-login">Đăng nhập Google</button>
+
+      <button id="btn-login">
+        Đăng nhập Google
+      </button>
+
     </div>
+
 
     <div id="user-section" class="hidden">
+
       <div class="user">
-        Đang đăng nhập: <strong id="user-info"></strong>
+        Đang đăng nhập:
+        <strong id="user-info"></strong>
       </div>
 
-      <button id="btn-logout" class="logout">
+      <button
+        id="btn-logout"
+        class="logout"
+      >
         Đăng xuất
       </button>
+
     </div>
+
   </div>
 
 
-  <div id="app-section" class="hidden">
+  <!-- =====================================================
+       APP
+       ===================================================== -->
+
+  <div
+    id="app-section"
+    class="hidden"
+  >
+
+
+    <!-- SUMMARY -->
 
     <div class="card">
-      <h2>📦 Dữ liệu sẽ lưu</h2>
+
+      <h2>📦 Dữ liệu chuyến đi</h2>
 
       <div class="summary">
 
         <div class="stat">
-          <div class="stat-number" id="count-days">0</div>
-          <div class="stat-label">Ngày</div>
+          <div
+            class="stat-number"
+            id="count-days"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            Ngày
+          </div>
         </div>
 
-        <div class="stat">
-          <div class="stat-number" id="count-activities">0</div>
-          <div class="stat-label">Activities</div>
-        </div>
 
         <div class="stat">
-          <div class="stat-number" id="count-flights">0</div>
-          <div class="stat-label">Flights</div>
+          <div
+            class="stat-number"
+            id="count-activities"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            Activities
+          </div>
         </div>
 
+
         <div class="stat">
-          <div class="stat-number" id="count-dsp">0</div>
-          <div class="stat-label">DSP attractions</div>
+          <div
+            class="stat-number"
+            id="count-places"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            Places
+          </div>
+        </div>
+
+
+        <div class="stat">
+          <div
+            class="stat-number"
+            id="count-dsp"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            DSP attractions
+          </div>
+        </div>
+
+
+        <div class="stat">
+          <div
+            class="stat-number"
+            id="count-milestones"
+          >
+            0
+          </div>
+
+          <div class="stat-label">
+            Milestones
+          </div>
         </div>
 
       </div>
 
-      <br>
 
-      <button id="btn-save" class="save">
+      <button
+        id="btn-save"
+        class="save"
+      >
         💾 SAVE TO FIREBASE
       </button>
 
-      <div id="status" class="status">
+
+      <div
+        id="status"
+        class="status"
+      >
         Sẵn sàng.
       </div>
+
     </div>
 
 
-    <div class="card">
-      <h2>🔎 Preview dữ liệu</h2>
+    <!-- INFORMATION -->
 
-      <div class="data-preview" id="preview"></div>
+    <div class="card">
+
+      <h2>ℹ️ Cấu trúc dữ liệu</h2>
+
+      <div class="info">
+
+        Dữ liệu sẽ được lưu vào:
+
+        <br><br>
+
+        <code>trips/seoul-2026</code>
+
+        <br>
+        ├── settings/main
+        <br>
+        ├── places/*
+        <br>
+        ├── activities/*
+        <br>
+        ├── milestones/*
+        <br>
+        ├── dsp/main
+        <br>
+        ├── dsp/attractions/*
+        <br>
+        └── notes/planning
+
+        <br><br>
+
+        Activity không chứa bản sao location.
+        Nó chỉ chứa <code>placeId</code> để tham chiếu
+        tới dữ liệu trong <code>places</code>.
+
+      </div>
+
+    </div>
+
+
+    <!-- PREVIEW -->
+
+    <div class="card">
+
+      <h2>🔎 Preview</h2>
+
+      <div
+        id="preview"
+        class="data-preview"
+      ></div>
+
     </div>
 
   </div>
@@ -220,12 +384,14 @@
 <script type="module">
 
   /* =========================================================
-     FIREBASE
+     FIREBASE IMPORTS
      ========================================================= */
 
   import {
     initializeApp
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  } from
+    "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
 
   import {
     getAuth,
@@ -233,67 +399,114 @@
     signInWithPopup,
     signOut,
     onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  } from
+    "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
 
   import {
     getFirestore,
     doc,
-    setDoc,
-    serverTimestamp,
-    writeBatch
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
-    authDomain: "seol-8eb80.firebaseapp.com",
-    projectId: "seol-8eb80",
-    storageBucket: "seol-8eb80.firebasestorage.app",
-    messagingSenderId: "545533388832",
-    appId: "1:545533388832:web:441dad1a09916bb14eb445",
-    measurementId: "G-MZQ5L465GV"
-  };
-
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  const provider = new GoogleAuthProvider();
+    writeBatch,
+    serverTimestamp
+  } from
+    "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
   /* =========================================================
-     CONFIG
+     FIREBASE CONFIG
      ========================================================= */
 
-  const TRIP_ID = "seoul-2026";
-  const SCHEMA_VERSION = 1;
+  const firebaseConfig = {
 
-  const TRIP_PATH = `trips/${TRIP_ID}`;
+    apiKey:
+      "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
+
+    authDomain:
+      "seol-8eb80.firebaseapp.com",
+
+    projectId:
+      "seol-8eb80",
+
+    storageBucket:
+      "seol-8eb80.firebasestorage.app",
+
+    messagingSenderId:
+      "545533388832",
+
+    appId:
+      "1:545533388832:web:441dad1a09916bb14eb445",
+
+    measurementId:
+      "G-MZQ5L465GV"
+  };
+
+
+  const app =
+    initializeApp(firebaseConfig);
+
+
+  const auth =
+    getAuth(app);
+
+
+  const db =
+    getFirestore(app);
+
+
+  const provider =
+    new GoogleAuthProvider();
+
+
+  /* =========================================================
+     APP CONFIG
+     ========================================================= */
+
+  const TRIP_ID =
+    "seoul-2026";
+
+  const SCHEMA_VERSION =
+    2;
 
 
   /* =========================================================
      DOM
      ========================================================= */
 
-  const btnLogin = document.getElementById("btn-login");
-  const btnLogout = document.getElementById("btn-logout");
-  const btnSave = document.getElementById("btn-save");
+  const btnLogin =
+    document.getElementById("btn-login");
 
-  const loginSection = document.getElementById("login-section");
-  const userSection = document.getElementById("user-section");
-  const appSection = document.getElementById("app-section");
+  const btnLogout =
+    document.getElementById("btn-logout");
 
-  const userInfo = document.getElementById("user-info");
-  const statusBox = document.getElementById("status");
-  const preview = document.getElementById("preview");
+  const btnSave =
+    document.getElementById("btn-save");
+
+
+  const loginSection =
+    document.getElementById("login-section");
+
+  const userSection =
+    document.getElementById("user-section");
+
+  const appSection =
+    document.getElementById("app-section");
+
+
+  const userInfo =
+    document.getElementById("user-info");
+
+  const statusBox =
+    document.getElementById("status");
+
+  const preview =
+    document.getElementById("preview");
 
 
   let currentUser = null;
 
 
   /* =========================================================
-     HELPER
+     USER METADATA
      ========================================================= */
 
   function userMeta() {
@@ -303,10 +516,54 @@
     }
 
     return {
-      uid: currentUser.uid,
-      name: currentUser.displayName || "",
-      email: currentUser.email || ""
+
+      uid:
+        currentUser.uid,
+
+      name:
+        currentUser.displayName || "",
+
+      email:
+        currentUser.email || ""
+
     };
+  }
+
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  function calculateDuration(
+    start,
+    end
+  ) {
+
+    if (!start || !end) {
+      return null;
+    }
+
+    const [
+      startHour,
+      startMinute
+    ] =
+      start.split(":").map(Number);
+
+
+    const [
+      endHour,
+      endMinute
+    ] =
+      end.split(":").map(Number);
+
+
+    return (
+      endHour * 60 +
+      endMinute
+    ) - (
+      startHour * 60 +
+      startMinute
+    );
   }
 
 
@@ -318,47 +575,43 @@
     endTime,
     type,
     flexibility,
-    location,
+    placeId,
     notes = "",
     extra = {}
   ) {
 
     return {
+
       id,
+
       date,
+
       title,
+
       startTime,
+
       endTime,
 
-      duration: calculateDuration(startTime, endTime),
+      duration:
+        calculateDuration(
+          startTime,
+          endTime
+        ),
 
       type,
-      status: "planned",
+
+      status:
+        "planned",
+
       flexibility,
 
-      location: {
-        name: location || "",
-        address: null,
-        lat: null,
-        lng: null,
-        mapUrl: null
-      },
+      placeId:
+        placeId || null,
 
       notes,
 
       ...extra
     };
-  }
-
-
-  function calculateDuration(start, end) {
-
-    if (!start || !end) return null;
-
-    const [sh, sm] = start.split(":").map(Number);
-    const [eh, em] = end.split(":").map(Number);
-
-    return (eh * 60 + em) - (sh * 60 + sm);
   }
 
 
@@ -368,59 +621,86 @@
 
   const tripSettings = {
 
-    tripId: TRIP_ID,
+    tripId:
+      TRIP_ID,
 
-    name: "Seoul 2026",
+    name:
+      "Seoul 2026",
 
-    country: "South Korea",
+    country:
+      "South Korea",
 
-    city: "Seoul",
+    city:
+      "Seoul",
 
-    startDate: "2026-10-18",
+    startDate:
+      "2026-10-18",
 
-    endDate: "2026-10-25",
+    endDate:
+      "2026-10-25",
 
-    travelers: 2,
+    travelers:
+      2,
 
-    currency: "KRW",
+    currency:
+      "KRW",
 
-    timezone: "Asia/Seoul",
+    timezone:
+      "Asia/Seoul",
 
-    schemaVersion: SCHEMA_VERSION,
 
-    planningRules: {
+    schemaVersion:
+      SCHEMA_VERSION,
 
-      avoidRushHour: true,
-
-      useRealTransitTimes: true,
-
-      doNotGuessTransitTime: true,
-
-      prioritizeExperienceDuration: true,
-
-      allowLightExtraActivitiesIfTimeAllows: true,
-
-      fixedActivitiesMustNotBeAutomaticallyShifted: true,
-
-      fixedActivitiesMustNotBeAutomaticallyDeleted: true,
-
-      spontaneousActivitiesRequireImpactCheck: true,
-
-      weatherShouldNotAutomaticallyChangeSchedule: true
-
-    },
 
     dsp: {
 
-      durationHours: 72,
+      durationHours:
+        72,
 
-      plannedActivation: "2026-10-21T15:00:00+09:00",
+      plannedActivation:
+        "2026-10-21T15:00:00+09:00",
 
-      plannedExpiration: "2026-10-24T15:00:00+09:00",
+      plannedExpiration:
+        "2026-10-24T15:00:00+09:00",
 
-      activated: false
+      activated:
+        false
 
     },
+
+
+    planningRules: {
+
+      avoidRushHour:
+        true,
+
+      useRealTransitTimes:
+        true,
+
+      doNotGuessTransitTime:
+        true,
+
+      prioritizeExperienceDuration:
+        true,
+
+      allowLightExtraActivitiesIfTimeAllows:
+        true,
+
+      fixedActivitiesMustNotBeAutomaticallyShifted:
+        true,
+
+      fixedActivitiesMustNotBeAutomaticallyDeleted:
+        true,
+
+      spontaneousActivitiesRequireImpactCheck:
+        true,
+
+      weatherShouldNotAutomaticallyChangeSchedule:
+        true
+
+    },
+
 
     notes: [
 
@@ -458,83 +738,670 @@
 
 
   /* =========================================================
-     FLIGHTS / MILESTONES
+     PLACES
      ========================================================= */
 
-  const milestones = [
+  const places = {
 
-    {
-      id: "flight-han-seoul",
+    nowon: {
 
-      type: "flight",
+      id:
+        "nowon",
 
-      title: "Hanoi → Seoul",
+      name:
+        "Nowon",
 
-      date: "2026-10-18",
+      address:
+        "Nowon-gu, Seoul, South Korea",
 
-      startTime: "01:40",
+      lat:
+        null,
 
-      endTime: "07:55",
+      lng:
+        null,
 
-      airline: "Vietjet",
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Nowon+Seoul",
 
-      flightNumber: "VJ960",
-
-      from: "HAN",
-
-      to: "ICN",
-
-      terminal: "ICN T1",
-
-      aircraft: "A321",
-
-      status: "booked",
-
-      notes: "Direct flight. 2 passengers."
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Nowon%20Seoul"
 
     },
 
-    {
-      id: "flight-seoul-han",
 
-      type: "flight",
+    incheonAirportT1: {
 
-      title: "Seoul → Hanoi",
+      id:
+        "incheon-airport-t1",
 
-      date: "2026-10-25",
+      name:
+        "Incheon International Airport Terminal 1",
 
-      startTime: "11:00",
+      address:
+        "272 Gonghang-ro, Jung-gu, Incheon, South Korea",
 
-      endTime: null,
+      lat:
+        null,
 
-      airline: "Vietjet",
+      lng:
+        null,
 
-      flightNumber: null,
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport+Terminal+1",
 
-      from: "ICN",
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Incheon%20International%20Airport%20Terminal%201"
 
-      to: "HAN",
+    },
 
-      terminal: "ICN T1",
 
-      status: "booked",
+    kyungHeeUniversity: {
 
-      notes: "Check-in, tax refund and airport procedures before departure."
+      id:
+        "kyung-hee-university",
+
+      name:
+        "Kyung Hee University",
+
+      address:
+        "26 Kyungheedae-ro, Dongdaemun-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Kyung+Hee+University+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Kyung%20Hee%20University"
+
+    },
+
+
+    hwarangdae: {
+
+      id:
+        "hwarangdae-railway-park",
+
+      name:
+        "Hwarangdae Railway Park",
+
+      address:
+        "708-1 Gongneung-dong, Nowon-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Hwarangdae+Railway+Park",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Hwarangdae%20Railway%20Park"
+
+    },
+
+
+    namiIsland: {
+
+      id:
+        "nami-island",
+
+      name:
+        "Nami Island",
+
+      address:
+        "1 Namiseom-gil, Namsan-myeon, Chuncheon-si, Gangwon-do, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Nami+Island",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Nami%20Island"
+
+    },
+
+
+    gongneung: {
+
+      id:
+        "gongneung",
+
+      name:
+        "Gongneung",
+
+      address:
+        "Gongneung-dong, Nowon-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Gongneung+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Gongneung%20Seoul"
+
+    },
+
+
+    gwangjangMarket: {
+
+      id:
+        "gwangjang-market",
+
+      name:
+        "Gwangjang Market",
+
+      address:
+        "88 Changgyeonggung-ro, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Gwangjang+Market",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Gwangjang%20Market"
+
+    },
+
+
+    dongmyo: {
+
+      id:
+        "dongmyo-flea-market",
+
+      name:
+        "Dongmyo Flea Market",
+
+      address:
+        "102-8 Sungin-dong, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Dongmyo+Flea+Market",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Dongmyo%20Flea%20Market"
+
+    },
+
+
+    ewha: {
+
+      id:
+        "ewha-womans-university",
+
+      name:
+        "Ewha Womans University",
+
+      address:
+        "52 Ewhayeodae-gil, Seodaemun-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Ewha+Womans+University",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Ewha%20Womans%20University"
+
+    },
+
+
+    haneulPark: {
+
+      id:
+        "haneul-park",
+
+      name:
+        "Haneul Park",
+
+      address:
+        "95 Haneulgongwon-ro, Mapo-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Haneul+Park+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Haneul%20Park"
+
+    },
+
+
+    suwonHwaseong: {
+
+      id:
+        "suwon-hwaseong",
+
+      name:
+        "Suwon Hwaseong Fortress",
+
+      address:
+        "320-2 Yeonghwa-dong, Jangan-gu, Suwon-si, Gyeonggi-do, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Suwon+Hwaseong+Fortress",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Suwon%20Hwaseong"
+
+    },
+
+
+    starfieldSuwon: {
+
+      id:
+        "starfield-suwon",
+
+      name:
+        "Starfield Suwon",
+
+      address:
+        "175 Suseong-ro, Jangan-gu, Suwon-si, Gyeonggi-do, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Starfield+Suwon",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Starfield%20Suwon"
+
+    },
+
+
+    koreanFolkVillage: {
+
+      id:
+        "korean-folk-village",
+
+      name:
+        "Korean Folk Village",
+
+      address:
+        "90 Minsokchon-ro, Giheung-gu, Yongin-si, Gyeonggi-do, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Korean+Folk+Village+Yongin",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Korean%20Folk%20Village"
+
+    },
+
+
+    gyeongbokgung: {
+
+      id:
+        "gyeongbokgung",
+
+      name:
+        "Gyeongbokgung Palace",
+
+      address:
+        "161 Sajik-ro, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Gyeongbokgung+Palace",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Gyeongbokgung"
+
+    },
+
+
+    bukchon: {
+
+      id:
+        "bukchon",
+
+      name:
+        "Bukchon Hanok Village",
+
+      address:
+        "Gyedong-gil, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Bukchon+Hanok+Village",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Bukchon%20Hanok%20Village"
+
+    },
+
+
+    insadong: {
+
+      id:
+        "insadong",
+
+      name:
+        "Insadong",
+
+      address:
+        "Insadong-gil, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Insadong+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Insadong"
+
+    },
+
+
+    ikseondong: {
+
+      id:
+        "ikseondong",
+
+      name:
+        "Ikseon-dong",
+
+      address:
+        "Ikseon-dong, Jongno-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Ikseon-dong+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Ikseon-dong"
+
+    },
+
+
+    myeongdongCathedral: {
+
+      id:
+        "myeongdong-cathedral",
+
+      name:
+        "Myeongdong Cathedral",
+
+      address:
+        "74 Myeongdong-gil, Jung-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Myeongdong+Cathedral",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Myeongdong%20Cathedral"
+
+    },
+
+
+    nSeoulTower: {
+
+      id:
+        "n-seoul-tower",
+
+      name:
+        "N Seoul Tower",
+
+      address:
+        "105 Namsangongwon-gil, Yongsan-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=N+Seoul+Tower",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/N%20Seoul%20Tower"
+
+    },
+
+
+    hwadamForest: {
+
+      id:
+        "hwadam-forest",
+
+      name:
+        "Hwadam Forest",
+
+      address:
+        "278 Docheogwit-ro, Docheok-myeon, Gwangju-si, Gyeonggi-do, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Hwadam+Forest",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Hwadam%20Forest"
+
+    },
+
+
+    banpoHangang: {
+
+      id:
+        "banpo-hangang",
+
+      name:
+        "Banpo Hangang Park",
+
+      address:
+        "40 Sinbanpo-ro 11-gil, Seocho-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Banpo+Hangang+Park",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Banpo%20Hangang%20Park"
+
+    },
+
+
+    hanRiver: {
+
+      id:
+        "han-river",
+
+      name:
+        "Han River",
+
+      address:
+        "Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Han+River+Seoul",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Han%20River%20Seoul"
+
+    },
+
+
+    lotteWorld: {
+
+      id:
+        "lotte-world",
+
+      name:
+        "Lotte World",
+
+      address:
+        "240 Olympic-ro, Songpa-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Lotte+World",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/Lotte%20World"
+
+    },
+
+
+    coexAquarium: {
+
+      id:
+        "coex-aquarium",
+
+      name:
+        "COEX Aquarium",
+
+      address:
+        "513 Yeongdong-daero, Gangnam-gu, Seoul, South Korea",
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=COEX+Aquarium",
+
+      naverMapsUrl:
+        "https://map.naver.com/p/search/COEX%20Aquarium"
+
+    },
+
+
+    hotel: {
+
+      id:
+        "hotel",
+
+      name:
+        "Accommodation",
+
+      address:
+        null,
+
+      lat:
+        null,
+
+      lng:
+        null,
+
+      googleMapsUrl:
+        null,
+
+      naverMapsUrl:
+        null
 
     }
 
-  ];
+  };
 
 
   /* =========================================================
-     ITINERARY
+     ACTIVITIES
      ========================================================= */
 
   const activities = [
 
-    /* ---------------------------------------------------------
-       18 OCT
-       --------------------------------------------------------- */
+    /* ==================== 18 OCT ==================== */
 
     activity(
       "2026-10-18-01",
@@ -544,9 +1411,10 @@
       "07:55",
       "flight",
       "fixed",
-      "Incheon International Airport",
+      "incheon-airport-t1",
       "Vietjet VJ960. Direct. ICN Terminal 1."
     ),
+
 
     activity(
       "2026-10-18-02",
@@ -556,9 +1424,10 @@
       "08:00",
       "transport",
       "flexible",
-      "Nowon",
-      "Thời gian về nhà sẽ phụ thuộc thủ tục nhập cảnh và di chuyển thực tế."
+      "nowon",
+      "Thời gian thực tế phụ thuộc nhập cảnh và di chuyển."
     ),
+
 
     activity(
       "2026-10-18-03",
@@ -568,9 +1437,10 @@
       "14:00",
       "rest",
       "flexible",
-      "Nowon",
+      "nowon",
       "Ưu tiên nghỉ sau chuyến bay đêm."
     ),
+
 
     activity(
       "2026-10-18-04",
@@ -580,9 +1450,10 @@
       "16:15",
       "attraction",
       "fixed",
-      "Kyung Hee University",
+      "kyung-hee-university",
       "Hoạt động buổi chiều."
     ),
+
 
     activity(
       "2026-10-18-05",
@@ -592,9 +1463,10 @@
       "18:15",
       "attraction",
       "flexible",
-      "Hwarangdae Railway Park",
+      "hwarangdae-railway-park",
       "Tham quan sau Kyung Hee University."
     ),
+
 
     activity(
       "2026-10-18-06",
@@ -604,14 +1476,12 @@
       "20:00",
       "food",
       "flexible",
-      "Nowon",
+      "nowon",
       "Ăn tối và nghỉ."
     ),
 
 
-    /* ---------------------------------------------------------
-       19 OCT
-       --------------------------------------------------------- */
+    /* ==================== 19 OCT ==================== */
 
     activity(
       "2026-10-19-01",
@@ -621,9 +1491,10 @@
       "08:30",
       "transport",
       "fixed",
-      "Nami Island",
+      "nami-island",
       "Ngày đi Nami Island. Không kích hoạt DSP."
     ),
+
 
     activity(
       "2026-10-19-02",
@@ -633,9 +1504,10 @@
       "12:00",
       "attraction",
       "fixed",
-      "Nami Island",
+      "nami-island",
       "Khung trải nghiệm buổi sáng."
     ),
+
 
     activity(
       "2026-10-19-03",
@@ -645,9 +1517,10 @@
       "13:00",
       "food",
       "flexible",
-      "Nami Island",
+      "nami-island",
       ""
     ),
+
 
     activity(
       "2026-10-19-04",
@@ -657,9 +1530,10 @@
       "15:00",
       "attraction",
       "fixed",
-      "Nami Island",
+      "nami-island",
       "Tiếp tục tham quan."
     ),
+
 
     activity(
       "2026-10-19-05",
@@ -669,9 +1543,10 @@
       "17:30",
       "transport",
       "fixed",
-      "Seoul",
+      "gongneung",
       "Dự kiến về Seoul khoảng 17:30."
     ),
+
 
     activity(
       "2026-10-19-06",
@@ -681,9 +1556,10 @@
       "19:00",
       "food",
       "flexible",
-      "Gongneung",
+      "gongneung",
       ""
     ),
+
 
     activity(
       "2026-10-19-07",
@@ -693,14 +1569,12 @@
       "20:30",
       "leisure",
       "flexible",
-      "Gyeongchun Line Forest",
+      "hwarangdae-railway-park",
       "Hoạt động nhẹ sau khi về Seoul."
     ),
 
 
-    /* ---------------------------------------------------------
-       20 OCT
-       --------------------------------------------------------- */
+    /* ==================== 20 OCT ==================== */
 
     activity(
       "2026-10-20-01",
@@ -710,9 +1584,10 @@
       "10:00",
       "food",
       "flexible",
-      "Gwangjang Market",
+      "gwangjang-market",
       "Ăn sáng / khám phá chợ."
     ),
+
 
     activity(
       "2026-10-20-02",
@@ -722,9 +1597,10 @@
       "13:00",
       "shopping",
       "flexible",
-      "Dongmyo",
+      "dongmyo-flea-market",
       "Khám phá khu đồ second-hand."
     ),
+
 
     activity(
       "2026-10-20-03",
@@ -734,9 +1610,10 @@
       "15:00",
       "attraction",
       "flexible",
-      "Ewha Womans University",
+      "ewha-womans-university",
       ""
     ),
+
 
     activity(
       "2026-10-20-04",
@@ -746,9 +1623,10 @@
       "20:00",
       "attraction",
       "fixed",
-      "Haneul Park",
-      "Ưu tiên thời điểm chiều, hoàng hôn và cảnh cỏ lau."
+      "haneul-park",
+      "Ưu tiên chiều, hoàng hôn và cảnh cỏ lau."
     ),
+
 
     activity(
       "2026-10-20-05",
@@ -758,14 +1636,12 @@
       "21:30",
       "transport",
       "flexible",
-      "Hotel",
+      "hotel",
       "Dự kiến về khoảng 21:15–21:30."
     ),
 
 
-    /* ---------------------------------------------------------
-       21 OCT
-       --------------------------------------------------------- */
+    /* ==================== 21 OCT ==================== */
 
     activity(
       "2026-10-21-01",
@@ -775,9 +1651,10 @@
       "11:30",
       "attraction",
       "fixed",
-      "Suwon Hwaseong",
+      "suwon-hwaseong",
       "Tham quan buổi sáng."
     ),
+
 
     activity(
       "2026-10-21-02",
@@ -787,9 +1664,10 @@
       "14:00",
       "shopping",
       "flexible",
-      "Starfield Suwon",
+      "starfield-suwon",
       "Ăn trưa / nghỉ."
     ),
+
 
     activity(
       "2026-10-21-03",
@@ -799,9 +1677,10 @@
       "15:00",
       "milestone",
       "fixed",
-      "Suwon",
+      "starfield-suwon",
       "Dự kiến bắt đầu 72 giờ DSP."
     ),
+
 
     activity(
       "2026-10-21-04",
@@ -811,9 +1690,10 @@
       "18:15",
       "attraction",
       "fixed",
-      "Korean Folk Village",
+      "korean-folk-village",
       "Sử dụng DSP."
     ),
+
 
     activity(
       "2026-10-21-05",
@@ -823,9 +1703,10 @@
       "19:15",
       "food",
       "flexible",
-      "Korean Folk Village",
+      "korean-folk-village",
       "Ăn tối sau attraction."
     ),
+
 
     activity(
       "2026-10-21-06",
@@ -835,14 +1716,12 @@
       "20:30",
       "transport",
       "flexible",
-      "Seoul",
+      "hotel",
       "Dự kiến về Seoul khoảng 20:30."
     ),
 
 
-    /* ---------------------------------------------------------
-       22 OCT
-       --------------------------------------------------------- */
+    /* ==================== 22 OCT ==================== */
 
     activity(
       "2026-10-22-01",
@@ -852,9 +1731,10 @@
       "11:00",
       "attraction",
       "fixed",
-      "Gyeongbokgung",
+      "gyeongbokgung",
       "Hanbok rental. DSP: Hanboknam–Gyeongbokgung."
     ),
+
 
     activity(
       "2026-10-22-02",
@@ -864,9 +1744,10 @@
       "12:30",
       "attraction",
       "flexible",
-      "Bukchon Hanok Village",
+      "bukchon",
       ""
     ),
+
 
     activity(
       "2026-10-22-03",
@@ -876,9 +1757,10 @@
       "13:30",
       "food",
       "flexible",
-      "Bukchon",
+      "bukchon",
       ""
     ),
+
 
     activity(
       "2026-10-22-04",
@@ -888,9 +1770,10 @@
       "14:45",
       "shopping",
       "flexible",
-      "Insadong",
+      "insadong",
       ""
     ),
+
 
     activity(
       "2026-10-22-05",
@@ -900,9 +1783,10 @@
       "15:30",
       "attraction",
       "flexible",
-      "Ikseon-dong",
-      "Có thể dùng làm hoạt động linh hoạt nếu lịch cho phép."
+      "ikseondong",
+      "Hoạt động linh hoạt nếu lịch cho phép."
     ),
+
 
     activity(
       "2026-10-22-06",
@@ -912,9 +1796,10 @@
       "16:30",
       "attraction",
       "flexible",
-      "Myeongdong Cathedral",
+      "myeongdong-cathedral",
       ""
     ),
+
 
     activity(
       "2026-10-22-07",
@@ -924,9 +1809,10 @@
       "19:00",
       "attraction",
       "fixed",
-      "N Seoul Tower",
-      "Sử dụng DSP. Ưu tiên thời điểm chiều tối / hoàng hôn."
+      "n-seoul-tower",
+      "Sử dụng DSP. Ưu tiên chiều tối / hoàng hôn."
     ),
+
 
     activity(
       "2026-10-22-08",
@@ -936,14 +1822,12 @@
       "21:30",
       "food",
       "flexible",
-      "Myeongdong",
+      "myeongdong-cathedral",
       ""
     ),
 
 
-    /* ---------------------------------------------------------
-       23 OCT
-       --------------------------------------------------------- */
+    /* ==================== 23 OCT ==================== */
 
     activity(
       "2026-10-23-01",
@@ -953,9 +1837,10 @@
       "08:00",
       "transport",
       "fixed",
-      "Hwadam Forest",
+      "hwadam-forest",
       "Rời khách sạn sớm."
     ),
+
 
     activity(
       "2026-10-23-02",
@@ -965,9 +1850,10 @@
       "12:00",
       "attraction",
       "fixed",
-      "Hwadam Forest",
+      "hwadam-forest",
       "Ưu tiên mùa lá mùa thu."
     ),
+
 
     activity(
       "2026-10-23-03",
@@ -977,9 +1863,10 @@
       "14:00",
       "food",
       "flexible",
-      "Hwadam Forest",
+      "hwadam-forest",
       ""
     ),
+
 
     activity(
       "2026-10-23-04",
@@ -989,9 +1876,10 @@
       "17:30",
       "attraction",
       "flexible",
-      "Banpo Hangang Park",
-      "Thời gian có thể điều chỉnh theo lịch Hwadam."
+      "banpo-hangang",
+      "Có thể điều chỉnh theo lịch Hwadam."
     ),
+
 
     activity(
       "2026-10-23-05",
@@ -1001,9 +1889,10 @@
       "19:00",
       "attraction",
       "fixed",
-      "Han River",
+      "han-river",
       "Sử dụng DSP nếu chuyến cruise phù hợp thời gian."
     ),
+
 
     activity(
       "2026-10-23-06",
@@ -1013,9 +1902,10 @@
       "20:00",
       "food",
       "flexible",
-      "Han River",
+      "han-river",
       ""
     ),
+
 
     activity(
       "2026-10-23-07",
@@ -1025,14 +1915,12 @@
       "20:30",
       "transport",
       "flexible",
-      "Hotel",
+      "hotel",
       ""
     ),
 
 
-    /* ---------------------------------------------------------
-       24 OCT
-       --------------------------------------------------------- */
+    /* ==================== 24 OCT ==================== */
 
     activity(
       "2026-10-24-01",
@@ -1042,9 +1930,10 @@
       "12:30",
       "attraction",
       "fixed",
-      "Lotte World",
+      "lotte-world",
       "Hoạt động buổi sáng."
     ),
+
 
     activity(
       "2026-10-24-02",
@@ -1054,9 +1943,10 @@
       "14:00",
       "transport",
       "fixed",
-      "COEX",
+      "coex-aquarium",
       ""
     ),
+
 
     activity(
       "2026-10-24-03",
@@ -1066,9 +1956,10 @@
       "15:40",
       "attraction",
       "fixed",
-      "COEX Aquarium",
+      "coex-aquarium",
       "Sử dụng DSP."
     ),
+
 
     activity(
       "2026-10-24-04",
@@ -1078,9 +1969,10 @@
       "16:30",
       "transport",
       "fixed",
-      "Hotel",
+      "hotel",
       "Phải đảm bảo đủ buffer cho việc ra sân bay."
     ),
+
 
     activity(
       "2026-10-24-05",
@@ -1090,9 +1982,10 @@
       "18:00",
       "transport",
       "fixed",
-      "Incheon International Airport T1",
+      "incheon-airport-t1",
       "Dự kiến tới sân bay khoảng 18:00."
     ),
+
 
     activity(
       "2026-10-24-06",
@@ -1102,14 +1995,12 @@
       "22:00",
       "rest",
       "flexible",
-      "Unseo",
+      "incheon-airport-t1",
       "Ở gần sân bay trước chuyến bay ngày 25/10."
     ),
 
 
-    /* ---------------------------------------------------------
-       25 OCT
-       --------------------------------------------------------- */
+    /* ==================== 25 OCT ==================== */
 
     activity(
       "2026-10-25-01",
@@ -1119,203 +2010,552 @@
       "10:00",
       "airport",
       "fixed",
-      "Incheon International Airport T1",
+      "incheon-airport-t1",
       "Ưu tiên check-in và tax refund."
     ),
+
 
     activity(
       "2026-10-25-02",
       "2026-10-25",
       "Seoul → Hanoi",
       "11:00",
-      "14:00",
+      null,
       "flight",
       "fixed",
-      "Incheon International Airport",
-      "Chuyến bay về Việt Nam."
+      "incheon-airport-t1",
+      "Chuyến bay về Việt Nam. Thời gian hạ cánh chưa được đưa vào dữ liệu."
     )
 
   ];
 
 
   /* =========================================================
-     DSP DATA
+     FLIGHT / MILESTONES
      ========================================================= */
 
-  const dspAttractions = [
+  const milestones = [
 
     {
-      id: "football-fantasium",
-      name: "Football Fæntasium",
-      normalPrice: 15000,
-      currency: "KRW",
-      dspFree: true
+
+      id:
+        "flight-han-seoul",
+
+      type:
+        "flight",
+
+      title:
+        "Hanoi → Seoul",
+
+      date:
+        "2026-10-18",
+
+      startTime:
+        "01:40",
+
+      endTime:
+        "07:55",
+
+      airline:
+        "Vietjet",
+
+      flightNumber:
+        "VJ960",
+
+      from:
+        "HAN",
+
+      to:
+        "ICN",
+
+      terminal:
+        "ICN T1",
+
+      aircraft:
+        "A321",
+
+      passengers:
+        2,
+
+      status:
+        "booked",
+
+      notes:
+        "Direct flight."
+
     },
 
-    {
-      id: "seoul-zoo-sky-lift",
-      name: "Seoul Zoo & Sky Lift",
-      normalPrice: 21000,
-      currency: "KRW",
-      dspFree: true
-    },
 
     {
-      id: "aquafield-goyang",
-      name: "AQUAFIELD GOYANG – Jjimjil Spa",
-      normalPrice: 26000,
-      currency: "KRW",
-      dspFree: true
-    },
 
-    {
-      id: "mokdong-ice-rink",
-      name: "Mokdong Ice Rink",
-      normalPrice: 9200,
-      currency: "KRW",
-      dspFree: true
-    },
+      id:
+        "flight-seoul-han",
 
-    {
-      id: "lotte-museum-art",
-      name: "LOTTE Museum of Art",
-      normalPrice: 20000,
-      currency: "KRW",
-      dspFree: true
-    },
+      type:
+        "flight",
 
-    {
-      id: "seoul-botanic-park",
-      name: "Seoul Botanic Park",
-      normalPrice: 5000,
-      currency: "KRW",
-      dspFree: true
-    },
+      title:
+        "Seoul → Hanoi",
 
-    {
-      id: "n-seoul-tower",
-      name: "N Seoul Tower",
-      normalPrice: 26000,
-      currency: "KRW",
-      dspFree: true
-    },
+      date:
+        "2026-10-25",
 
-    {
-      id: "mmca-seoul",
-      name: "MMCA Seoul",
-      normalPrice: 5000,
-      currency: "KRW",
-      dspFree: true
-    },
+      startTime:
+        "11:00",
 
-    {
-      id: "suwon-ipark-museum",
-      name: "Suwon Ipark Museum of Art",
-      normalPrice: 4000,
-      currency: "KRW",
-      dspFree: true
-    },
+      endTime:
+        null,
 
-    {
-      id: "seoul-cruise",
-      name: "Seoul Cruise",
-      normalPrice: 250000,
-      currency: "KRW",
-      dspFree: true
-    },
+      airline:
+        "Vietjet",
 
-    {
-      id: "heolleung-illeung",
-      name: "Heolleung / Illeung Tombs",
-      normalPrice: 1000,
-      currency: "KRW",
-      dspFree: true
-    },
+      flightNumber:
+        null,
 
-    {
-      id: "golden-blue-marina",
-      name: "Golden Blue Marina Kayak / Yacht",
-      normalPrice: 30000,
-      currency: "KRW",
-      dspFree: true
-    },
+      from:
+        "ICN",
 
-    {
-      id: "hanboknam-gyeongbokgung",
-      name: "Hanboknam – Gyeongbokgung",
-      normalPrice: 50000,
-      currency: "KRW",
-      dspFree: true
-    },
+      to:
+        "HAN",
 
-    {
-      id: "aquafield-anseong",
-      name: "Aquafield Anseong",
-      normalPrice: 26000,
-      currency: "KRW",
-      dspFree: true
+      terminal:
+        "ICN T1",
+
+      passengers:
+        2,
+
+      status:
+        "booked",
+
+      notes:
+        "Check-in, tax refund and airport procedures before departure."
+
     }
 
   ];
 
 
   /* =========================================================
-     BUILD DATA PREVIEW
+     DSP
+     ========================================================= */
+
+  const dspAttractions = [
+
+    {
+      id:
+        "football-fantasium",
+
+      name:
+        "Football Fæntasium",
+
+      normalPrice:
+        15000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "seoul-zoo-sky-lift",
+
+      name:
+        "Seoul Zoo & Sky Lift",
+
+      normalPrice:
+        21000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "aquafield-goyang",
+
+      name:
+        "AQUAFIELD GOYANG – Jjimjil Spa",
+
+      normalPrice:
+        26000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "mokdong-ice-rink",
+
+      name:
+        "Mokdong Ice Rink",
+
+      normalPrice:
+        9200,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "lotte-museum-art",
+
+      name:
+        "LOTTE Museum of Art",
+
+      normalPrice:
+        20000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "seoul-botanic-park",
+
+      name:
+        "Seoul Botanic Park",
+
+      normalPrice:
+        5000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "n-seoul-tower",
+
+      name:
+        "N Seoul Tower",
+
+      normalPrice:
+        26000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "mmca-seoul",
+
+      name:
+        "MMCA Seoul",
+
+      normalPrice:
+        5000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "suwon-ipark-museum",
+
+      name:
+        "Suwon Ipark Museum of Art",
+
+      normalPrice:
+        4000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "seoul-cruise",
+
+      name:
+        "Seoul Cruise",
+
+      normalPrice:
+        250000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "heolleung-illeung",
+
+      name:
+        "Heolleung / Illeung Tombs",
+
+      normalPrice:
+        1000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "golden-blue-marina",
+
+      name:
+        "Golden Blue Marina Kayak / Yacht",
+
+      normalPrice:
+        30000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "hanboknam-gyeongbokgung",
+
+      name:
+        "Hanboknam – Gyeongbokgung",
+
+      normalPrice:
+        50000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    },
+
+
+    {
+      id:
+        "aquafield-anseong",
+
+      name:
+        "Aquafield Anseong",
+
+      normalPrice:
+        26000,
+
+      currency:
+        "KRW",
+
+      dspFree:
+        true
+
+    }
+
+  ];
+
+
+  /* =========================================================
+     PREVIEW
      ========================================================= */
 
   function buildPreview() {
 
     const data = {
 
-      trip: tripSettings,
+      trip:
+        tripSettings,
+
+      places:
+        Object.values(places),
 
       activities,
 
       milestones,
 
       dsp: {
-        durationHours: 72,
-        attractions: dspAttractions
+
+        durationHours:
+          72,
+
+        attractions:
+          dspAttractions
+
       }
 
     };
 
+
     preview.textContent =
-      JSON.stringify(data, null, 2);
+      JSON.stringify(
+        data,
+        null,
+        2
+      );
   }
 
 
   /* =========================================================
-     UPDATE SUMMARY
+     SUMMARY
      ========================================================= */
 
   function updateSummary() {
 
-    const dates = [
-      ...new Set(
-        activities.map(a => a.date)
-      )
-    ];
+    const dates =
+      [
+        ...new Set(
+          activities.map(
+            item => item.date
+          )
+        )
+      ];
 
-    document.getElementById("count-days")
-      .textContent = dates.length;
 
-    document.getElementById("count-activities")
-      .textContent = activities.length;
+    document.getElementById(
+      "count-days"
+    ).textContent =
+      dates.length;
 
-    document.getElementById("count-flights")
-      .textContent = milestones.length;
 
-    document.getElementById("count-dsp")
-      .textContent = dspAttractions.length;
+    document.getElementById(
+      "count-activities"
+    ).textContent =
+      activities.length;
+
+
+    document.getElementById(
+      "count-places"
+    ).textContent =
+      Object.keys(places).length;
+
+
+    document.getElementById(
+      "count-dsp"
+    ).textContent =
+      dspAttractions.length;
+
+
+    document.getElementById(
+      "count-milestones"
+    ).textContent =
+      milestones.length;
   }
 
 
   /* =========================================================
-     SAVE TRIP SETTINGS
+     SAVE ROOT TRIP
      ========================================================= */
 
-  async function saveTripSettings(batch) {
+  function saveTripMetadata(batch) {
+
+    const ref =
+      doc(
+        db,
+        "trips",
+        TRIP_ID
+      );
+
+
+    batch.set(
+      ref,
+      {
+
+        tripId:
+          TRIP_ID,
+
+        name:
+          "Seoul 2026",
+
+        status:
+          "planning",
+
+        startDate:
+          "2026-10-18",
+
+        endDate:
+          "2026-10-25",
+
+        travelers:
+          2,
+
+        schemaVersion:
+          SCHEMA_VERSION,
+
+        updatedAt:
+          serverTimestamp(),
+
+        updatedBy:
+          userMeta()
+
+      },
+
+      {
+        merge:
+          true
+      }
+    );
+  }
+
+
+  /* =========================================================
+     SAVE SETTINGS
+     ========================================================= */
+
+  function saveTripSettings(batch) {
 
     const ref =
       doc(
@@ -1326,18 +2566,76 @@
         "main"
       );
 
+
     batch.set(
       ref,
       {
+
         ...tripSettings,
 
-        updatedAt: serverTimestamp(),
-        updatedBy: userMeta()
+        updatedAt:
+          serverTimestamp(),
+
+        updatedBy:
+          userMeta()
+
       },
+
       {
-        merge: true
+        merge:
+          true
       }
     );
+  }
+
+
+  /* =========================================================
+     SAVE PLACES
+     ========================================================= */
+
+  function savePlaces(batch) {
+
+    for (
+      const [id, place]
+      of Object.entries(places)
+    ) {
+
+      const ref =
+        doc(
+          db,
+          "trips",
+          TRIP_ID,
+          "places",
+          id
+        );
+
+
+      batch.set(
+        ref,
+        {
+
+          ...place,
+
+          tripId:
+            TRIP_ID,
+
+          schemaVersion:
+            SCHEMA_VERSION,
+
+          updatedAt:
+            serverTimestamp(),
+
+          updatedBy:
+            userMeta()
+
+        },
+
+        {
+          merge:
+            true
+        }
+      );
+    }
   }
 
 
@@ -1347,7 +2645,10 @@
 
   function saveActivities(batch) {
 
-    for (const item of activities) {
+    for (
+      const item
+      of activities
+    ) {
 
       const ref =
         doc(
@@ -1358,21 +2659,30 @@
           item.id
         );
 
+
       batch.set(
         ref,
         {
+
           ...item,
 
-          tripId: TRIP_ID,
+          tripId:
+            TRIP_ID,
 
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion:
+            SCHEMA_VERSION,
 
-          updatedAt: serverTimestamp(),
+          updatedAt:
+            serverTimestamp(),
 
-          updatedBy: userMeta()
+          updatedBy:
+            userMeta()
+
         },
+
         {
-          merge: true
+          merge:
+            true
         }
       );
     }
@@ -1385,7 +2695,10 @@
 
   function saveMilestones(batch) {
 
-    for (const item of milestones) {
+    for (
+      const item
+      of milestones
+    ) {
 
       const ref =
         doc(
@@ -1396,21 +2709,30 @@
           item.id
         );
 
+
       batch.set(
         ref,
         {
+
           ...item,
 
-          tripId: TRIP_ID,
+          tripId:
+            TRIP_ID,
 
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion:
+            SCHEMA_VERSION,
 
-          updatedAt: serverTimestamp(),
+          updatedAt:
+            serverTimestamp(),
 
-          updatedBy: userMeta()
+          updatedBy:
+            userMeta()
+
         },
+
         {
-          merge: true
+          merge:
+            true
         }
       );
     }
@@ -1423,7 +2745,7 @@
 
   function saveDSP(batch) {
 
-    const dspRef =
+    const mainRef =
       doc(
         db,
         "trips",
@@ -1432,10 +2754,13 @@
         "main"
       );
 
+
     batch.set(
-      dspRef,
+      mainRef,
       {
-        durationHours: 72,
+
+        durationHours:
+          72,
 
         plannedActivation:
           "2026-10-21T15:00:00+09:00",
@@ -1443,21 +2768,31 @@
         plannedExpiration:
           "2026-10-24T15:00:00+09:00",
 
-        activated: false,
+        activated:
+          false,
 
-        schemaVersion: SCHEMA_VERSION,
+        schemaVersion:
+          SCHEMA_VERSION,
 
-        updatedAt: serverTimestamp(),
+        updatedAt:
+          serverTimestamp(),
 
-        updatedBy: userMeta()
+        updatedBy:
+          userMeta()
+
       },
+
       {
-        merge: true
+        merge:
+          true
       }
     );
 
 
-    for (const item of dspAttractions) {
+    for (
+      const item
+      of dspAttractions
+    ) {
 
       const ref =
         doc(
@@ -1469,65 +2804,33 @@
           item.id
         );
 
+
       batch.set(
         ref,
         {
+
           ...item,
 
-          tripId: TRIP_ID,
+          tripId:
+            TRIP_ID,
 
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion:
+            SCHEMA_VERSION,
 
-          updatedAt: serverTimestamp(),
+          updatedAt:
+            serverTimestamp(),
 
-          updatedBy: userMeta()
+          updatedBy:
+            userMeta()
+
         },
+
         {
-          merge: true
+          merge:
+            true
         }
       );
     }
-  }
-
-
-  /* =========================================================
-     SAVE METADATA
-     ========================================================= */
-
-  function saveMetadata(batch) {
-
-    const ref =
-      doc(
-        db,
-        "trips",
-        TRIP_ID
-      );
-
-    batch.set(
-      ref,
-      {
-        tripId: TRIP_ID,
-
-        name: "Seoul 2026",
-
-        schemaVersion: SCHEMA_VERSION,
-
-        status: "planning",
-
-        startDate: "2026-10-18",
-
-        endDate: "2026-10-25",
-
-        travelers: 2,
-
-        updatedAt: serverTimestamp(),
-
-        updatedBy: userMeta()
-      },
-      {
-        merge: true
-      }
-    );
   }
 
 
@@ -1546,46 +2849,62 @@
         "planning"
       );
 
+
     batch.set(
       ref,
       {
-        title: "Planning notes",
 
-        notes: tripSettings.notes,
+        title:
+          "Seoul 2026 Planning Notes",
+
+        notes:
+          tripSettings.notes,
 
         planningRules:
           tripSettings.planningRules,
 
-        schemaVersion: SCHEMA_VERSION,
+        schemaVersion:
+          SCHEMA_VERSION,
 
-        updatedAt: serverTimestamp(),
+        updatedAt:
+          serverTimestamp(),
 
-        updatedBy: userMeta()
+        updatedBy:
+          userMeta()
+
       },
+
       {
-        merge: true
+        merge:
+          true
       }
     );
   }
 
 
   /* =========================================================
-     FIRESTORE BATCH SAVE
+     SAVE EVERYTHING
      ========================================================= */
 
   async function saveAllData() {
 
     if (!currentUser) {
 
-      alert("Vui lòng đăng nhập trước.");
+      alert(
+        "Vui lòng đăng nhập trước."
+      );
 
       return;
     }
 
 
-    btnSave.disabled = true;
+    btnSave.disabled =
+      true;
 
-    statusBox.className = "status";
+
+    statusBox.className =
+      "status";
+
 
     statusBox.textContent =
       "Đang chuẩn bị dữ liệu...\n";
@@ -1593,46 +2912,101 @@
 
     try {
 
+      const batch =
+        writeBatch(db);
+
+
+      let writeCount =
+        0;
+
+
       /*
-       * Firestore batch giới hạn 500 writes.
-       *
-       * Hiện tại dữ liệu của chúng ta < 500,
-       * nên có thể lưu thành một batch.
+       * Root trip
        */
 
-      let batch = writeBatch(db);
+      saveTripMetadata(
+        batch
+      );
 
-      let writeCount = 0;
-
-
-      saveMetadata(batch);
       writeCount++;
 
 
-      saveTripSettings(batch);
+      /*
+       * Settings
+       */
+
+      saveTripSettings(
+        batch
+      );
+
       writeCount++;
 
 
-      saveActivities(batch);
-      writeCount += activities.length;
+      /*
+       * Places
+       */
 
-
-      saveMilestones(batch);
-      writeCount += milestones.length;
-
-
-      saveDSP(batch);
+      savePlaces(
+        batch
+      );
 
       writeCount +=
-        1 + dspAttractions.length;
+        Object.keys(
+          places
+        ).length;
 
 
-      saveNotes(batch);
+      /*
+       * Activities
+       */
+
+      saveActivities(
+        batch
+      );
+
+      writeCount +=
+        activities.length;
+
+
+      /*
+       * Milestones
+       */
+
+      saveMilestones(
+        batch
+      );
+
+      writeCount +=
+        milestones.length;
+
+
+      /*
+       * DSP
+       */
+
+      saveDSP(
+        batch
+      );
+
+      writeCount +=
+        1 +
+        dspAttractions.length;
+
+
+      /*
+       * Notes
+       */
+
+      saveNotes(
+        batch
+      );
+
       writeCount++;
 
 
       statusBox.textContent +=
         `Đã chuẩn bị ${writeCount} document.\n`;
+
 
       statusBox.textContent +=
         "Đang ghi vào Firestore...\n";
@@ -1646,9 +3020,12 @@
 
 
       statusBox.textContent =
-        `✓ SAVE THÀNH CÔNG\n\n` +
+
+        "✓ SAVE THÀNH CÔNG\n\n" +
 
         `Trip: ${TRIP_ID}\n` +
+
+        `Places: ${Object.keys(places).length}\n` +
 
         `Activities: ${activities.length}\n` +
 
@@ -1660,34 +3037,42 @@
 
         `Người lưu: ${currentUser.email}\n\n` +
 
-        `Dữ liệu đã được lưu vào Firestore.`;
+        "Dữ liệu đã được cập nhật trong Firestore.";
+
 
     }
 
     catch (error) {
 
-      console.error(error);
+      console.error(
+        "Firebase save error:",
+        error
+      );
+
 
       statusBox.className =
         "status error";
 
+
       statusBox.textContent =
+
         "✕ SAVE THẤT BẠI\n\n" +
+
         error.message;
 
     }
 
     finally {
 
-      btnSave.disabled = false;
+      btnSave.disabled =
+        false;
 
     }
-
   }
 
 
   /* =========================================================
-     AUTH
+     LOGIN
      ========================================================= */
 
   btnLogin.addEventListener(
@@ -1696,10 +3081,12 @@
 
       try {
 
-        btnLogin.disabled = true;
+        btnLogin.disabled =
+          true;
 
         btnLogin.textContent =
           "Đang đăng nhập...";
+
 
         await signInWithPopup(
           auth,
@@ -1710,7 +3097,10 @@
 
       catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         alert(
           "Đăng nhập thất bại: " +
@@ -1721,10 +3111,38 @@
 
       finally {
 
-        btnLogin.disabled = false;
+        btnLogin.disabled =
+          false;
 
         btnLogin.textContent =
           "Đăng nhập Google";
+      }
+    }
+  );
+
+
+  /* =========================================================
+     LOGOUT
+     ========================================================= */
+
+  btnLogout.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await signOut(
+          auth
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
 
       }
 
@@ -1732,38 +3150,38 @@
   );
 
 
-  btnLogout.addEventListener(
-    "click",
-    async () => {
-
-      await signOut(auth);
-
-    }
-  );
-
+  /* =========================================================
+     AUTH STATE
+     ========================================================= */
 
   onAuthStateChanged(
     auth,
     (user) => {
 
-      currentUser = user;
+      currentUser =
+        user;
+
 
       if (user) {
 
-        loginSection.classList.add(
-          "hidden"
-        );
+        loginSection
+          .classList
+          .add("hidden");
 
-        userSection.classList.remove(
-          "hidden"
-        );
 
-        appSection.classList.remove(
-          "hidden"
-        );
+        userSection
+          .classList
+          .remove("hidden");
+
+
+        appSection
+          .classList
+          .remove("hidden");
+
 
         userInfo.textContent =
           user.email;
+
 
         statusBox.textContent =
           "Đã đăng nhập. Sẵn sàng lưu dữ liệu.";
@@ -1772,21 +3190,33 @@
 
       else {
 
-        loginSection.classList.remove(
-          "hidden"
-        );
+        loginSection
+          .classList
+          .remove("hidden");
 
-        userSection.classList.add(
-          "hidden"
-        );
 
-        appSection.classList.add(
-          "hidden"
-        );
+        userSection
+          .classList
+          .add("hidden");
+
+
+        appSection
+          .classList
+          .add("hidden");
 
       }
 
     }
+  );
+
+
+  /* =========================================================
+     SAVE BUTTON
+     ========================================================= */
+
+  btnSave.addEventListener(
+    "click",
+    saveAllData
   );
 
 
