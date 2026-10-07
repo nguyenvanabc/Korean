@@ -1986,12 +1986,12 @@ function renderDashboard() {
   const now = new Date(state.nowTick);
   const todayStr = localDateString(now);
 
-  // Prefer trip day if device date is outside trip (preview mode)
+  // Today KHÔNG theo ngày chọn ở tab Lịch (state.selectedDay chỉ cho itinerary)
+  // Trong trip → luôn ngày máy; ngoài trip → preview cố định TRIP_START
   let focusDay = todayStr;
   if (todayStr < TRIP_START || todayStr > TRIP_END) {
-    focusDay = state.selectedDay || TRIP_START;
+    focusDay = TRIP_START;
   } else {
-    state.selectedDay = todayStr;
     focusDay = todayStr;
   }
 
