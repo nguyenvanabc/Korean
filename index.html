@@ -6,6 +6,14 @@
   <meta name="theme-color" content="#111827" />
   <title>Seoul Trip Companion · 2026</title>
 
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
   <style>
     :root {
       --bg: #f5f7fb;
@@ -362,6 +370,93 @@
       color: white;
     }
 
+    /* ---------- DAY MAP ---------- */
+
+    .day-map-wrap {
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
+    #dayMap {
+      height: 280px;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      z-index: 1;
+    }
+
+    .day-map-distances {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .day-map-distances .dist-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .day-map-distances .dist-row:last-child {
+      border-bottom: 0;
+    }
+
+    .day-map-distances .dist-total {
+      margin-top: 8px;
+      font-weight: 700;
+      padding-top: 6px;
+      border-top: 1px solid var(--line);
+    }
+
+    .day-map-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .leaflet-popup-content {
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 10px 12px;
+    }
+
+    .leaflet-popup-content b {
+      font-size: 14px;
+    }
+
+    .leaflet-popup-content .popup-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .leaflet-popup-content .popup-actions a {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #1e293b;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .numbered-marker {
+      background: #2563eb;
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
     /* ---------- FORMS ---------- */
 
     .form {
@@ -493,6 +588,10 @@
 
       .activity > .actions {
         grid-column: 2;
+      }
+
+      #dayMap {
+        height: 240px;
       }
     }
   </style>
@@ -659,6 +758,13 @@
 ></div>
 
 
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
 <!-- =========================================================
      FIREBASE + APP
 ========================================================= -->
@@ -780,6 +886,10 @@ const state = {
 
 };
 
+/** Leaflet map instance for Day Map (itinerary tab) */
+let dayMap = null;
+let dayMapLayerGroup = null;
+
 
 /* =========================================================
    HELPERS
@@ -877,6 +987,80 @@ function audit() {
     }
 
   };
+
+}
+
+
+/**
+ * Haversine distance in km between two lat/lng points.
+ * Pure geometry — as-the-crow-flies, not routing.
+ */
+function haversineKm(lat1, lng1, lat2, lng2) {
+
+  const toRad = deg => (deg * Math.PI) / 180;
+
+  const R = 6371; // Earth radius km
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+
+}
+
+
+/**
+ * Build ordered list of map points for a given day.
+ * Only includes activities that have a place with valid lat/lng.
+ * Numbering is sequential among those points only.
+ */
+function getDayMapPoints(day) {
+
+  const dayActivities = state.activities
+    .filter(a => a.date === day)
+    .slice()
+    .sort((a, b) => {
+      // Prefer explicit order if present, else startTime
+      const orderA = a.order != null ? Number(a.order) : Infinity;
+      const orderB = b.order != null ? Number(b.order) : Infinity;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a.startTime || "").localeCompare(String(b.startTime || ""));
+    });
+
+  const points = [];
+
+  for (const activity of dayActivities) {
+
+    if (!activity.placeId) continue;
+
+    const place = state.places.find(p => p.id === activity.placeId);
+
+    if (!place) continue;
+
+    const lat = Number(place.lat);
+    const lng = Number(place.lng);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+
+    points.push({
+      activity,
+      place,
+      lat,
+      lng
+    });
+
+  }
+
+  return points;
 
 }
 
@@ -1537,6 +1721,202 @@ function renderDSPSummary() {
 
 
 /* =========================================================
+   DAY MAP (Leaflet + OSM)
+========================================================= */
+
+function destroyDayMap() {
+
+  if (dayMap) {
+    dayMap.remove();
+    dayMap = null;
+    dayMapLayerGroup = null;
+  }
+
+}
+
+
+function renderDayMapDistances(points) {
+
+  const container = document.getElementById("dayMapDistances");
+
+  if (!container) return;
+
+  if (points.length < 2) {
+
+    container.innerHTML = points.length === 0
+      ? `<div class="muted small">Không có địa điểm có tọa độ để hiển thị trên bản đồ.</div>`
+      : `<div class="muted small">Chỉ 1 địa điểm — chưa có đoạn khoảng cách.</div>`;
+
+    return;
+
+  }
+
+  let total = 0;
+  const rows = [];
+
+  for (let i = 0; i < points.length - 1; i++) {
+
+    const a = points[i];
+    const b = points[i + 1];
+    const d = haversineKm(a.lat, a.lng, b.lat, b.lng);
+    total += d;
+
+    const fromNum = i + 1;
+    const toNum = i + 2;
+
+    rows.push(`
+      <div class="dist-row">
+        <span>
+          ${fromNum} → ${toNum}
+          <span class="muted"> · ${escapeHtml(a.place.name)} → ${escapeHtml(b.place.name)}</span>
+        </span>
+        <strong>${d.toFixed(1)} km</strong>
+      </div>
+    `);
+
+  }
+
+  container.innerHTML = `
+    ${rows.join("")}
+    <div class="dist-total">
+      Tổng khoảng cách trực tiếp: ${total.toFixed(1)} km
+    </div>
+    <div class="day-map-note">
+      Khoảng cách tính từ tọa độ / đường chim bay — không phải khoảng cách đi bộ hay tuyến đường thực tế.
+    </div>
+  `;
+
+}
+
+
+function initOrUpdateDayMap(day) {
+
+  const mapEl = document.getElementById("dayMap");
+
+  if (!mapEl) return;
+
+  const points = getDayMapPoints(day);
+
+  // Destroy previous instance if DOM was re-rendered
+  if (dayMap) {
+    try {
+      dayMap.remove();
+    } catch (_) { /* ignore */ }
+    dayMap = null;
+    dayMapLayerGroup = null;
+  }
+
+  // Default center: Seoul (only used when no points)
+  const defaultCenter = [37.5665, 126.9780];
+
+  dayMap = L.map(mapEl, {
+    zoomControl: true,
+    attributionControl: true
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(dayMap);
+
+  dayMapLayerGroup = L.layerGroup().addTo(dayMap);
+
+  const latLngs = [];
+
+  points.forEach((pt, index) => {
+
+    const num = index + 1;
+
+    const icon = L.divIcon({
+      className: "",
+      html: `<div class="numbered-marker">${num}</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14]
+    });
+
+    const marker = L.marker([pt.lat, pt.lng], { icon }).addTo(dayMapLayerGroup);
+
+    const timeStr = [
+      pt.activity.startTime || "",
+      pt.activity.endTime || ""
+    ].filter(Boolean).join(" – ");
+
+    const googleUrl =
+      pt.place.googleMapsUrl ||
+      (Number.isFinite(pt.lat) && Number.isFinite(pt.lng)
+        ? `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`
+        : null);
+
+    const naverUrl =
+      pt.place.naverMapsUrl ||
+      (pt.place.name
+        ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}`
+        : null);
+
+    let popupHtml = `
+      <b>${escapeHtml(pt.place.name || "—")}</b><br>
+      <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>
+    `;
+
+    if (pt.activity.notes) {
+      popupHtml += `<br><span style="color:#64748b;font-size:12px">${escapeHtml(pt.activity.notes)}</span>`;
+    }
+
+    const links = [];
+    if (googleUrl) {
+      links.push(`<a href="${escapeHtml(googleUrl)}" target="_blank" rel="noopener">Google Maps</a>`);
+    }
+    if (naverUrl) {
+      links.push(`<a href="${escapeHtml(naverUrl)}" target="_blank" rel="noopener">Naver Map</a>`);
+    }
+
+    if (links.length) {
+      popupHtml += `<div class="popup-actions">${links.join("")}</div>`;
+    }
+
+    marker.bindPopup(popupHtml);
+
+    latLngs.push([pt.lat, pt.lng]);
+
+  });
+
+  if (latLngs.length >= 2) {
+
+    L.polyline(latLngs, {
+      color: "#2563eb",
+      weight: 3,
+      opacity: 0.75,
+      dashArray: "6 8"
+    }).addTo(dayMapLayerGroup);
+
+  }
+
+  if (latLngs.length === 0) {
+
+    dayMap.setView(defaultCenter, 11);
+
+  } else if (latLngs.length === 1) {
+
+    dayMap.setView(latLngs[0], 14);
+
+  } else {
+
+    dayMap.fitBounds(latLngs, { padding: [36, 36], maxZoom: 15 });
+
+  }
+
+  // Leaflet needs a size invalidate after DOM insertion
+  setTimeout(() => {
+    if (dayMap) dayMap.invalidateSize();
+  }, 80);
+
+  renderDayMapDistances(points);
+
+}
+
+
+/* =========================================================
    ITINERARY
 ========================================================= */
 
@@ -1554,6 +1934,13 @@ function renderItinerary() {
         a => a.date
       )
     )].sort();
+
+  // Ensure selected day has at least the known trip range if no activities yet
+  if (!days.length) {
+    // keep selectedDay as-is
+  } else if (!days.includes(state.selectedDay)) {
+    state.selectedDay = days[0];
+  }
 
 
   element.innerHTML = `
@@ -1605,6 +1992,23 @@ function renderItinerary() {
 
         `).join("")
       }
+
+    </div>
+
+
+    <!-- DAY MAP -->
+    <div class="card day-map-wrap">
+
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <h3>Bản đồ ngày</h3>
+          <div class="small muted">${formatDay(state.selectedDay)}</div>
+        </div>
+      </div>
+
+      <div id="dayMap"></div>
+
+      <div id="dayMapDistances" class="day-map-distances"></div>
 
     </div>
 
@@ -1664,6 +2068,17 @@ function renderItinerary() {
     "addActivity"
   ).onclick = () =>
     openActivityForm();
+
+
+  // Init map only when itinerary tab is visible
+  if (state.tab === "itinerary") {
+    // Small delay so the container has layout
+    requestAnimationFrame(() => {
+      initOrUpdateDayMap(state.selectedDay);
+    });
+  } else {
+    destroyDayMap();
+  }
 
 }
 
@@ -3164,6 +3579,8 @@ onAuthStateChanged(
         );
 
       state.unsubscribe = [];
+
+      destroyDayMap();
 
       return;
 
