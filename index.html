@@ -44,6 +44,7 @@
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
+      padding-bottom: env(safe-area-inset-bottom, 0);
     }
 
     button,
@@ -142,6 +143,7 @@
       display: flex;
       gap: 5px;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .nav button {
@@ -162,7 +164,7 @@
     /* ---------- COMMON ---------- */
 
     main {
-      padding: 20px 18px 60px;
+      padding: 20px 18px 80px;
     }
 
     h1,
@@ -256,6 +258,11 @@
       color: var(--red);
     }
 
+    .btn.block {
+      width: 100%;
+      justify-content: center;
+    }
+
     .pill {
       display: inline-flex;
       padding: 4px 8px;
@@ -278,6 +285,16 @@
     .pill.orange {
       background: #ffedd5;
       color: #9a3412;
+    }
+
+    .pill.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pill.gray {
+      background: #f1f5f9;
+      color: #475569;
     }
 
     .stat {
@@ -356,6 +373,62 @@
       content: "◇ ";
     }
 
+    /* Today timeline states */
+    .tl-item {
+      display: grid;
+      grid-template-columns: 28px 64px 1fr;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      align-items: start;
+    }
+
+    .tl-item:first-child {
+      border-top: 0;
+    }
+
+    .tl-item.done {
+      opacity: 0.55;
+    }
+
+    .tl-item.current {
+      background: #eef2ff;
+      margin: 0 -12px;
+      padding-left: 12px;
+      padding-right: 12px;
+      border-radius: 10px;
+      border-top-color: transparent;
+    }
+
+    .tl-item.skipped {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .tl-mark {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .tl-time {
+      font-weight: 700;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .tl-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .tl-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
     /* ---------- DAY TABS ---------- */
 
     .day-tabs {
@@ -395,6 +468,7 @@
       justify-content: space-between;
       padding: 4px 0;
       border-bottom: 1px dashed var(--line);
+      gap: 8px;
     }
 
     .day-map-distances .dist-row:last-child {
@@ -455,6 +529,82 @@
       font-weight: 800;
       font-size: 13px;
       box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
+    /* ---------- NOW CARD / I'M HERE ---------- */
+
+    .now-card {
+      background: linear-gradient(135deg, #111827 0%, #1e3a5f 100%);
+      color: white;
+      border: 0;
+    }
+
+    .now-card .muted {
+      color: rgba(255,255,255,.7);
+    }
+
+    .now-card h2 {
+      color: white;
+    }
+
+    .now-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      opacity: .75;
+      margin-bottom: 4px;
+    }
+
+    .here-result {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .here-result strong {
+      font-size: 16px;
+    }
+
+    /* ---------- QUICK ADD FAB ---------- */
+
+    .fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--primary);
+      color: white;
+      font-size: 28px;
+      font-weight: 300;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .fab:active {
+      transform: scale(0.96);
+    }
+
+    .quick-sheet {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-sheet button {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 15px;
     }
 
     /* ---------- FORMS ---------- */
@@ -520,9 +670,16 @@
       z-index: 50;
       background: rgba(15,23,42,.45);
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
-      padding: 18px;
+      padding: 0;
+    }
+
+    @media (min-width: 640px) {
+      .modal {
+        align-items: center;
+        padding: 18px;
+      }
     }
 
     .modal-box {
@@ -530,8 +687,14 @@
       max-height: 92vh;
       overflow: auto;
       background: white;
-      border-radius: 18px;
+      border-radius: 18px 18px 0 0;
       padding: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .modal-box {
+        border-radius: 18px;
+      }
     }
 
     .close-btn {
@@ -548,13 +711,14 @@
     .toast {
       position: fixed;
       right: 18px;
-      bottom: 18px;
+      bottom: 80px;
       z-index: 100;
       background: #111827;
       color: white;
       padding: 11px 14px;
       border-radius: 10px;
       font-size: 13px;
+      max-width: calc(100vw - 36px);
     }
 
     .error {
@@ -592,6 +756,10 @@
 
       #dayMap {
         height: 240px;
+      }
+
+      main {
+        padding-bottom: 90px;
       }
     }
   </style>
@@ -662,7 +830,7 @@
         data-tab="dashboard"
         class="active"
       >
-        Tổng quan
+        Today
       </button>
 
       <button data-tab="itinerary">
@@ -720,6 +888,17 @@
     ></section>
 
   </main>
+
+  <!-- Quick Add FAB (visible when logged in) -->
+  <button
+    id="quickAddFab"
+    class="fab"
+    type="button"
+    aria-label="Quick Add"
+    title="Quick Add"
+  >
+    +
+  </button>
 
 </div>
 
@@ -799,7 +978,6 @@ import {
    FIREBASE
 ========================================================= */
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCoHYgOL4hAs4ECxz8iMrc8d9458dOth3Q",
   authDomain: "seol-8eb80.firebaseapp.com",
@@ -824,40 +1002,15 @@ const db = getFirestore(app);
 
 const TRIP_ID = "seoul-2026";
 
-const tripRef = collection(
-  db,
-  "trips",
-  TRIP_ID,
-  "activities"
-);
+/** Trip date range (labels only; data always from Firestore) */
+const TRIP_START = "2026-10-18";
+const TRIP_END = "2026-10-25";
 
-const placesRef = collection(
-  db,
-  "trips",
-  TRIP_ID,
-  "places"
-);
-
-const expensesRef = collection(
-  db,
-  "trips",
-  TRIP_ID,
-  "expenses"
-);
-
-const dspRef = collection(
-  db,
-  "trips",
-  TRIP_ID,
-  "dsp"
-);
-
-const notesRef = collection(
-  db,
-  "trips",
-  TRIP_ID,
-  "notes"
-);
+const tripRef = collection(db, "trips", TRIP_ID, "activities");
+const placesRef = collection(db, "trips", TRIP_ID, "places");
+const expensesRef = collection(db, "trips", TRIP_ID, "expenses");
+const dspRef = collection(db, "trips", TRIP_ID, "dsp");
+const notesRef = collection(db, "trips", TRIP_ID, "notes");
 
 
 /* =========================================================
@@ -865,30 +1018,22 @@ const notesRef = collection(
 ========================================================= */
 
 const state = {
-
   user: null,
-
   tab: "dashboard",
-
-  selectedDay: "2026-10-18",
-
+  selectedDay: TRIP_START,
   activities: [],
-
   places: [],
-
   expenses: [],
-
   dsp: [],
-
   dspMain: null,
-
-  unsubscribe: []
-
+  unsubscribe: [],
+  /** Tick for "now" UI — updated every 30s when on dashboard */
+  nowTick: Date.now()
 };
 
-/** Leaflet map instance for Day Map (itinerary tab) */
 let dayMap = null;
 let dayMapLayerGroup = null;
+let nowTimer = null;
 
 
 /* =========================================================
@@ -896,7 +1041,6 @@ let dayMapLayerGroup = null;
 ========================================================= */
 
 function escapeHtml(value) {
-
   return String(value ?? "")
     .replace(/[&<>"']/g, char => ({
       "&": "&amp;",
@@ -905,131 +1049,177 @@ function escapeHtml(value) {
       '"': "&quot;",
       "'": "&#039;"
     }[char]));
-
 }
 
 
 function money(value) {
-
   return new Intl.NumberFormat("ko-KR")
     .format(Number(value) || 0) + " ₩";
-
 }
 
 
 function minutes(time) {
-
   if (!time) return 0;
-
-  const [h, m] = time.split(":").map(Number);
-
+  const parts = String(time).split(":");
+  const h = Number(parts[0]) || 0;
+  const m = Number(parts[1]) || 0;
   return h * 60 + m;
-
 }
 
 
 function formatDay(date) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit"
+  }).format(new Date(date + "T12:00:00"));
+}
 
-  return new Intl.DateTimeFormat(
-    "vi-VN",
-    {
-      weekday: "short",
-      day: "2-digit",
-      month: "2-digit"
-    }
-  ).format(
-    new Date(date + "T12:00:00")
-  );
 
+function formatDayLong(date) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  }).format(new Date(date + "T12:00:00"));
 }
 
 
 function placeName(id) {
-
-  const place = state.places.find(
-    p => p.id === id
-  );
-
+  const place = state.places.find(p => p.id === id);
   return place?.name || id || "—";
-
 }
 
 
 function showToast(message) {
-
-  const element =
-    document.getElementById("toast");
-
+  const element = document.getElementById("toast");
   element.textContent = message;
-
   element.classList.remove("hidden");
-
   clearTimeout(window.__toastTimer);
-
-  window.__toastTimer =
-    setTimeout(() => {
-      element.classList.add("hidden");
-    }, 2200);
-
+  window.__toastTimer = setTimeout(() => {
+    element.classList.add("hidden");
+  }, 2200);
 }
 
 
 function audit() {
-
   return {
-
     updatedAt: new Date().toISOString(),
-
     updatedBy: {
       uid: state.user?.uid || "",
       name: state.user?.displayName || "",
       email: state.user?.email || ""
     }
-
   };
-
 }
 
 
 /**
- * Haversine distance in km between two lat/lng points.
- * Pure geometry — as-the-crow-flies, not routing.
+ * Local "today" as YYYY-MM-DD (device local timezone).
+ * During trip, device should be set to Seoul time.
+ */
+function localDateString(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+
+function localTimeMinutes(d = new Date()) {
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+
+function formatCountdown(ms) {
+  if (ms <= 0) return "0m";
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h >= 24) {
+    const days = Math.floor(h / 24);
+    const rh = h % 24;
+    return `${days}d ${rh}h`;
+  }
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+
+/**
+ * Haversine distance in km (as-the-crow-flies).
  */
 function haversineKm(lat1, lng1, lat2, lng2) {
-
   const toRad = deg => (deg * Math.PI) / 180;
-
-  const R = 6371; // Earth radius km
-
+  const R = 6371;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
       Math.cos(toRad(lat2)) *
       Math.sin(dLng / 2) *
       Math.sin(dLng / 2);
-
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
   return R * c;
+}
 
+
+function haversineM(lat1, lng1, lat2, lng2) {
+  return haversineKm(lat1, lng1, lat2, lng2) * 1000;
 }
 
 
 /**
- * Build ordered list of map points for a given day.
- * Only includes activities that have a place with valid lat/lng.
- * Numbering is sequential among those points only.
+ * Classify activities for a day relative to "now".
+ * Uses status field if present (done/skipped), else time windows.
  */
-function getDayMapPoints(day) {
+function classifyDayActivities(day, now = new Date()) {
+  const dayStr = day;
+  const todayStr = localDateString(now);
+  const nowMin = localTimeMinutes(now);
 
+  const list = state.activities
+    .filter(a => a.date === dayStr)
+    .slice()
+    .sort((a, b) => {
+      const orderA = a.order != null ? Number(a.order) : Infinity;
+      const orderB = b.order != null ? Number(b.order) : Infinity;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a.startTime || "").localeCompare(String(b.startTime || ""));
+    });
+
+  return list.map(a => {
+    const status = String(a.status || "").toLowerCase();
+    if (status === "done" || status === "completed") {
+      return { activity: a, state: "done" };
+    }
+    if (status === "skipped") {
+      return { activity: a, state: "skipped" };
+    }
+
+    // Only use clock for the actual calendar day
+    if (dayStr !== todayStr) {
+      if (dayStr < todayStr) return { activity: a, state: "done" };
+      return { activity: a, state: "upcoming" };
+    }
+
+    const start = minutes(a.startTime);
+    const end = minutes(a.endTime) || start + 60;
+
+    if (nowMin >= end) return { activity: a, state: "done" };
+    if (nowMin >= start && nowMin < end) return { activity: a, state: "current" };
+    return { activity: a, state: "upcoming" };
+  });
+}
+
+
+function getDayMapPoints(day) {
   const dayActivities = state.activities
     .filter(a => a.date === day)
     .slice()
     .sort((a, b) => {
-      // Prefer explicit order if present, else startTime
       const orderA = a.order != null ? Number(a.order) : Infinity;
       const orderB = b.order != null ? Number(b.order) : Infinity;
       if (orderA !== orderB) return orderA - orderB;
@@ -1039,29 +1229,16 @@ function getDayMapPoints(day) {
   const points = [];
 
   for (const activity of dayActivities) {
-
     if (!activity.placeId) continue;
-
     const place = state.places.find(p => p.id === activity.placeId);
-
     if (!place) continue;
-
     const lat = Number(place.lat);
     const lng = Number(place.lng);
-
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-
-    points.push({
-      activity,
-      place,
-      lat,
-      lng
-    });
-
+    points.push({ activity, place, lat, lng });
   }
 
   return points;
-
 }
 
 
@@ -1070,44 +1247,21 @@ function getDayMapPoints(day) {
 ========================================================= */
 
 function openModal(title, html) {
-
-  document.getElementById(
-    "modalTitle"
-  ).textContent = title;
-
-  document.getElementById(
-    "modalBody"
-  ).innerHTML = html;
-
-  document.getElementById(
-    "modal"
-  ).classList.remove("hidden");
-
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").innerHTML = html;
+  document.getElementById("modal").classList.remove("hidden");
 }
 
 
 function closeModal() {
-
-  document.getElementById(
-    "modal"
-  ).classList.add("hidden");
-
+  document.getElementById("modal").classList.add("hidden");
 }
 
 
-document.getElementById(
-  "modalClose"
-).onclick = closeModal;
+document.getElementById("modalClose").onclick = closeModal;
 
-
-document.getElementById(
-  "modal"
-).onclick = event => {
-
-  if (event.target.id === "modal") {
-    closeModal();
-  }
-
+document.getElementById("modal").onclick = event => {
+  if (event.target.id === "modal") closeModal();
 };
 
 
@@ -1115,48 +1269,21 @@ document.getElementById(
    NAVIGATION
 ========================================================= */
 
-document
-  .querySelectorAll("#nav button")
-  .forEach(button => {
+document.querySelectorAll("#nav button").forEach(button => {
+  button.onclick = () => {
+    state.tab = button.dataset.tab;
 
-    button.onclick = () => {
+    document.querySelectorAll("#nav button").forEach(btn => {
+      btn.classList.toggle("active", btn === button);
+    });
 
-      state.tab = button.dataset.tab;
+    ["dashboard", "itinerary", "dsp", "expenses", "places", "more"].forEach(tab => {
+      document.getElementById("tab-" + tab).classList.toggle("hidden", tab !== state.tab);
+    });
 
-      document
-        .querySelectorAll("#nav button")
-        .forEach(btn => {
-
-          btn.classList.toggle(
-            "active",
-            btn === button
-          );
-
-        });
-
-      [
-        "dashboard",
-        "itinerary",
-        "dsp",
-        "expenses",
-        "places",
-        "more"
-      ].forEach(tab => {
-
-        document
-          .getElementById("tab-" + tab)
-          .classList.toggle(
-            "hidden",
-            tab !== state.tab
-          );
-
-      });
-
-      render();
-
-    };
-
-  });
+    render();
+  };
+});
 
 
 /* =========================================================
@@ -1164,122 +1291,47 @@ document
 ========================================================= */
 
 function subscribeFirestore() {
-
-  state.unsubscribe.forEach(
-    unsubscribe => unsubscribe?.()
-  );
-
+  state.unsubscribe.forEach(unsub => unsub?.());
   state.unsubscribe = [];
 
-
   state.unsubscribe.push(
-
-    onSnapshot(
-      tripRef,
-      snapshot => {
-
-        state.activities =
-          snapshot.docs
-            .map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }))
-            .sort((a, b) =>
-              (
-                a.date +
-                a.startTime
-              ).localeCompare(
-                b.date +
-                b.startTime
-              )
-            );
-
-        render();
-
-      }
-
-    )
-
+    onSnapshot(tripRef, snapshot => {
+      state.activities = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) =>
+          (String(a.date) + String(a.startTime)).localeCompare(
+            String(b.date) + String(b.startTime)
+          )
+        );
+      render();
+    })
   );
 
-
   state.unsubscribe.push(
-
-    onSnapshot(
-      placesRef,
-      snapshot => {
-
-        state.places =
-          snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-
-        render();
-
-      }
-
-    )
-
+    onSnapshot(placesRef, snapshot => {
+      state.places = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    })
   );
 
-
   state.unsubscribe.push(
-
-    onSnapshot(
-      expensesRef,
-      snapshot => {
-
-        state.expenses =
-          snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-
-        render();
-
-      }
-
-    )
-
+    onSnapshot(expensesRef, snapshot => {
+      state.expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    })
   );
 
-
   state.unsubscribe.push(
+    onSnapshot(dspRef, snapshot => {
+      state.dsp = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(item => item.id !== "main");
 
-    onSnapshot(
-      dspRef,
-      snapshot => {
-
-        state.dsp =
-          snapshot.docs
-
-            .map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }))
-
-            .filter(
-              item => item.id !== "main"
-            );
-
-
-        const main =
-          snapshot.docs.find(
-            doc => doc.id === "main"
-          );
-
-        state.dspMain =
-          main?.data() || null;
-
-        render();
-
-      }
-
-    )
-
+      const main = snapshot.docs.find(d => d.id === "main");
+      state.dspMain = main?.data() || null;
+      render();
+    })
   );
-
 }
 
 
@@ -1288,40 +1340,29 @@ function subscribeFirestore() {
 ========================================================= */
 
 function mapButtons(placeId) {
-
-  const place =
-    state.places.find(
-      p => p.id === placeId
-    );
-
+  const place = state.places.find(p => p.id === placeId);
   if (!place) return "";
 
   const google =
     place.googleMapsUrl ||
-    `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+    (Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lng))
+      ? `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`
+      : null);
 
   const naver =
     place.naverMapsUrl ||
-    `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`;
+    (place.name
+      ? `https://map.naver.com/p/search/${encodeURIComponent(place.name)}`
+      : null);
 
-  return `
-
-    <button
-      class="btn"
-      onclick="window.open('${escapeHtml(google)}','_blank')"
-    >
-      Google Maps
-    </button>
-
-    <button
-      class="btn"
-      onclick="window.open('${escapeHtml(naver)}','_blank')"
-    >
-      Naver Map
-    </button>
-
-  `;
-
+  let html = "";
+  if (google) {
+    html += `<button class="btn" onclick="window.open('${escapeHtml(google)}','_blank')">Google Maps</button>`;
+  }
+  if (naver) {
+    html += `<button class="btn" onclick="window.open('${escapeHtml(naver)}','_blank')">Naver Map</button>`;
+  }
+  return html;
 }
 
 
@@ -1330,483 +1371,468 @@ function mapButtons(placeId) {
 ========================================================= */
 
 function activityHtml(activity) {
-
   return `
-
-    <div class="activity ${
-      activity.mode === "fixed"
-        ? "fixed"
-        : "flexible"
-    }">
-
+    <div class="activity ${activity.mode === "fixed" ? "fixed" : "flexible"}">
       <div class="activity-time">
-
         ${escapeHtml(activity.startTime)}
-
         <br>
-
-        <span class="muted">
-          ${escapeHtml(activity.endTime)}
-        </span>
-
+        <span class="muted">${escapeHtml(activity.endTime)}</span>
       </div>
-
-
       <div>
-
-        <div class="activity-title">
-          ${escapeHtml(activity.title)}
-        </div>
-
+        <div class="activity-title">${escapeHtml(activity.title)}</div>
         <div class="activity-place">
-          📍 ${escapeHtml(
-            placeName(activity.placeId)
-          )}
-          · ${escapeHtml(activity.mode)}
+          📍 ${escapeHtml(placeName(activity.placeId))}
+          · ${escapeHtml(activity.mode || "flexible")}
+          ${activity.dspAttractionId ? ' · <span class="pill blue">DSP</span>' : ""}
         </div>
-
         ${
           activity.notes
-            ? `
-              <div class="activity-note">
-                ${escapeHtml(activity.notes)}
-              </div>
-            `
+            ? `<div class="activity-note">${escapeHtml(activity.notes)}</div>`
             : ""
         }
-
       </div>
-
-
       <div class="actions">
-
-        <button
-          class="btn"
-          onclick="editActivity('${escapeHtml(activity.id)}')"
-        >
-          Sửa
-        </button>
-
-        <button
-          class="btn danger"
-          onclick="removeActivity('${escapeHtml(activity.id)}')"
-        >
-          Xóa
-        </button>
-
+        <button class="btn" onclick="editActivity('${escapeHtml(activity.id)}')">Sửa</button>
+        <button class="btn danger" onclick="removeActivity('${escapeHtml(activity.id)}')">Xóa</button>
       </div>
-
     </div>
-
   `;
-
 }
 
 
 /* =========================================================
-   DASHBOARD
+   PHASE 2 — DASHBOARD "TODAY"
 ========================================================= */
 
 function renderDashboard() {
+  const element = document.getElementById("tab-dashboard");
+  const now = new Date(state.nowTick);
+  const todayStr = localDateString(now);
 
-  const element =
-    document.getElementById(
-      "tab-dashboard"
-    );
+  // Prefer trip day if device date is outside trip (preview mode)
+  let focusDay = todayStr;
+  if (todayStr < TRIP_START || todayStr > TRIP_END) {
+    focusDay = state.selectedDay || TRIP_START;
+  } else {
+    state.selectedDay = todayStr;
+    focusDay = todayStr;
+  }
 
+  const classified = classifyDayActivities(focusDay, now);
+  const current = classified.find(c => c.state === "current");
+  const upcoming = classified.filter(c => c.state === "upcoming");
+  const doneCount = classified.filter(c => c.state === "done").length;
+  const remainingCount = classified.filter(
+    c => c.state === "current" || c.state === "upcoming"
+  ).length;
+  const next = upcoming[0] || null;
 
-  const todayActivities =
-    state.activities.filter(
-      a => a.date === state.selectedDay
-    );
+  let remainingText = "—";
+  if (current) {
+    const endMin = minutes(current.activity.endTime);
+    const left = endMin - localTimeMinutes(now);
+    remainingText = left > 0 ? `${left} phút` : "sắp kết thúc";
+  }
 
+  let nextStartText = "—";
+  if (next) {
+    nextStartText = next.activity.startTime || "—";
+    if (focusDay === todayStr && next.activity.startTime) {
+      const minsUntil = minutes(next.activity.startTime) - localTimeMinutes(now);
+      if (minsUntil > 0) {
+        nextStartText += ` (còn ${minsUntil} phút)`;
+      }
+    }
+  }
 
-  const totalExpense =
-    state.expenses.reduce(
-      (sum, expense) =>
-        sum + Number(expense.amount || 0),
-      0
-    );
+  // Expenses today
+  const expenseToday = state.expenses
+    .filter(e => e.date === focusDay)
+    .reduce((s, e) => s + Number(e.amount || 0), 0);
 
-
-  const dspUsed =
-    state.dsp
-
-      .filter(item => item.visited)
-
-      .reduce(
-        (sum, item) =>
-          sum + Number(item.normalPrice || 0),
-        0
-      );
-
+  // DSP summary
+  const dspSummary = renderDSPMini();
 
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill blue">
-          TRIP CONTROL
-        </span>
-
-        <h1 style="margin-top:8px">
-          ${formatDay(state.selectedDay)}
-        </h1>
-
-        <div class="muted">
-          Seoul · 18–25/10/2026
+        <span class="pill blue">TODAY</span>
+        <h1 style="margin-top:8px">${formatDayLong(focusDay)}</h1>
+        <div class="muted small">
+          ${focusDay === todayStr
+            ? now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+            : "Xem trước (thiết bị ngoài ngày trip)"}
         </div>
-
       </div>
-
-
       <div class="actions">
-
-        <button
-          class="btn"
-          id="quickAdd"
-        >
-          + Activity
-        </button>
-
-        <button
-          class="btn blue"
-          id="goItinerary"
-        >
-          Lịch trình
-        </button>
-
+        <button class="btn" id="imHereBtn">📍 Tôi đang ở đây</button>
+        <button class="btn blue" id="goItinerary">Lịch trình</button>
       </div>
-
     </div>
 
-
-    <div class="grid grid-3">
-
-      <div class="card">
-
-        <div class="stat">
-
-          <div>
-            <div class="small muted">
-              Activities
-            </div>
-
-            <strong>
-              ${state.activities.length}
-            </strong>
-          </div>
-
-          📅
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div class="stat">
-
-          <div>
-            <div class="small muted">
-              Chi tiêu
-            </div>
-
-            <strong>
-              ${money(totalExpense)}
-            </strong>
-          </div>
-
-          💳
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div class="stat">
-
-          <div>
-            <div class="small muted">
-              DSP đã dùng
-            </div>
-
-            <strong>
-              ${money(dspUsed)}
-            </strong>
-          </div>
-
-          🎫
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    ${
-      renderDSPSummary()
-    }
-
-
-    <div
-      class="card"
-      style="margin-top:14px"
-    >
-
-      <div class="row">
-
+    <!-- NOW STATUS -->
+    <div class="card now-card" style="margin-bottom:14px">
+      <div class="grid grid-2">
         <div>
-
-          <h2>
-            ${formatDay(state.selectedDay)}
+          <div class="now-label">Đang làm</div>
+          <h2 style="margin:0">
+            ${
+              current
+                ? escapeHtml(current.activity.title)
+                : (upcoming.length
+                    ? "Chưa bắt đầu activity"
+                    : (classified.length ? "Đã xong ngày" : "Chưa có lịch"))
+            }
           </h2>
-
-          <div class="small muted">
-            ${todayActivities.length}
-            activities
-          </div>
-
+          ${
+            current
+              ? `<div class="muted small" style="margin-top:4px">
+                  ${escapeHtml(current.activity.startTime || "")} – ${escapeHtml(current.activity.endTime || "")}
+                  · Còn ${remainingText}
+                  <br>📍 ${escapeHtml(placeName(current.activity.placeId))}
+                </div>`
+              : ""
+          }
         </div>
-
+        <div>
+          <div class="now-label">Tiếp theo</div>
+          <h2 style="margin:0">
+            ${next ? escapeHtml(next.activity.title) : "—"}
+          </h2>
+          ${
+            next
+              ? `<div class="muted small" style="margin-top:4px">
+                  Bắt đầu: ${escapeHtml(nextStartText)}
+                  <br>📍 ${escapeHtml(placeName(next.activity.placeId))}
+                </div>`
+              : ""
+          }
+        </div>
       </div>
-
-
-      <div class="timeline">
-
-        ${
-          todayActivities.length
-            ? todayActivities
-                .map(activityHtml)
-                .join("")
-            : `
-              <div class="empty">
-                Không có activity.
-              </div>
-            `
-        }
-
+      <div class="row" style="margin-top:14px">
+        <span class="small" style="opacity:.85">
+          ✓ ${doneCount} xong · ${remainingCount} còn lại · ${classified.length} tổng
+        </span>
       </div>
-
     </div>
 
+    <!-- STATS -->
+    <div class="grid grid-3" style="margin-bottom:14px">
+      <div class="card">
+        <div class="stat">
+          <div>
+            <div class="small muted">Chi tiêu hôm nay</div>
+            <strong style="font-size:18px">${money(expenseToday)}</strong>
+          </div>
+          💳
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat">
+          <div>
+            <div class="small muted">Activities</div>
+            <strong style="font-size:18px">${classified.length}</strong>
+          </div>
+          📅
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat">
+          <div>
+            <div class="small muted">Địa điểm</div>
+            <strong style="font-size:18px">${state.places.length}</strong>
+          </div>
+          📍
+        </div>
+      </div>
+    </div>
+
+    ${dspSummary}
+
+    <!-- TIMELINE -->
+    <div class="card" style="margin-top:14px">
+      <div class="row">
+        <div>
+          <h2>Timeline</h2>
+          <div class="small muted">${formatDay(focusDay)}</div>
+        </div>
+        <button class="btn" id="markDoneBtn" ${current ? "" : "disabled"}>
+          ✓ Đánh dấu xong
+        </button>
+      </div>
+      <div class="timeline" style="margin-top:8px">
+        ${
+          classified.length
+            ? classified.map(c => {
+                const mark =
+                  c.state === "done" ? "✓" :
+                  c.state === "current" ? "→" :
+                  c.state === "skipped" ? "–" : "○";
+                return `
+                  <div class="tl-item ${c.state}">
+                    <div class="tl-mark">${mark}</div>
+                    <div class="tl-time">${escapeHtml(c.activity.startTime || "—")}</div>
+                    <div>
+                      <div class="tl-title">${escapeHtml(c.activity.title || "—")}</div>
+                      <div class="tl-meta">
+                        📍 ${escapeHtml(placeName(c.activity.placeId))}
+                        ${c.activity.mode === "fixed" ? " · 🔒" : ""}
+                        ${c.activity.dspAttractionId ? ' · <span class="pill blue">DSP</span>' : ""}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join("")
+            : `<div class="empty">Chưa có activity cho ngày này.</div>`
+        }
+      </div>
+    </div>
+
+    <!-- I'M HERE RESULT SLOT -->
+    <div id="hereResultSlot"></div>
   `;
 
-
-  document.getElementById(
-    "quickAdd"
-  ).onclick = () =>
-    openActivityForm();
-
-
-  document.getElementById(
-    "goItinerary"
-  ).onclick = () => {
-
+  document.getElementById("imHereBtn").onclick = () => runImHere();
+  document.getElementById("goItinerary").onclick = () => {
     state.tab = "itinerary";
-
-    document
-      .querySelector(
-        '[data-tab="itinerary"]'
-      )
-      .click();
-
+    document.querySelector('[data-tab="itinerary"]').click();
   };
 
+  const markBtn = document.getElementById("markDoneBtn");
+  if (markBtn && current) {
+    markBtn.onclick = async () => {
+      try {
+        await updateDoc(
+          doc(db, "trips", TRIP_ID, "activities", current.activity.id),
+          { status: "done", ...audit() }
+        );
+        showToast("Đã đánh dấu xong");
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+  }
 }
 
 
-function renderDSPSummary() {
-
+function renderDSPMini() {
   if (!state.dspMain) {
-
     return `
-
-      <div
-        class="card"
-        style="margin-top:14px"
-      >
-
-        <h3>
-          🎫 Discover Seoul Pass
-        </h3>
-
-        <div class="muted small">
-          Chưa có thông tin activation.
+      <div class="card">
+        <div class="row">
+          <div>
+            <h3>🎫 Discover Seoul Pass</h3>
+            <div class="muted small">Chưa có thông tin activation trong Firestore.</div>
+          </div>
+          <button class="btn" id="goDspMini">DSP</button>
         </div>
-
       </div>
-
     `;
-
   }
 
+  const expires = new Date(state.dspMain.expiresAt);
+  const activated = state.dspMain.activatedAt
+    ? new Date(state.dspMain.activatedAt)
+    : null;
+  const remaining = Math.max(0, expires.getTime() - Date.now());
+  const used = state.dsp
+    .filter(i => i.visited)
+    .reduce((s, i) => s + Number(i.normalPrice || 0), 0);
+  const visitedCount = state.dsp.filter(i => i.visited).length;
+  const totalAttr = state.dsp.length;
 
-  const expiration =
-    new Date(
-      state.dspMain.expiresAt
-    );
-
-
-  const remaining =
-    Math.max(
-      0,
-      expiration.getTime() -
-      Date.now()
-    );
-
-
-  const hours =
-    remaining /
-    1000 /
-    60 /
-    60;
-
+  const active = remaining > 0 && (!activated || Date.now() >= activated.getTime());
 
   return `
-
-    <div
-      class="card"
-      style="margin-top:14px"
-    >
-
-      <div class="stat">
-
+    <div class="card">
+      <div class="row">
         <div>
-
-          <h3>
-            🎫 Discover Seoul Pass
-          </h3>
-
+          <h3>🎫 DSP ${active ? '<span class="pill green">ACTIVE</span>' : '<span class="pill gray">—</span>'}</h3>
           <div class="small muted">
-            Hết hạn:
-            ${expiration.toLocaleString("vi-VN")}
+            Còn ${formatCountdown(remaining)}
+            · Đã dùng ${visitedCount}/${totalAttr}
+            · ${money(used)}
           </div>
-
         </div>
-
-        <strong>
-          ${hours.toFixed(1)}h
-        </strong>
-
+        <button class="btn" id="goDspMini">Chi tiết</button>
       </div>
-
-      <div
-        class="progress"
-        style="margin-top:10px"
-      >
-
-        <i
-          style="
-            width:${Math.min(
-              100,
-              hours / 72 * 100
-            )}%
-          "
-        ></i>
-
+      <div class="progress" style="margin-top:10px">
+        <i style="width:${Math.min(100, (remaining / (72 * 3600 * 1000)) * 100)}%"></i>
       </div>
-
     </div>
-
   `;
-
 }
 
 
 /* =========================================================
-   DAY MAP (Leaflet + OSM)
+   PHASE 3 — I'M HERE (Geolocation)
+========================================================= */
+
+function runImHere() {
+  const slot = document.getElementById("hereResultSlot");
+  if (!slot) {
+    // Open on dashboard
+    state.tab = "dashboard";
+    document.querySelector('[data-tab="dashboard"]').click();
+    setTimeout(runImHere, 100);
+    return;
+  }
+
+  slot.innerHTML = `
+    <div class="card" style="margin-top:14px">
+      <div class="muted">Đang lấy vị trí…</div>
+    </div>
+  `;
+
+  if (!navigator.geolocation) {
+    slot.innerHTML = `
+      <div class="card" style="margin-top:14px">
+        <div class="error">Trình duyệt không hỗ trợ Geolocation.</div>
+      </div>
+    `;
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude, accuracy } = pos.coords;
+
+      const withCoords = state.places.filter(p => {
+        const lat = Number(p.lat);
+        const lng = Number(p.lng);
+        return Number.isFinite(lat) && Number.isFinite(lng);
+      });
+
+      if (!withCoords.length) {
+        slot.innerHTML = `
+          <div class="card" style="margin-top:14px">
+            <div class="muted">Không có Place nào có tọa độ trong Firestore.</div>
+          </div>
+        `;
+        return;
+      }
+
+      let nearest = null;
+      let nearestM = Infinity;
+
+      for (const place of withCoords) {
+        const d = haversineM(latitude, longitude, Number(place.lat), Number(place.lng));
+        if (d < nearestM) {
+          nearestM = d;
+          nearest = place;
+        }
+      }
+
+      const distLabel =
+        nearestM < 1000
+          ? `${Math.round(nearestM)} m`
+          : `${(nearestM / 1000).toFixed(2)} km`;
+
+      const google =
+        nearest.googleMapsUrl ||
+        `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
+      const naver =
+        nearest.naverMapsUrl ||
+        `https://map.naver.com/p/search/${encodeURIComponent(nearest.name || "")}`;
+
+      slot.innerHTML = `
+        <div class="card here-result" style="margin-top:14px">
+          <div class="now-label" style="color:var(--muted)">📍 Bạn đang gần</div>
+          <strong>${escapeHtml(nearest.name || "—")}</strong>
+          <div class="small muted" style="margin-top:4px">
+            Khoảng cách (đường chim bay): <b>${distLabel}</b>
+            ${accuracy ? ` · GPS ±${Math.round(accuracy)} m` : ""}
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <button class="btn" onclick="window.open('${escapeHtml(google)}','_blank')">Google Maps</button>
+            <button class="btn" onclick="window.open('${escapeHtml(naver)}','_blank')">Naver Map</button>
+          </div>
+        </div>
+      `;
+    },
+    err => {
+      let msg = "Không lấy được vị trí.";
+      if (err.code === 1) msg = "Bạn đã từ chối quyền vị trí.";
+      if (err.code === 2) msg = "Vị trí không khả dụng.";
+      if (err.code === 3) msg = "Hết thời gian chờ GPS.";
+      slot.innerHTML = `
+        <div class="card" style="margin-top:14px">
+          <div class="error">${escapeHtml(msg)}</div>
+        </div>
+      `;
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+  );
+}
+
+window.runImHere = runImHere;
+
+
+/* =========================================================
+   DAY MAP (Phase 1)
 ========================================================= */
 
 function destroyDayMap() {
-
   if (dayMap) {
-    dayMap.remove();
+    try { dayMap.remove(); } catch (_) {}
     dayMap = null;
     dayMapLayerGroup = null;
   }
-
 }
 
 
 function renderDayMapDistances(points) {
-
   const container = document.getElementById("dayMapDistances");
-
   if (!container) return;
 
   if (points.length < 2) {
-
     container.innerHTML = points.length === 0
       ? `<div class="muted small">Không có địa điểm có tọa độ để hiển thị trên bản đồ.</div>`
       : `<div class="muted small">Chỉ 1 địa điểm — chưa có đoạn khoảng cách.</div>`;
-
     return;
-
   }
 
   let total = 0;
   const rows = [];
 
   for (let i = 0; i < points.length - 1; i++) {
-
     const a = points[i];
     const b = points[i + 1];
     const d = haversineKm(a.lat, a.lng, b.lat, b.lng);
     total += d;
-
-    const fromNum = i + 1;
-    const toNum = i + 2;
-
     rows.push(`
       <div class="dist-row">
         <span>
-          ${fromNum} → ${toNum}
+          ${i + 1} → ${i + 2}
           <span class="muted"> · ${escapeHtml(a.place.name)} → ${escapeHtml(b.place.name)}</span>
         </span>
         <strong>${d.toFixed(1)} km</strong>
       </div>
     `);
-
   }
 
   container.innerHTML = `
     ${rows.join("")}
-    <div class="dist-total">
-      Tổng khoảng cách trực tiếp: ${total.toFixed(1)} km
-    </div>
+    <div class="dist-total">Tổng khoảng cách trực tiếp: ${total.toFixed(1)} km</div>
     <div class="day-map-note">
       Khoảng cách tính từ tọa độ / đường chim bay — không phải khoảng cách đi bộ hay tuyến đường thực tế.
     </div>
   `;
-
 }
 
 
 function initOrUpdateDayMap(day) {
-
   const mapEl = document.getElementById("dayMap");
-
   if (!mapEl) return;
 
   const points = getDayMapPoints(day);
 
-  // Destroy previous instance if DOM was re-rendered
   if (dayMap) {
-    try {
-      dayMap.remove();
-    } catch (_) { /* ignore */ }
+    try { dayMap.remove(); } catch (_) {}
     dayMap = null;
     dayMapLayerGroup = null;
   }
 
-  // Default center: Seoul (only used when no points)
   const defaultCenter = [37.5665, 126.9780];
 
   dayMap = L.map(mapEl, {
@@ -1824,9 +1850,7 @@ function initOrUpdateDayMap(day) {
   const latLngs = [];
 
   points.forEach((pt, index) => {
-
     const num = index + 1;
-
     const icon = L.divIcon({
       className: "",
       html: `<div class="numbered-marker">${num}</div>`,
@@ -1837,16 +1861,13 @@ function initOrUpdateDayMap(day) {
 
     const marker = L.marker([pt.lat, pt.lng], { icon }).addTo(dayMapLayerGroup);
 
-    const timeStr = [
-      pt.activity.startTime || "",
-      pt.activity.endTime || ""
-    ].filter(Boolean).join(" – ");
+    const timeStr = [pt.activity.startTime || "", pt.activity.endTime || ""]
+      .filter(Boolean)
+      .join(" – ");
 
     const googleUrl =
       pt.place.googleMapsUrl ||
-      (Number.isFinite(pt.lat) && Number.isFinite(pt.lng)
-        ? `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`
-        : null);
+      `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`;
 
     const naverUrl =
       pt.place.naverMapsUrl ||
@@ -1858,7 +1879,6 @@ function initOrUpdateDayMap(day) {
       <b>${escapeHtml(pt.place.name || "—")}</b><br>
       <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>
     `;
-
     if (pt.activity.notes) {
       popupHtml += `<br><span style="color:#64748b;font-size:12px">${escapeHtml(pt.activity.notes)}</span>`;
     }
@@ -1870,49 +1890,36 @@ function initOrUpdateDayMap(day) {
     if (naverUrl) {
       links.push(`<a href="${escapeHtml(naverUrl)}" target="_blank" rel="noopener">Naver Map</a>`);
     }
-
     if (links.length) {
       popupHtml += `<div class="popup-actions">${links.join("")}</div>`;
     }
 
     marker.bindPopup(popupHtml);
-
     latLngs.push([pt.lat, pt.lng]);
-
   });
 
   if (latLngs.length >= 2) {
-
     L.polyline(latLngs, {
       color: "#2563eb",
       weight: 3,
       opacity: 0.75,
       dashArray: "6 8"
     }).addTo(dayMapLayerGroup);
-
   }
 
   if (latLngs.length === 0) {
-
     dayMap.setView(defaultCenter, 11);
-
   } else if (latLngs.length === 1) {
-
     dayMap.setView(latLngs[0], 14);
-
   } else {
-
     dayMap.fitBounds(latLngs, { padding: [36, 36], maxZoom: 15 });
-
   }
 
-  // Leaflet needs a size invalidate after DOM insertion
   setTimeout(() => {
     if (dayMap) dayMap.invalidateSize();
   }, 80);
 
   renderDayMapDistances(points);
-
 }
 
 
@@ -1921,165 +1928,76 @@ function initOrUpdateDayMap(day) {
 ========================================================= */
 
 function renderItinerary() {
+  const element = document.getElementById("tab-itinerary");
 
-  const element =
-    document.getElementById(
-      "tab-itinerary"
-    );
+  const days = [...new Set(state.activities.map(a => a.date))].sort();
 
-
-  const days =
-    [...new Set(
-      state.activities.map(
-        a => a.date
-      )
-    )].sort();
-
-  // Ensure selected day has at least the known trip range if no activities yet
-  if (!days.length) {
-    // keep selectedDay as-is
-  } else if (!days.includes(state.selectedDay)) {
+  if (days.length && !days.includes(state.selectedDay)) {
     state.selectedDay = days[0];
   }
 
-
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill">
-          ITINERARY
-        </span>
-
-        <h1>
-          Lịch trình
-        </h1>
-
-        <div class="muted">
-          🔒 Fixed · ◇ Flexible
-        </div>
-
+        <span class="pill">ITINERARY</span>
+        <h1>Lịch trình</h1>
+        <div class="muted">🔒 Fixed · ◇ Flexible</div>
       </div>
-
-
-      <button
-        class="btn primary"
-        id="addActivity"
-      >
-        + Activity
-      </button>
-
+      <button class="btn primary" id="addActivity">+ Activity</button>
     </div>
 
-
     <div class="day-tabs">
-
       ${
         days.map(day => `
-
           <button
-            class="btn ${
-              day === state.selectedDay
-                ? "active"
-                : ""
-            }"
+            class="btn ${day === state.selectedDay ? "active" : ""}"
             data-day="${day}"
           >
             ${formatDay(day)}
           </button>
-
         `).join("")
       }
-
     </div>
 
-
-    <!-- DAY MAP -->
     <div class="card day-map-wrap">
-
       <div class="row" style="margin-bottom:8px">
         <div>
           <h3>Bản đồ ngày</h3>
           <div class="small muted">${formatDay(state.selectedDay)}</div>
         </div>
       </div>
-
       <div id="dayMap"></div>
-
       <div id="dayMapDistances" class="day-map-distances"></div>
-
     </div>
 
-
-    <div
-      class="card"
-      style="margin-top:12px"
-    >
-
-      <h2>
-        ${formatDay(state.selectedDay)}
-      </h2>
-
+    <div class="card" style="margin-top:12px">
+      <h2>${formatDay(state.selectedDay)}</h2>
       <div class="timeline">
-
         ${
           state.activities
-            .filter(
-              a =>
-                a.date ===
-                state.selectedDay
-            )
+            .filter(a => a.date === state.selectedDay)
             .map(activityHtml)
             .join("")
-            ||
-          `
-            <div class="empty">
-              Chưa có activity.
-            </div>
-          `
+          || `<div class="empty">Chưa có activity.</div>`
         }
-
       </div>
-
     </div>
-
   `;
 
+  element.querySelectorAll("[data-day]").forEach(button => {
+    button.onclick = () => {
+      state.selectedDay = button.dataset.day;
+      render();
+    };
+  });
 
-  element
-    .querySelectorAll("[data-day]")
-    .forEach(button => {
+  document.getElementById("addActivity").onclick = () => openActivityForm();
 
-      button.onclick = () => {
-
-        state.selectedDay =
-          button.dataset.day;
-
-        render();
-
-      };
-
-    });
-
-
-  document.getElementById(
-    "addActivity"
-  ).onclick = () =>
-    openActivityForm();
-
-
-  // Init map only when itinerary tab is visible
   if (state.tab === "itinerary") {
-    // Small delay so the container has layout
-    requestAnimationFrame(() => {
-      initOrUpdateDayMap(state.selectedDay);
-    });
+    requestAnimationFrame(() => initOrUpdateDayMap(state.selectedDay));
   } else {
     destroyDayMap();
   }
-
 }
 
 
@@ -2088,643 +2006,273 @@ function renderItinerary() {
 ========================================================= */
 
 function openActivityForm(activityId = null) {
+  const activity = activityId
+    ? state.activities.find(a => a.id === activityId)
+    : null;
 
-  const activity =
-    activityId
-      ? state.activities.find(
-          a => a.id === activityId
-        )
-      : null;
-
-
-  const dates =
-    [
-      ...new Set([
-        ...state.activities.map(
-          a => a.date
-        ),
-        "2026-10-18",
-        "2026-10-19",
-        "2026-10-20",
-        "2026-10-21",
-        "2026-10-22",
-        "2026-10-23",
-        "2026-10-24",
-        "2026-10-25"
-      ])
-    ].sort();
-
+  const dates = [
+    ...new Set([
+      ...state.activities.map(a => a.date),
+      "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21",
+      "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"
+    ])
+  ].sort();
 
   openModal(
-
-    activity
-      ? "Sửa activity"
-      : "Thêm activity",
-
+    activity ? "Sửa activity" : "Thêm activity",
     `
-
-      <form
-        id="activityForm"
-        class="form"
-      >
-
+      <form id="activityForm" class="form">
         <div class="form-grid">
-
           <label>
-
             Ngày
-
             <select name="date">
-
               ${dates.map(day => `
-
-                <option
-                  value="${day}"
-                  ${
-                    day ===
-                    (
-                      activity?.date ||
-                      state.selectedDay
-                    )
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  ${formatDay(day)}
-                </option>
-
+                <option value="${day}" ${
+                  day === (activity?.date || state.selectedDay) ? "selected" : ""
+                }>${formatDay(day)}</option>
               `).join("")}
-
             </select>
-
           </label>
-
-
           <label>
-
             Địa điểm
-
             <select name="placeId">
-
-              <option value="">
-                — Không chọn —
-              </option>
-
-              ${
-                state.places.map(place => `
-
-                  <option
-                    value="${escapeHtml(place.id)}"
-                    ${
-                      place.id ===
-                      activity?.placeId
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    ${escapeHtml(place.name)}
-                  </option>
-
-                `).join("")
-              }
-
+              <option value="">— Không chọn —</option>
+              ${state.places.map(place => `
+                <option value="${escapeHtml(place.id)}" ${
+                  place.id === activity?.placeId ? "selected" : ""
+                }>${escapeHtml(place.name)}</option>
+              `).join("")}
             </select>
-
           </label>
-
         </div>
-
-
         <div class="form-grid">
-
           <label>
-
             Bắt đầu
-
-            <input
-              type="time"
-              name="startTime"
-              value="${
-                activity?.startTime ||
-                "09:00"
-              }"
-              required
-            >
-
+            <input type="time" name="startTime" value="${activity?.startTime || "09:00"}" required>
           </label>
-
-
           <label>
-
             Kết thúc
-
-            <input
-              type="time"
-              name="endTime"
-              value="${
-                activity?.endTime ||
-                "10:00"
-              }"
-              required
-            >
-
+            <input type="time" name="endTime" value="${activity?.endTime || "10:00"}" required>
           </label>
-
         </div>
-
-
         <label>
-
           Tên activity
-
-          <input
-            name="title"
-            required
-            value="${escapeHtml(
-              activity?.title || ""
-            )}"
-          >
-
+          <input name="title" required value="${escapeHtml(activity?.title || "")}">
         </label>
-
-
         <div class="form-grid">
-
           <label>
-
             Loại
-
             <select name="type">
-
-              ${
-                [
-                  "sightseeing",
-                  "food",
-                  "shopping",
-                  "transport",
-                  "rest",
-                  "flight",
-                  "other"
-                ].map(type => `
-
-                  <option
-                    value="${type}"
-                    ${
-                      type ===
-                      (
-                        activity?.type ||
-                        "sightseeing"
-                      )
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    ${type}
-                  </option>
-
-                `).join("")
-              }
-
+              ${["sightseeing","food","shopping","transport","rest","flight","other"].map(type => `
+                <option value="${type}" ${type === (activity?.type || "sightseeing") ? "selected" : ""}>${type}</option>
+              `).join("")}
             </select>
-
           </label>
-
-
           <label>
-
             Kiểu
-
             <select name="mode">
-
-              <option
-                value="fixed"
-                ${
-                  activity?.mode === "fixed"
-                    ? "selected"
-                    : ""
-                }
-              >
-                Fixed
-              </option>
-
-              <option
-                value="flexible"
-                ${
-                  activity?.mode !== "fixed"
-                    ? "selected"
-                    : ""
-                }
-              >
-                Flexible
-              </option>
-
+              <option value="fixed" ${activity?.mode === "fixed" ? "selected" : ""}>Fixed</option>
+              <option value="flexible" ${activity?.mode !== "fixed" ? "selected" : ""}>Flexible</option>
             </select>
-
           </label>
-
         </div>
-
-
         <label>
-
           Ghi chú
-
-          <textarea
-            name="notes"
-          >${escapeHtml(
-            activity?.notes || ""
-          )}</textarea>
-
+          <textarea name="notes">${escapeHtml(activity?.notes || "")}</textarea>
         </label>
-
-
         <div class="actions">
-
-          <button
-            class="btn primary"
-          >
-            Lưu
-          </button>
-
+          <button class="btn primary">Lưu</button>
           ${
             activity
-              ? `
-                <button
-                  type="button"
-                  class="btn danger"
-                  id="deleteActivity"
-                >
-                  Xóa
-                </button>
-              `
+              ? `<button type="button" class="btn danger" id="deleteActivity">Xóa</button>`
               : ""
           }
-
         </div>
-
       </form>
-
     `
   );
 
-
-  document.getElementById(
-    "activityForm"
-  ).onsubmit = async event => {
-
+  document.getElementById("activityForm").onsubmit = async event => {
     event.preventDefault();
-
-    const form =
-      Object.fromEntries(
-        new FormData(
-          event.target
-        ).entries()
-      );
-
+    const form = Object.fromEntries(new FormData(event.target).entries());
 
     try {
-
       if (activity) {
-
         await updateDoc(
-          doc(
-            db,
-            "trips",
-            TRIP_ID,
-            "activities",
-            activity.id
-          ),
-          {
-            ...form,
-            ...audit()
-          }
+          doc(db, "trips", TRIP_ID, "activities", activity.id),
+          { ...form, ...audit() }
         );
-
       } else {
-
-        await addDoc(
-          tripRef,
-          {
-            ...form,
-            status: "planned",
-            createdAt:
-              new Date().toISOString(),
-            ...audit()
-          }
-        );
-
+        await addDoc(tripRef, {
+          ...form,
+          status: "planned",
+          createdAt: new Date().toISOString(),
+          ...audit()
+        });
       }
-
-
       closeModal();
-
-      showToast(
-        "Đã lưu activity"
-      );
-
+      showToast("Đã lưu activity");
     } catch (error) {
-
       alert(error.message);
-
     }
-
   };
-
 
   if (activity) {
-
-    document.getElementById(
-      "deleteActivity"
-    ).onclick = () =>
-      removeActivity(
-        activity.id
-      );
-
+    document.getElementById("deleteActivity").onclick = () =>
+      removeActivity(activity.id);
   }
-
 }
 
+window.editActivity = openActivityForm;
 
-window.editActivity =
-  openActivityForm;
-
-
-window.removeActivity =
-  async function(id) {
-
-    if (
-      !confirm(
-        "Xóa activity này?"
-      )
-    ) return;
-
-
-    try {
-
-      await deleteDoc(
-        doc(
-          db,
-          "trips",
-          TRIP_ID,
-          "activities",
-          id
-        )
-      );
-
-      closeModal();
-
-      showToast(
-        "Đã xóa activity"
-      );
-
-    } catch (error) {
-
-      alert(error.message);
-
-    }
-
-  };
+window.removeActivity = async function (id) {
+  if (!confirm("Xóa activity này?")) return;
+  try {
+    await deleteDoc(doc(db, "trips", TRIP_ID, "activities", id));
+    closeModal();
+    showToast("Đã xóa activity");
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
 
 /* =========================================================
-   DSP
+   PHASE 7 (gọn) — DSP CONTROL
 ========================================================= */
 
 function renderDSP() {
+  const element = document.getElementById("tab-dsp");
 
-  const element =
-    document.getElementById(
-      "tab-dsp"
-    );
+  const used = state.dsp
+    .filter(item => item.visited)
+    .reduce((sum, item) => sum + Number(item.normalPrice || 0), 0);
 
+  const visitedCount = state.dsp.filter(i => i.visited).length;
+  const plannedCount = state.dsp.filter(i => i.planned).length;
 
-  const used =
-    state.dsp
-      .filter(
-        item => item.visited
-      )
-      .reduce(
-        (sum, item) =>
-          sum +
-          Number(
-            item.normalPrice || 0
-          ),
-        0
-      );
+  let countdownHtml = "";
+  let statusPill = '<span class="pill gray">Chưa kích hoạt</span>';
 
+  if (state.dspMain?.expiresAt) {
+    const expires = new Date(state.dspMain.expiresAt);
+    const remaining = Math.max(0, expires.getTime() - Date.now());
+    const activated = state.dspMain.activatedAt
+      ? new Date(state.dspMain.activatedAt)
+      : null;
+    const isActive =
+      remaining > 0 &&
+      (!activated || Date.now() >= activated.getTime());
+
+    statusPill = isActive
+      ? '<span class="pill green">ACTIVE</span>'
+      : remaining <= 0
+        ? '<span class="pill red">HẾT HẠN</span>'
+        : '<span class="pill orange">Chưa tới giờ</span>';
+
+    countdownHtml = `
+      <div class="card" style="margin-top:14px">
+        <div class="stat">
+          <div>
+            <h3>Còn lại</h3>
+            <div class="small muted">Hết hạn: ${expires.toLocaleString("vi-VN")}</div>
+          </div>
+          <strong>${formatCountdown(remaining)}</strong>
+        </div>
+        <div class="progress" style="margin-top:10px">
+          <i style="width:${Math.min(100, (remaining / (72 * 3600 * 1000)) * 100)}%"></i>
+        </div>
+      </div>
+    `;
+  }
 
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill orange">
-          DISCOVER SEOUL PASS
-        </span>
-
-        <h1>
-          DSP
-        </h1>
-
-        <div class="muted">
-          72 giờ
-        </div>
-
+        <span class="pill orange">DISCOVER SEOUL PASS</span>
+        <h1>DSP ${statusPill}</h1>
+        <div class="muted">72 giờ · dữ liệu từ Firestore</div>
       </div>
-
     </div>
-
 
     <div class="grid grid-3">
-
       <div class="card">
-
-        <div class="small muted">
-          Activation
-        </div>
-
-        <h2>
+        <div class="small muted">Activation</div>
+        <h2 style="font-size:16px">
           ${
-            state.dspMain
-              ? new Date(
-                  state.dspMain.activatedAt
-                ).toLocaleString(
-                  "vi-VN"
-                )
-              : "21/10 · 15:00"
+            state.dspMain?.activatedAt
+              ? new Date(state.dspMain.activatedAt).toLocaleString("vi-VN")
+              : "—"
           }
         </h2>
-
       </div>
-
-
       <div class="card">
-
-        <div class="small muted">
-          Expiration
-        </div>
-
-        <h2>
+        <div class="small muted">Expiration</div>
+        <h2 style="font-size:16px">
           ${
-            state.dspMain
-              ? new Date(
-                  state.dspMain.expiresAt
-                ).toLocaleString(
-                  "vi-VN"
-                )
-              : "24/10 · 15:00"
+            state.dspMain?.expiresAt
+              ? new Date(state.dspMain.expiresAt).toLocaleString("vi-VN")
+              : "—"
           }
         </h2>
-
       </div>
-
-
       <div class="card">
-
-        <div class="small muted">
-          Giá trị đã dùng
-        </div>
-
-        <h2>
-          ${money(used)}
-        </h2>
-
+        <div class="small muted">Giá trị đã dùng</div>
+        <h2>${money(used)}</h2>
+        <div class="small muted">${visitedCount} attraction · ${plannedCount} đã lên lịch</div>
       </div>
-
     </div>
 
+    ${countdownHtml}
 
-    <div
-      class="card"
-      style="margin-top:14px"
-    >
-
-      <h2>
-        Attractions
-      </h2>
-
-
+    <div class="card" style="margin-top:14px">
+      <h2>Attractions</h2>
       <div>
-
         ${
           state.dsp.map(item => `
-
             <div class="list-item">
-
               <div class="row">
-
                 <div>
-
-                  <b>
-                    ${escapeHtml(
-                      item.name
-                    )}
-                  </b>
-
+                  <b>${escapeHtml(item.name)}</b>
                   <div class="small muted">
-                    ${money(
-                      item.normalPrice
-                    )}
-                    · FREE với DSP
+                    ${money(item.normalPrice)} · FREE với DSP
+                    ${item.visited ? ' · <span class="pill green">Đã dùng</span>' : ""}
+                    ${item.planned && !item.visited ? ' · <span class="pill blue">Đã lên lịch</span>' : ""}
                   </div>
-
                 </div>
-
-
                 <div class="actions">
-
                   <button
-                    class="btn ${
-                      item.planned
-                        ? "blue"
-                        : ""
-                    }"
-                    onclick="toggleDSP(
-                      '${escapeHtml(
-                        item.id
-                      )}',
-                      'planned'
-                    )"
+                    class="btn ${item.planned ? "blue" : ""}"
+                    onclick="toggleDSP('${escapeHtml(item.id)}','planned')"
                   >
-                    ${
-                      item.planned
-                        ? "✓ Đã lên lịch"
-                        : "Lên lịch"
-                    }
+                    ${item.planned ? "✓ Lịch" : "Lên lịch"}
                   </button>
-
-
                   <button
-                    class="btn ${
-                      item.visited
-                        ? "green"
-                        : ""
-                    }"
-                    onclick="toggleDSP(
-                      '${escapeHtml(
-                        item.id
-                      )}',
-                      'visited'
-                    )"
+                    class="btn ${item.visited ? "green" : ""}"
+                    onclick="toggleDSP('${escapeHtml(item.id)}','visited')"
                   >
-                    ${
-                      item.visited
-                        ? "✓ Đã dùng"
-                        : "Đã dùng"
-                    }
+                    ${item.visited ? "✓ Dùng" : "Đã dùng"}
                   </button>
-
                 </div>
-
               </div>
-
             </div>
-
           `).join("")
-          ||
-          `
-            <div class="empty">
-              Chưa có dữ liệu DSP.
-            </div>
-          `
+          || `<div class="empty">Chưa có dữ liệu DSP.</div>`
         }
-
       </div>
-
     </div>
-
   `;
-
 }
 
 
-window.toggleDSP =
-  async function(id, field) {
-
-    const item =
-      state.dsp.find(
-        x => x.id === id
-      );
-
-    if (!item) return;
-
-
-    await updateDoc(
-      doc(
-        db,
-        "trips",
-        TRIP_ID,
-        "dsp",
-        id
-      ),
-      {
-        [field]: !item[field],
-        ...audit()
-      }
-    );
-
-  };
+window.toggleDSP = async function (id, field) {
+  const item = state.dsp.find(x => x.id === id);
+  if (!item) return;
+  await updateDoc(doc(db, "trips", TRIP_ID, "dsp", id), {
+    [field]: !item[field],
+    ...audit()
+  });
+};
 
 
 /* =========================================================
@@ -2732,373 +2280,133 @@ window.toggleDSP =
 ========================================================= */
 
 function renderExpenses() {
+  const element = document.getElementById("tab-expenses");
 
-  const element =
-    document.getElementById(
-      "tab-expenses"
-    );
+  const total = state.expenses.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
 
-
-  const total =
-    state.expenses.reduce(
-      (sum, item) =>
-        sum +
-        Number(item.amount || 0),
-      0
-    );
-
+  const todayStr = localDateString();
+  const todayTotal = state.expenses
+    .filter(e => e.date === todayStr)
+    .reduce((s, e) => s + Number(e.amount || 0), 0);
 
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill">
-          MONEY
-        </span>
-
-        <h1>
-          Chi tiêu
-        </h1>
-
+        <span class="pill">MONEY</span>
+        <h1>Chi tiêu</h1>
         <div class="muted">
-          Tổng:
-          <b>${money(total)}</b>
+          Tổng: <b>${money(total)}</b>
+          · Hôm nay: <b>${money(todayTotal)}</b>
         </div>
-
       </div>
-
-
-      <button
-        class="btn primary"
-        id="addExpense"
-      >
-        + Khoản chi
-      </button>
-
+      <button class="btn primary" id="addExpense">+ Khoản chi</button>
     </div>
 
-
     <div class="grid grid-3">
-
-      ${[
-        "food",
-        "transport",
-        "shopping"
-      ].map(category => `
-
+      ${["food", "transport", "shopping"].map(category => `
         <div class="card">
-
-          <div class="small muted">
-            ${category}
-          </div>
-
+          <div class="small muted">${category}</div>
           <h2>
             ${money(
               state.expenses
-                .filter(
-                  item =>
-                    item.category ===
-                    category
-                )
-                .reduce(
-                  (sum, item) =>
-                    sum +
-                    Number(
-                      item.amount || 0
-                    ),
-                  0
-                )
+                .filter(item => item.category === category)
+                .reduce((sum, item) => sum + Number(item.amount || 0), 0)
             )}
           </h2>
-
         </div>
-
       `).join("")}
-
     </div>
 
-
-    <div
-      class="card"
-      style="margin-top:14px"
-    >
-
+    <div class="card" style="margin-top:14px">
       ${
         state.expenses.length
-
           ? state.expenses
-              .sort(
-                (a,b) =>
-                  String(b.date)
-                    .localeCompare(
-                      String(a.date)
-                    )
-              )
+              .sort((a, b) => String(b.date).localeCompare(String(a.date)))
               .map(item => `
-
                 <div class="list-item">
-
                   <div class="row">
-
                     <div>
-
-                      <b>
-                        ${escapeHtml(
-                          item.description
-                        )}
-                      </b>
-
+                      <b>${escapeHtml(item.description)}</b>
                       <div class="small muted">
-
-                        ${escapeHtml(
-                          item.date || ""
-                        )}
-
-                        ·
-
-                        ${escapeHtml(
-                          item.category || ""
-                        )}
-
-                        ${
-                          item.payer
-                            ? " · " +
-                              escapeHtml(
-                                item.payer
-                              )
-                            : ""
-                        }
-
+                        ${escapeHtml(item.date || "")}
+                        · ${escapeHtml(item.category || "")}
+                        ${item.payer ? " · " + escapeHtml(item.payer) : ""}
                       </div>
-
                     </div>
-
-
                     <div class="actions">
-
-                      <strong>
-                        ${money(
-                          item.amount
-                        )}
-                      </strong>
-
-                      <button
-                        class="btn danger"
-                        onclick="removeExpense(
-                          '${escapeHtml(
-                            item.id
-                          )}'
-                        )"
-                      >
-                        Xóa
-                      </button>
-
+                      <strong>${money(item.amount)}</strong>
+                      <button class="btn danger" onclick="removeExpense('${escapeHtml(item.id)}')">Xóa</button>
                     </div>
-
                   </div>
-
                 </div>
-
               `).join("")
-
-          : `
-            <div class="empty">
-              Chưa có khoản chi.
-            </div>
-          `
+          : `<div class="empty">Chưa có khoản chi.</div>`
       }
-
     </div>
-
   `;
 
-
-  document.getElementById(
-    "addExpense"
-  ).onclick =
-    openExpenseForm;
-
+  document.getElementById("addExpense").onclick = openExpenseForm;
 }
 
 
 function openExpenseForm() {
-
   openModal(
-
     "Thêm khoản chi",
-
     `
-
-      <form
-        id="expenseForm"
-        class="form"
-      >
-
+      <form id="expenseForm" class="form">
         <div class="form-grid">
-
           <label>
-
             Ngày
-
-            <input
-              type="date"
-              name="date"
-              value="${state.selectedDay}"
-              required
-            >
-
+            <input type="date" name="date" value="${state.selectedDay || localDateString()}" required>
           </label>
-
-
           <label>
-
             Số tiền KRW
-
-            <input
-              type="number"
-              name="amount"
-              min="0"
-              required
-            >
-
+            <input type="number" name="amount" min="0" required>
           </label>
-
         </div>
-
-
         <div class="form-grid">
-
           <label>
-
             Danh mục
-
             <select name="category">
-
-              <option value="food">
-                food
-              </option>
-
-              <option value="transport">
-                transport
-              </option>
-
-              <option value="shopping">
-                shopping
-              </option>
-
-              <option value="ticket">
-                ticket
-              </option>
-
-              <option value="other">
-                other
-              </option>
-
+              <option value="food">food</option>
+              <option value="transport">transport</option>
+              <option value="shopping">shopping</option>
+              <option value="ticket">ticket</option>
+              <option value="other">other</option>
             </select>
-
           </label>
-
-
           <label>
-
             Người trả
-
-            <input
-              name="payer"
-              placeholder="Tôi / Vợ"
-            >
-
+            <input name="payer" placeholder="Tôi / Vợ">
           </label>
-
         </div>
-
-
         <label>
-
           Mô tả
-
-          <input
-            name="description"
-            required
-            placeholder="Ví dụ: ăn trưa..."
-          >
-
+          <input name="description" required placeholder="Ví dụ: ăn trưa...">
         </label>
-
-
-        <button
-          class="btn primary"
-        >
-          Lưu
-        </button>
-
+        <button class="btn primary">Lưu</button>
       </form>
-
     `
   );
 
-
-  document.getElementById(
-    "expenseForm"
-  ).onsubmit =
-    async event => {
-
-      event.preventDefault();
-
-      const data =
-        Object.fromEntries(
-          new FormData(
-            event.target
-          ).entries()
-        );
-
-      data.amount =
-        Number(data.amount);
-
-
-      await addDoc(
-        expensesRef,
-        {
-          ...data,
-          ...audit()
-        }
-      );
-
-
-      closeModal();
-
-      showToast(
-        "Đã thêm khoản chi"
-      );
-
-    };
-
+  document.getElementById("expenseForm").onsubmit = async event => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.target).entries());
+    data.amount = Number(data.amount);
+    await addDoc(expensesRef, { ...data, ...audit() });
+    closeModal();
+    showToast("Đã thêm khoản chi");
+  };
 }
 
 
-window.removeExpense =
-  async function(id) {
-
-    if (
-      !confirm(
-        "Xóa khoản chi?"
-      )
-    ) return;
-
-
-    await deleteDoc(
-      doc(
-        db,
-        "trips",
-        TRIP_ID,
-        "expenses",
-        id
-      )
-    );
-
-  };
+window.removeExpense = async function (id) {
+  if (!confirm("Xóa khoản chi?")) return;
+  await deleteDoc(doc(db, "trips", TRIP_ID, "expenses", id));
+};
 
 
 /* =========================================================
@@ -3106,135 +2414,66 @@ window.removeExpense =
 ========================================================= */
 
 function renderPlaces() {
-
-  const element =
-    document.getElementById(
-      "tab-places"
-    );
-
+  const element = document.getElementById("tab-places");
 
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill">
-          PLACES
-        </span>
-
-        <h1>
-          Địa điểm
-        </h1>
-
-        <div class="muted">
-          ${state.places.length}
-          địa điểm
-        </div>
-
+        <span class="pill">PLACES</span>
+        <h1>Địa điểm</h1>
+        <div class="muted">${state.places.length} địa điểm</div>
       </div>
-
+      <button class="btn" id="imHerePlaces">📍 Tôi đang ở đây</button>
     </div>
-
 
     <div class="card">
-
-      <input
-        id="placeSearch"
-        placeholder="Tìm địa điểm..."
-      >
-
-
-      <div
-        id="placeList"
-        style="margin-top:8px"
-      >
-
-        ${placeListHtml(
-          state.places
-        )}
-
+      <input id="placeSearch" placeholder="Tìm địa điểm...">
+      <div id="placeList" style="margin-top:8px">
+        ${placeListHtml(state.places)}
       </div>
-
     </div>
-
+    <div id="hereResultSlotPlaces"></div>
   `;
 
-
-  document.getElementById(
-    "placeSearch"
-  ).oninput = event => {
-
-    const keyword =
-      event.target.value
-        .toLowerCase()
-        .trim();
-
-
-    document.getElementById(
-      "placeList"
-    ).innerHTML =
-      placeListHtml(
-        state.places.filter(
-          place =>
-            place.name
-              .toLowerCase()
-              .includes(keyword)
-        )
-      );
-
+  document.getElementById("placeSearch").oninput = event => {
+    const keyword = event.target.value.toLowerCase().trim();
+    document.getElementById("placeList").innerHTML = placeListHtml(
+      state.places.filter(place =>
+        String(place.name || "").toLowerCase().includes(keyword)
+      )
+    );
   };
 
+  document.getElementById("imHerePlaces").onclick = () => {
+    // Reuse same logic but target places slot via temporary redirect to dashboard slot
+    state.tab = "dashboard";
+    document.querySelector('[data-tab="dashboard"]').click();
+    setTimeout(() => runImHere(), 120);
+  };
 }
 
 
 function placeListHtml(places) {
-
   if (!places.length) {
-
-    return `
-      <div class="empty">
-        Không tìm thấy.
-      </div>
-    `;
-
+    return `<div class="empty">Không tìm thấy.</div>`;
   }
 
-
   return places.map(place => `
-
     <div class="list-item">
-
       <div class="row">
-
         <div>
-
-          <b>
-            ${escapeHtml(
-              place.name
-            )}
-          </b>
-
+          <b>${escapeHtml(place.name)}</b>
           <div class="small muted">
-            ${place.lat},
-            ${place.lng}
+            ${place.lat != null ? place.lat : "—"},
+            ${place.lng != null ? place.lng : "—"}
           </div>
-
         </div>
-
-
         <div class="actions">
-
           ${mapButtons(place.id)}
-
         </div>
-
       </div>
-
     </div>
-
   `).join("");
-
 }
 
 
@@ -3243,263 +2482,209 @@ function placeListHtml(places) {
 ========================================================= */
 
 function renderMore() {
-
-  const element =
-    document.getElementById(
-      "tab-more"
-    );
-
+  const element = document.getElementById("tab-more");
 
   element.innerHTML = `
-
     <div class="hero">
-
       <div>
-
-        <span class="pill">
-          TOOLS
-        </span>
-
-        <h1>
-          Khác
-        </h1>
-
-        <div class="muted">
-          Backup và ghi chú.
-        </div>
-
+        <span class="pill">TOOLS</span>
+        <h1>Khác</h1>
+        <div class="muted">Backup và ghi chú.</div>
       </div>
-
     </div>
-
 
     <div class="grid grid-2">
-
       <div class="card">
-
-        <h2>
-          📝 Ghi chú chuyến đi
-        </h2>
-
-        <textarea
-          id="planningNote"
-          placeholder="Ghi chú chung..."
-        ></textarea>
-
-        <button
-          id="saveNote"
-          class="btn primary"
-          style="margin-top:8px"
-        >
-          Lưu
-        </button>
-
+        <h2>📝 Ghi chú chuyến đi</h2>
+        <textarea id="planningNote" placeholder="Ghi chú chung..."></textarea>
+        <button id="saveNote" class="btn primary" style="margin-top:8px">Lưu</button>
       </div>
-
-
       <div class="card">
-
-        <h2>
-          💾 Backup
-        </h2>
-
-        <p class="muted small">
-          Xuất dữ liệu hiện tại thành
-          file JSON.
-        </p>
-
-        <button
-          id="exportJson"
-          class="btn"
-        >
-          Export JSON
-        </button>
-
+        <h2>💾 Backup</h2>
+        <p class="muted small">Xuất dữ liệu hiện tại thành file JSON.</p>
+        <button id="exportJson" class="btn">Export JSON</button>
       </div>
-
     </div>
-
   `;
 
-
   loadPlanningNote();
-
-
-  document.getElementById(
-    "saveNote"
-  ).onclick =
-    savePlanningNote;
-
-
-  document.getElementById(
-    "exportJson"
-  ).onclick =
-    exportJson;
-
+  document.getElementById("saveNote").onclick = savePlanningNote;
+  document.getElementById("exportJson").onclick = exportJson;
 }
 
 
 async function loadPlanningNote() {
-
   try {
+    const snapshot = await import(
+      "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+    ).then(module => module.getDocs(notesRef));
 
-    const snapshot =
-      await import(
-        "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
-      ).then(module =>
-        module.getDocs(
-          notesRef
-        )
-      );
-
-
-    const note =
-      snapshot.docs.find(
-        doc =>
-          doc.id === "planning"
-      );
-
-
+    const note = snapshot.docs.find(d => d.id === "planning");
     if (note) {
-
-      const textarea =
-        document.getElementById(
-          "planningNote"
-        );
-
-      if (textarea) {
-
-        textarea.value =
-          note.data().text || "";
-
-      }
-
+      const textarea = document.getElementById("planningNote");
+      if (textarea) textarea.value = note.data().text || "";
     }
-
   } catch (error) {
-
     console.error(error);
-
   }
-
 }
 
 
 async function savePlanningNote() {
-
-  const text =
-    document.getElementById(
-      "planningNote"
-    ).value;
-
-
+  const text = document.getElementById("planningNote").value;
   await setDoc(
-    doc(
-      db,
-      "trips",
-      TRIP_ID,
-      "notes",
-      "planning"
-    ),
-    {
-      text,
-      ...audit()
-    },
-    {
-      merge: true
-    }
+    doc(db, "trips", TRIP_ID, "notes", "planning"),
+    { text, ...audit() },
+    { merge: true }
   );
-
-
-  showToast(
-    "Đã lưu ghi chú"
-  );
-
+  showToast("Đã lưu ghi chú");
 }
 
 
 async function exportJson() {
-
   const data = {
-
     tripId: TRIP_ID,
-
-    exportedAt:
-      new Date().toISOString(),
-
-    activities:
-      state.activities,
-
-    places:
-      state.places,
-
-    expenses:
-      state.expenses,
-
-    dsp:
-      state.dsp,
-
-    dspMain:
-      state.dspMain
-
+    exportedAt: new Date().toISOString(),
+    activities: state.activities,
+    places: state.places,
+    expenses: state.expenses,
+    dsp: state.dsp,
+    dspMain: state.dspMain
   };
 
-
-  const blob =
-    new Blob(
-      [
-        JSON.stringify(
-          data,
-          null,
-          2
-        )
-      ],
-      {
-        type:
-          "application/json"
-      }
-    );
-
-
-  const url =
-    URL.createObjectURL(blob);
-
-
-  const link =
-    document.createElement("a");
-
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
   link.href = url;
-
-  link.download =
-    "seoul-2026-backup.json";
-
+  link.download = "seoul-2026-backup.json";
   link.click();
-
   URL.revokeObjectURL(url);
-
 }
 
 
 /* =========================================================
-   RENDER
+   QUICK ADD (Phase 10 early)
+========================================================= */
+
+function openQuickAdd() {
+  openModal(
+    "Quick Add",
+    `
+      <div class="quick-sheet">
+        <button class="btn" id="qaActivity">📅 Activity</button>
+        <button class="btn" id="qaExpense">💳 Khoản chi</button>
+        <button class="btn" id="qaNote">📝 Ghi chú nhanh</button>
+      </div>
+    `
+  );
+
+  document.getElementById("qaActivity").onclick = () => {
+    closeModal();
+    openActivityForm();
+  };
+  document.getElementById("qaExpense").onclick = () => {
+    closeModal();
+    openExpenseForm();
+  };
+  document.getElementById("qaNote").onclick = () => {
+    closeModal();
+    openQuickNote();
+  };
+}
+
+
+function openQuickNote() {
+  openModal(
+    "Ghi chú nhanh",
+    `
+      <form id="quickNoteForm" class="form">
+        <label>
+          Nội dung
+          <textarea name="text" required placeholder="Ghi nhanh..."></textarea>
+        </label>
+        <button class="btn primary">Lưu vào ghi chú chuyến đi</button>
+      </form>
+    `
+  );
+
+  document.getElementById("quickNoteForm").onsubmit = async event => {
+    event.preventDefault();
+    const text = new FormData(event.target).get("text");
+    const stamp = new Date().toLocaleString("vi-VN");
+    const line = `\n[${stamp}] ${text}`;
+
+    // Append to planning note
+    try {
+      const { getDoc } = await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+      );
+      const ref = doc(db, "trips", TRIP_ID, "notes", "planning");
+      const snap = await getDoc(ref);
+      const prev = snap.exists() ? (snap.data().text || "") : "";
+      await setDoc(ref, { text: prev + line, ...audit() }, { merge: true });
+      closeModal();
+      showToast("Đã lưu ghi chú");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+}
+
+
+document.getElementById("quickAddFab").onclick = openQuickAdd;
+
+
+/* =========================================================
+   RENDER + NOW TIMER
 ========================================================= */
 
 function render() {
-
   if (!state.user) return;
 
   renderDashboard();
-
   renderItinerary();
-
   renderDSP();
-
   renderExpenses();
-
   renderPlaces();
-
   renderMore();
 
+  // Wire DSP mini button if present
+  const goDsp = document.getElementById("goDspMini");
+  if (goDsp) {
+    goDsp.onclick = () => {
+      state.tab = "dsp";
+      document.querySelector('[data-tab="dsp"]').click();
+    };
+  }
+}
+
+
+function startNowTimer() {
+  stopNowTimer();
+  nowTimer = setInterval(() => {
+    state.nowTick = Date.now();
+    // Only soft-refresh dashboard if visible — avoid full map rebuild
+    if (state.tab === "dashboard" && state.user) {
+      renderDashboard();
+      const goDsp = document.getElementById("goDspMini");
+      if (goDsp) {
+        goDsp.onclick = () => {
+          state.tab = "dsp";
+          document.querySelector('[data-tab="dsp"]').click();
+        };
+      }
+    }
+  }, 30000);
+}
+
+
+function stopNowTimer() {
+  if (nowTimer) {
+    clearInterval(nowTimer);
+    nowTimer = null;
+  }
 }
 
 
@@ -3507,117 +2692,47 @@ function render() {
    AUTH
 ========================================================= */
 
-document.getElementById(
-  "loginBtn"
-).onclick = async () => {
-
+document.getElementById("loginBtn").onclick = async () => {
   try {
-
-    await signInWithPopup(
-      auth,
-      provider
-    );
-
+    await signInWithPopup(auth, provider);
   } catch (error) {
-
-    const element =
-      document.getElementById(
-        "loginError"
-      );
-
-    element.textContent =
-      error.message;
-
-    element.classList.remove(
-      "hidden"
-    );
-
+    const element = document.getElementById("loginError");
+    element.textContent = error.message;
+    element.classList.remove("hidden");
   }
-
 };
 
 
-document.getElementById(
-  "logoutBtn"
-).onclick = () =>
-  signOut(auth);
+document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
 
-/* =========================================================
-   AUTH STATE
-========================================================= */
+onAuthStateChanged(auth, user => {
+  state.user = user;
 
-onAuthStateChanged(
-  auth,
-  user => {
+  document.getElementById("loginView").classList.toggle("hidden", !!user);
+  document.getElementById("appView").classList.toggle("hidden", !user);
 
-    state.user = user;
-
-
-    document
-      .getElementById("loginView")
-      .classList.toggle(
-        "hidden",
-        !!user
-      );
-
-
-    document
-      .getElementById("appView")
-      .classList.toggle(
-        "hidden",
-        !user
-      );
-
-
-    if (!user) {
-
-      state.unsubscribe
-        .forEach(
-          unsubscribe =>
-            unsubscribe?.()
-        );
-
-      state.unsubscribe = [];
-
-      destroyDayMap();
-
-      return;
-
-    }
-
-
-    document.getElementById(
-      "userName"
-    ).textContent =
-      user.displayName ||
-      user.email ||
-      "";
-
-
-    if (user.photoURL) {
-
-      const avatar =
-        document.getElementById(
-          "avatar"
-        );
-
-      avatar.src =
-        user.photoURL;
-
-      avatar.classList.remove(
-        "hidden"
-      );
-
-    }
-
-
-    subscribeFirestore();
-
-    render();
-
+  if (!user) {
+    state.unsubscribe.forEach(unsub => unsub?.());
+    state.unsubscribe = [];
+    destroyDayMap();
+    stopNowTimer();
+    return;
   }
-);
+
+  document.getElementById("userName").textContent =
+    user.displayName || user.email || "";
+
+  if (user.photoURL) {
+    const avatar = document.getElementById("avatar");
+    avatar.src = user.photoURL;
+    avatar.classList.remove("hidden");
+  }
+
+  subscribeFirestore();
+  startNowTimer();
+  render();
+});
 
 </script>
 
