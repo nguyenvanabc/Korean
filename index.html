@@ -952,6 +952,15 @@
       .tl-time { grid-column: 2; }
     }
 
+  
+    #dayMap {
+      background: #e2e8f0;
+      min-height: 240px;
+    }
+    .leaflet-tile-container img {
+      /* slightly smoother on mobile */
+    }
+
   </style>
 </head>
 
@@ -1421,7 +1430,7 @@ function openPlaceMaps(placeId) {
   const naverWeb = place.naverMapsUrl ||
     (name ? `https://map.naver.com/p/search/${encodeURIComponent(name)}` : null);
 
-  // Deep link mở app — Safari giữ nguyên tab lịch trình, không cần Back
+  // App schemes: mở app, Safari giữ nguyên trang lịch trình
   const naverApp = name
     ? `nmap://search?query=${encodeURIComponent(name)}`
     : (hasCoord ? `nmap://map?lat=${lat}&lng=${lng}&zoom=15` : null);
@@ -1429,7 +1438,7 @@ function openPlaceMaps(placeId) {
     ? `comgooglemaps://?q=${lat},${lng}`
     : (name ? `comgooglemaps://?q=${encodeURIComponent(name)}` : null);
   const appleMaps = hasCoord
-    ? `maps://?q=${lat},${lng}`
+    ? `maps://?ll=${lat},${lng}&q=${encodeURIComponent(name || "Place")}`
     : (name ? `maps://?q=${encodeURIComponent(name)}` : null);
 
   if (!naverWeb && !googleWeb && !appleMaps) {
@@ -1437,74 +1446,72 @@ function openPlaceMaps(placeId) {
     return;
   }
 
-  /** Mở app native nếu có; trang lịch trình vẫn nằm dưới — không navigate đi */
   function openApp(appUrl) {
-    if (!appUrl) return false;
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = appUrl;
-    document.body.appendChild(iframe);
-    setTimeout(() => iframe.remove(), 1500);
-    // cũng thử location scheme qua hidden anchor (iOS)
-    const a = document.createElement("a");
-    a.href = appUrl;
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    return true;
+    // Dùng hidden iframe/anchor để không rời trang hiện tại
+    try {
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "display:none;width:0;height:0;border:0";
+      iframe.src = appUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => { try { iframe.remove(); } catch(_){} }, 2000);
+    } catch (_) {}
+    try {
+      const a = document.createElement("a");
+      a.setAttribute("href", appUrl);
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 100);
+    } catch (_) {}
   }
 
-  /** Web: tab mới — tab lịch trình vẫn còn, không cần Back */
   function openWebNewTab(url) {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
+    // Tab mới: trang Seoul Trip Companion không bị thay thế
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if (!w) {
+      // Popup bị chặn → dùng anchor
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
   }
 
   openModal("🗺 " + (name || "Bản đồ"), `
-    <p class="muted small" style="margin:0 0 8px">
-      ${escapeHtml(name || "—")}
-      ${hasCoord ? `<br><span class="small">${lat}, ${lng}</span>` : ""}
-    </p>
+    <p style="margin:0 0 6px;font-weight:700">${escapeHtml(name || "—")}</p>
     <p class="small muted" style="margin:0 0 12px">
-      Ưu tiên mở <b>app bản đồ</b> — lịch trình vẫn giữ nguyên, không cần Back.<br>
-      Nếu không có app → mở tab mới (tab này vẫn còn).
+      Lịch trình <b>không bị rời đi</b>. Mở app hoặc tab map riêng, rồi vuốt về Safari tab này.
     </p>
     <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
-      ${naverWeb || naverApp ? `<button type="button" class="btn primary" id="openNaverMap">Naver Map</button>` : ""}
-      ${googleWeb || googleApp ? `<button type="button" class="btn" id="openGoogleMap">Google Maps</button>` : ""}
+      ${naverApp ? `<button type="button" class="btn primary" id="openNaverApp">Naver Map (app)</button>` : ""}
+      ${naverWeb ? `<button type="button" class="btn" id="openNaverWeb">Naver Map (web · tab mới)</button>` : ""}
+      ${googleApp ? `<button type="button" class="btn" id="openGoogleApp">Google Maps (app)</button>` : ""}
+      ${googleWeb ? `<button type="button" class="btn" id="openGoogleWeb">Google Maps (web · tab mới)</button>` : ""}
       ${appleMaps ? `<button type="button" class="btn" id="openAppleMap">Apple Maps</button>` : ""}
-      <button type="button" class="btn" id="copyPlaceName">📋 Sao chép tên địa điểm</button>
+      <button type="button" class="btn" id="copyPlaceName">📋 Sao chép tên</button>
     </div>
   `);
 
-  const nBtn = document.getElementById("openNaverMap");
-  if (nBtn) nBtn.onclick = () => {
-    closeModal();
-    if (naverApp) openApp(naverApp);
-    // Luôn mở web tab mới làm fallback an toàn (tab lịch trình không mất)
-    setTimeout(() => openWebNewTab(naverWeb), 400);
+  const bind = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = fn;
   };
-  const gBtn = document.getElementById("openGoogleMap");
-  if (gBtn) gBtn.onclick = () => {
-    closeModal();
-    if (googleApp) openApp(googleApp);
-    setTimeout(() => openWebNewTab(googleWeb), 400);
-  };
-  const aBtn = document.getElementById("openAppleMap");
-  if (aBtn) aBtn.onclick = () => {
-    closeModal();
-    openApp(appleMaps);
-  };
-  const cBtn = document.getElementById("copyPlaceName");
-  if (cBtn) cBtn.onclick = async () => {
+  bind("openNaverApp", () => { closeModal(); openApp(naverApp); showToast("Đang mở Naver Map…"); });
+  bind("openNaverWeb", () => { closeModal(); openWebNewTab(naverWeb); });
+  bind("openGoogleApp", () => { closeModal(); openApp(googleApp); showToast("Đang mở Google Maps…"); });
+  bind("openGoogleWeb", () => { closeModal(); openWebNewTab(googleWeb); });
+  bind("openAppleMap", () => { closeModal(); openApp(appleMaps); showToast("Đang mở Apple Maps…"); });
+  bind("copyPlaceName", async () => {
     try {
       await navigator.clipboard.writeText(name || (hasCoord ? `${lat},${lng}` : ""));
-      showToast("Đã sao chép");
+      showToast("Đã sao chép tên địa điểm");
     } catch (_) {
-      showToast(name || "—");
+      prompt("Sao chép:", name || "");
     }
-  };
+  });
 }
 window.openPlaceMaps = openPlaceMaps;
 
@@ -2488,29 +2495,41 @@ function initOrUpdateDayMap(day) {
   if (!mapEl) return;
 
   const points = getDayMapPoints(day);
+  const defaultCenter = [37.5665, 126.9780];
 
+  // #dayMap bị thay mỗi lần render itinerary → phải tạo map mới sạch
   if (dayMap) {
     try { dayMap.remove(); } catch (_) {}
     dayMap = null;
     dayMapLayerGroup = null;
   }
-
-  const defaultCenter = [37.5665, 126.9780];
+  // Xóa state Leaflet còn sót trên DOM node
+  if (mapEl._leaflet_id) {
+    try { delete mapEl._leaflet_id; } catch (_) { mapEl._leaflet_id = undefined; }
+  }
+  mapEl.innerHTML = "";
 
   dayMap = L.map(mapEl, {
     zoomControl: true,
-    attributionControl: true
+    attributionControl: true,
+    preferCanvas: true,
+    fadeAnimation: false,
+    zoomAnimation: true
   });
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  // Tile ổn định hơn tile.openstreetmap.org (CDN Carto, data OSM, miễn phí)
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    maxZoom: 20,
+    subdomains: "abcd",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · CARTO',
+    updateWhenIdle: true,
+    keepBuffer: 2,
+    errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
   }).addTo(dayMap);
 
   dayMapLayerGroup = L.layerGroup().addTo(dayMap);
 
   const latLngs = [];
-
   points.forEach((pt, index) => {
     const num = index + 1;
     const icon = L.divIcon({
@@ -2520,52 +2539,29 @@ function initOrUpdateDayMap(day) {
       iconAnchor: [14, 14],
       popupAnchor: [0, -14]
     });
-
     const marker = L.marker([pt.lat, pt.lng], { icon }).addTo(dayMapLayerGroup);
-
     const timeStr = [pt.activity.startTime || "", pt.activity.endTime || ""]
-      .filter(Boolean)
-      .join(" – ");
-
-    const googleUrl =
-      pt.place.googleMapsUrl ||
+      .filter(Boolean).join(" – ");
+    const googleUrl = pt.place.googleMapsUrl ||
       `https://www.google.com/maps/search/?api=1&query=${pt.lat},${pt.lng}`;
-
-    const naverUrl =
-      pt.place.naverMapsUrl ||
-      (pt.place.name
-        ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}`
-        : null);
-
-    let popupHtml = `
-      <b>${escapeHtml(pt.place.name || "—")}</b><br>
-      <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>
-    `;
+    const naverUrl = pt.place.naverMapsUrl ||
+      (pt.place.name ? `https://map.naver.com/p/search/${encodeURIComponent(pt.place.name)}` : null);
+    let popupHtml = `<b>${escapeHtml(pt.place.name || "—")}</b><br>
+      <span style="color:#64748b">${escapeHtml(timeStr || "—")}</span>`;
     if (pt.activity.notes) {
       popupHtml += `<br><span style="color:#64748b;font-size:12px">${escapeHtml(pt.activity.notes)}</span>`;
     }
-
     const links = [];
-    if (googleUrl) {
-      links.push(`<a href="${escapeHtml(googleUrl)}" target="_blank" rel="noopener">Google Maps</a>`);
-    }
-    if (naverUrl) {
-      links.push(`<a href="${escapeHtml(naverUrl)}" target="_blank" rel="noopener">Naver Map</a>`);
-    }
-    if (links.length) {
-      popupHtml += `<div class="popup-actions">${links.join("")}</div>`;
-    }
-
+    if (googleUrl) links.push(`<a href="${escapeHtml(googleUrl)}" target="_blank" rel="noopener">Google Maps</a>`);
+    if (naverUrl) links.push(`<a href="${escapeHtml(naverUrl)}" target="_blank" rel="noopener">Naver Map</a>`);
+    if (links.length) popupHtml += `<div class="popup-actions">${links.join("")}</div>`;
     marker.bindPopup(popupHtml);
     latLngs.push([pt.lat, pt.lng]);
   });
 
   if (latLngs.length >= 2) {
     L.polyline(latLngs, {
-      color: "#2563eb",
-      weight: 3,
-      opacity: 0.75,
-      dashArray: "6 8"
+      color: "#2563eb", weight: 3, opacity: 0.75, dashArray: "6 8"
     }).addTo(dayMapLayerGroup);
   }
 
@@ -2577,9 +2573,12 @@ function initOrUpdateDayMap(day) {
     dayMap.fitBounds(latLngs, { padding: [36, 36], maxZoom: 15 });
   }
 
-  setTimeout(() => {
-    if (dayMap) dayMap.invalidateSize();
-  }, 80);
+  // Container mobile thường layout chậm → invalidateSize lặp
+  const fixSize = () => { if (dayMap) dayMap.invalidateSize({ animate: false }); };
+  requestAnimationFrame(fixSize);
+  setTimeout(fixSize, 100);
+  setTimeout(fixSize, 350);
+  setTimeout(fixSize, 800);
 
   renderDayMapDistances(points);
 }
@@ -3381,7 +3380,10 @@ function renderMore() {
               <div class="small muted">${escapeHtml(a.date || "")} · ${escapeHtml(a.startTime || "")}</div>
             </div>
             <div class="actions">
+              <div class="actions">
               <button class="btn sm" data-restore-act="${escapeHtml(a.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-act="${escapeHtml(a.id)}">Xóa</button>
+            </div>
               <button class="btn sm danger" data-purge-act="${escapeHtml(a.id)}">Xóa</button>
             </div>
           </div>
@@ -3396,7 +3398,10 @@ function renderMore() {
               <div class="small muted">${escapeHtml(e.date || "")} · ${money(e.amount)}</div>
             </div>
             <div class="actions">
+              <div class="actions">
               <button class="btn sm" data-restore-exp="${escapeHtml(e.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-exp="${escapeHtml(e.id)}">Xóa</button>
+            </div>
               <button class="btn sm danger" data-purge-exp="${escapeHtml(e.id)}">Xóa</button>
             </div>
           </div>
@@ -3411,7 +3416,10 @@ function renderMore() {
               <div class="small muted">${escapeHtml(b.date || "")}</div>
             </div>
             <div class="actions">
+              <div class="actions">
               <button class="btn sm" data-restore-booking="${escapeHtml(b.id)}">↩ Khôi phục</button>
+              <button class="btn sm danger" data-purge-booking="${escapeHtml(b.id)}">Xóa</button>
+            </div>
               <button class="btn sm danger" data-purge-booking="${escapeHtml(b.id)}">Xóa</button>
             </div>
           </div>
