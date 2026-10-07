@@ -398,237 +398,213 @@ function setStatus(message, type = "info") {
    ========================================================= */
 
 const places = [
-
   {
     id: "home-nowon",
     name: "Home – Nowon",
     address: "Nowon-gu, Seoul, South Korea",
-    lat: null,
-    lng: null,
+    lat: 37.62536,
+    lng: 127.07348,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Nowon-gu+Seoul",
     naverMapsUrl: "https://map.naver.com/p/search/Nowon-gu%20Seoul"
   },
-
   {
     id: "incheon-airport-t1",
     name: "Incheon International Airport Terminal 1",
     address: "272 Gonghang-ro, Jung-gu, Incheon, South Korea",
-    lat: null,
-    lng: null,
+    lat: 37.46020,
+    lng: 126.44070,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport+Terminal+1",
     naverMapsUrl: "https://map.naver.com/p/search/Incheon%20International%20Airport%20Terminal%201"
   },
-
   {
     id: "kyung-hee-university",
     name: "Kyung Hee University",
     address: "26 Kyungheedae-ro, Dongdaemun-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.59616,
+    lng: 127.05252,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Kyung+Hee+University+Seoul",
     naverMapsUrl: "https://map.naver.com/p/search/Kyung%20Hee%20University"
   },
-
   {
     id: "hwarangdae-railway-park",
     name: "Hwarangdae Railway Park",
     address: "1455 Gongneung-dong, Nowon-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.62382,
+    lng: 127.08535,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Hwarangdae+Railway+Park",
     naverMapsUrl: "https://map.naver.com/p/search/Hwarangdae%20Railway%20Park"
   },
-
   {
     id: "nami-island",
     name: "Nami Island",
     address: "1 Namiseom-gil, Namsan-myeon, Chuncheon-si, Gangwon-do",
-    lat: null,
-    lng: null,
+    lat: 37.80587,
+    lng: 127.52558,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Nami+Island+Korea",
     naverMapsUrl: "https://map.naver.com/p/search/Nami%20Island"
   },
-
   {
     id: "gwangjang-market",
     name: "Gwangjang Market",
     address: "88 Changgyeonggung-ro, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.57022,
+    lng: 126.99951,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Gwangjang+Market",
     naverMapsUrl: "https://map.naver.com/p/search/Gwangjang%20Market"
   },
-
   {
     id: "dongmyo-market",
     name: "Dongmyo Flea Market",
     address: "Dongmyo-dong, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.57310,
+    lng: 127.01770,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Dongmyo+Flea+Market",
     naverMapsUrl: "https://map.naver.com/p/search/Dongmyo%20Flea%20Market"
   },
-
   {
     id: "ewha-womans-university",
     name: "Ewha Womans University",
     address: "52 Ewhayeodae-gil, Seodaemun-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.55663,
+    lng: 126.94503,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Ewha+Womans+University",
     naverMapsUrl: "https://map.naver.com/p/search/Ewha%20Womans%20University"
   },
-
   {
     id: "haneul-park",
     name: "Haneul Park",
     address: "95 Haneulgongwon-ro, Mapo-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.56821,
+    lng: 126.88547,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Haneul+Park+Seoul",
     naverMapsUrl: "https://map.naver.com/p/search/Haneul%20Park"
   },
-
   {
     id: "suwon-hwaseong",
     name: "Suwon Hwaseong Fortress",
     address: "Suwon, Gyeonggi-do, South Korea",
-    lat: null,
-    lng: null,
+    lat: 37.28740,
+    lng: 127.01260,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Suwon+Hwaseong+Fortress",
     naverMapsUrl: "https://map.naver.com/p/search/Suwon%20Hwaseong"
   },
-
   {
     id: "starfield-suwon",
     name: "Starfield Suwon",
     address: "175 Suwoncheon-ro, Jangan-gu, Suwon",
-    lat: null,
-    lng: null,
+    lat: 37.28612,
+    lng: 126.99124,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Starfield+Suwon",
     naverMapsUrl: "https://map.naver.com/p/search/Starfield%20Suwon"
   },
-
   {
     id: "korean-folk-village",
     name: "Korean Folk Village",
     address: "90 Minsokchon-ro, Giheung-gu, Yongin-si",
-    lat: null,
-    lng: null,
+    lat: 37.25959,
+    lng: 127.12057,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Korean+Folk+Village+Yongin",
     naverMapsUrl: "https://map.naver.com/p/search/Korean%20Folk%20Village"
   },
-
   {
     id: "gyeongbokgung",
     name: "Gyeongbokgung Palace",
     address: "161 Sajik-ro, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.57952,
+    lng: 126.97709,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Gyeongbokgung+Palace",
     naverMapsUrl: "https://map.naver.com/p/search/Gyeongbokgung"
   },
-
   {
     id: "bukchon-hanok-village",
     name: "Bukchon Hanok Village",
     address: "Bukchon-ro, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.58239,
+    lng: 126.98587,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Bukchon+Hanok+Village",
     naverMapsUrl: "https://map.naver.com/p/search/Bukchon%20Hanok%20Village"
   },
-
   {
     id: "insadong",
     name: "Insadong / Ssamzigil",
     address: "Insadong-gil, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.57144,
+    lng: 126.98632,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Insadong+Ssamzigil",
     naverMapsUrl: "https://map.naver.com/p/search/Insadong%20Ssamzigil"
   },
-
   {
     id: "ikseon-dong",
     name: "Ikseon-dong",
     address: "Ikseon-dong, Jongno-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.57436,
+    lng: 126.98978,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Ikseon-dong+Seoul",
     naverMapsUrl: "https://map.naver.com/p/search/Ikseon-dong"
   },
-
   {
     id: "myeongdong-cathedral",
     name: "Myeongdong Cathedral",
     address: "74 Myeongdong-gil, Jung-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.56327,
+    lng: 126.98726,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Myeongdong+Cathedral",
     naverMapsUrl: "https://map.naver.com/p/search/Myeongdong%20Cathedral"
   },
-
   {
     id: "n-seoul-tower",
     name: "N Seoul Tower",
     address: "105 Namsangongwon-gil, Yongsan-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.55122,
+    lng: 126.988275,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=N+Seoul+Tower",
     naverMapsUrl: "https://map.naver.com/p/search/N%20Seoul%20Tower"
   },
-
   {
     id: "hwadam-forest",
     name: "Hwadam Forest",
     address: "278-1 Docheokwitangol-gil, Docheok-myeon, Gwangju-si, Gyeonggi-do",
-    lat: null,
-    lng: null,
+    lat: 37.33924,
+    lng: 127.29221,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Hwadam+Forest",
     naverMapsUrl: "https://map.naver.com/p/search/Hwadam%20Forest"
   },
-
   {
     id: "banpo-hangang-park",
     name: "Banpo Hangang Park",
     address: "40 Banpo-dong, Seocho-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.50912,
+    lng: 126.99219,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Banpo+Hangang+Park",
     naverMapsUrl: "https://map.naver.com/p/search/Banpo%20Hangang%20Park"
   },
-
   {
     id: "lotte-world",
     name: "Lotte World",
     address: "240 Olympic-ro, Songpa-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.51132,
+    lng: 127.09825,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Lotte+World+Seoul",
     naverMapsUrl: "https://map.naver.com/p/search/Lotte%20World"
   },
-
   {
     id: "coex-aquarium",
     name: "COEX Aquarium",
     address: "513 Yeongdong-daero, Gangnam-gu, Seoul",
-    lat: null,
-    lng: null,
+    lat: 37.51318,
+    lng: 127.05835,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=COEX+Aquarium",
     naverMapsUrl: "https://map.naver.com/p/search/COEX%20Aquarium"
   },
-
   {
     id: "unseo",
     name: "Unseo / Airport area",
     address: "Unseo-dong, Jung-gu, Incheon",
-    lat: null,
-    lng: null,
+    lat: 37.49275,
+    lng: 126.49273,
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Unseo+Station+Incheon",
     naverMapsUrl: "https://map.naver.com/p/search/Unseo%20Station"
   }
-
 ];
 
 
