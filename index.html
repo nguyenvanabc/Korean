@@ -998,6 +998,77 @@
     }
     .place-link:active { opacity: 0.7; }
 
+  
+    /* Segment / chip selectors (expense category, payer, …) */
+    .seg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .seg button {
+      border: 1.5px solid var(--line, #e2e8f0);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.2;
+      min-height: 42px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .12s, border-color .12s, color .12s;
+    }
+    .seg button.on {
+      background: #eef2ff;
+      border-color: #6366f1;
+      color: #3730a3;
+      box-shadow: 0 0 0 1px #6366f1;
+    }
+    .seg button:active {
+      transform: scale(0.98);
+    }
+    /* Expense form mobile */
+    #expenseForm label {
+      display: block;
+      margin-bottom: 14px;
+      font-size: 13px;
+      font-weight: 650;
+      color: #475569;
+    }
+    #expenseForm input[type="number"],
+    #expenseForm input[type="date"],
+    #expenseForm input[type="time"],
+    #expenseForm input[type="text"],
+    #expenseForm select,
+    #expenseForm textarea {
+      width: 100%;
+      margin-top: 6px;
+      min-height: 46px;
+      font-size: 16px !important; /* tránh zoom iOS */
+      border-radius: 12px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    #expenseForm .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 380px) {
+      #expenseForm .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .exp-amount-wrap input {
+      font-size: 28px !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.02em;
+      text-align: center;
+      padding: 16px 12px !important;
+    }
+
   </style>
 </head>
 
@@ -3228,18 +3299,23 @@ function renderExpenses() {
     </div>
 
     <div class="grid grid-3">
-      ${["food", "transport", "shopping"].map(category => `
-        <div class="card">
-          <div class="small muted">${category}</div>
-          <h2>
-            ${money(
-              activeExpenses()
-                .filter(item => item.category === category)
-                .reduce((sum, item) => sum + Number(item.amount || 0), 0)
-            )}
-          </h2>
-        </div>
-      `).join("")}
+      ${(() => {
+        const preset = ["food", "transport", "shopping", "ticket"];
+        const fromData = [...new Set(activeExpenses().map(e => e.category).filter(Boolean))];
+        const cats = [...preset];
+        fromData.forEach(c => { if (!cats.includes(c)) cats.push(c); });
+        return cats.map(category => {
+          const sum = activeExpenses()
+            .filter(item => item.category === category)
+            .reduce((s, item) => s + Number(item.amount || 0), 0);
+          if (!preset.includes(category) && sum === 0) return "";
+          return `
+            <div class="card">
+              <div class="small muted">${escapeHtml(category)}</div>
+              <h2>${money(sum)}</h2>
+            </div>`;
+        }).join("");
+      })()}
     </div>
 
     <div class="card" style="margin-top:14px">
@@ -3289,14 +3365,14 @@ function openExpenseForm() {
     "Thêm khoản chi",
     `
       <form id="expenseForm" class="form">
-        <label>
-          Mô tả
-          <input name="description" required placeholder="Ăn trưa, taxi, cafe…" autocomplete="off">
+        <label class="exp-amount-wrap">
+          Số tiền (KRW)
+          <input type="number" name="amount" min="0" step="1" required inputmode="numeric" placeholder="0" enterkeyhint="next">
         </label>
 
         <label>
-          Số tiền (KRW)
-          <input type="number" name="amount" min="0" step="1" required inputmode="numeric" placeholder="0" style="font-size:22px;font-weight:700;padding:14px 12px">
+          Mô tả
+          <input name="description" required placeholder="Cafe, taxi, cơm…" autocomplete="off" enterkeyhint="done">
         </label>
 
         <div class="form-grid">
@@ -3310,67 +3386,72 @@ function openExpenseForm() {
           </label>
         </div>
 
-        <label>
-          Danh mục
-          <div class="seg" id="expCatSeg" style="margin-top:4px">
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:650;color:#475569">Danh mục</div>
+          <div class="seg" id="expCatSeg" role="group" aria-label="Danh mục">
             <button type="button" data-cat="food" class="on">🍜 Ăn</button>
             <button type="button" data-cat="transport">🚇 Đi lại</button>
             <button type="button" data-cat="shopping">🛍 Mua</button>
             <button type="button" data-cat="ticket">🎫 Vé</button>
-            <button type="button" data-cat="other">… Khác</button>
+            <button type="button" data-cat="__custom">… Khác</button>
           </div>
           <input type="hidden" name="category" id="expCategory" value="food">
-        </label>
-
-        <label>
-          Người trả
-          <div class="seg" id="expPayerSeg" style="margin-top:4px">
-            <button type="button" data-payer="Tôi" class="on">Tôi</button>
-            <button type="button" data-payer="Vợ">Vợ</button>
-            <button type="button" data-payer="Cả hai">Cả hai</button>
+          <div id="expCustomCatWrap" class="hidden" style="margin-top:10px">
+            <input type="text" id="expCustomCat" placeholder="Tên danh mục (vd: quà, sim, bảo hiểm…)" autocomplete="off" maxlength="40" style="width:100%;min-height:46px;font-size:16px;border-radius:12px;padding:12px;box-sizing:border-box">
           </div>
-          <input type="hidden" name="payer" id="expPayer" value="Tôi">
-        </label>
+        </div>
 
-        <label>
-          Địa điểm (tuỳ chọn)
-          <select name="placeId" id="expPlaceId">
-            <option value="">— Không gắn —</option>
-            ${(state.places || []).slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""))).map(p =>
-              `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`
-            ).join("")}
-          </select>
-        </label>
-
-        <label>
-          Activity (tuỳ chọn)
-          <select name="activityId" id="expActivityId">
-            <option value="">— Không gắn —</option>
-            ${(typeof activeActivities === "function" ? activeActivities() : state.activities)
-              .filter(a => a.date === defaultDate)
-              .map(a =>
-                `<option value="${escapeHtml(a.id)}">${escapeHtml((a.startTime || "") + " " + (a.title || ""))}</option>`
+        <details style="margin-bottom:14px">
+          <summary style="font-size:13px;font-weight:650;color:#475569;cursor:pointer;padding:8px 0">Gắn địa điểm / activity (tuỳ chọn)</summary>
+          <label style="margin-top:8px">
+            Địa điểm
+            <select name="placeId" id="expPlaceId">
+              <option value="">— Không gắn —</option>
+              ${(state.places || []).slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""))).map(p =>
+                `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`
               ).join("")}
-          </select>
-        </label>
+            </select>
+          </label>
+          <label>
+            Activity
+            <select name="activityId" id="expActivityId">
+              <option value="">— Không gắn —</option>
+              ${(typeof activeActivities === "function" ? activeActivities() : state.activities)
+                .filter(a => a.date === defaultDate)
+                .map(a =>
+                  `<option value="${escapeHtml(a.id)}">${escapeHtml((a.startTime || "") + " " + (a.title || ""))}</option>`
+                ).join("")}
+            </select>
+          </label>
+        </details>
 
-        <button class="btn primary" style="width:100%;min-height:48px;font-size:16px;margin-top:4px">Lưu khoản chi</button>
+        <button type="submit" class="btn primary" style="width:100%;min-height:52px;font-size:17px;margin-top:4px">Lưu khoản chi</button>
       </form>
     `
   );
 
+  const customWrap = document.getElementById("expCustomCatWrap");
+  const customInput = document.getElementById("expCustomCat");
   document.querySelectorAll("#expCatSeg button").forEach(btn => {
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       document.querySelectorAll("#expCatSeg button").forEach(b => b.classList.remove("on"));
       btn.classList.add("on");
-      document.getElementById("expCategory").value = btn.getAttribute("data-cat");
-    };
-  });
-  document.querySelectorAll("#expPayerSeg button").forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll("#expPayerSeg button").forEach(b => b.classList.remove("on"));
-      btn.classList.add("on");
-      document.getElementById("expPayer").value = btn.getAttribute("data-payer");
+      const cat = btn.getAttribute("data-cat");
+      const hidden = document.getElementById("expCategory");
+      if (cat === "__custom") {
+        if (hidden) hidden.value = "";
+        if (customWrap) customWrap.classList.remove("hidden");
+        if (customInput) {
+          customInput.value = "";
+          setTimeout(() => customInput.focus(), 50);
+        }
+      } else {
+        if (hidden) hidden.value = cat;
+        if (customWrap) customWrap.classList.add("hidden");
+        if (customInput) customInput.value = "";
+      }
     };
   });
 
@@ -3378,6 +3459,16 @@ function openExpenseForm() {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.target).entries());
     data.amount = Number(data.amount);
+    // Danh mục: preset hoặc custom khi chọn "Khác"
+    const customVal = ((document.getElementById("expCustomCat") || {}).value || "").trim();
+    const catHidden = (data.category || "").trim();
+    if (customVal) {
+      data.category = customVal;
+    } else if (!catHidden || catHidden === "__custom") {
+      alert("Nhập tên danh mục hoặc chọn một danh mục có sẵn");
+      return;
+    }
+    delete data.payer;
     if (!data.time) delete data.time;
     if (!data.placeId) delete data.placeId;
     if (!data.activityId) delete data.activityId;
